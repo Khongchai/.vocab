@@ -1,0 +1,1 @@
+- [ ] Make go server return all red text.
