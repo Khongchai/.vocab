@@ -3,19 +3,25 @@
   "displayName": ".vocab",
   "description": "Vocab file parser",
   "version": "0.0.1",
+  "publisher": "Khongchai",
   "engines": {
     "vscode": "^1.103.0"
   },
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEventsComment": "We don't need any events because we're contributing a new language.",
+  "activationEvents": [
+    "onLanguage:markdown"
+  ],
   "main": "./dist/extension.js",
   "contributes": {
-    "commands": [
+    "languages": [
       {
-        "command": "vocab.helloWorld",
-        "title": "Hello World"
+        "id": "markdown",
+        "extensions": [
+          ".vocab.markdown"
+        ]
       }
     ]
   },
