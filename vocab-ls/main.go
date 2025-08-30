@@ -47,6 +47,8 @@ type PublishDiagnosticsParams struct {
 }
 
 func main() {
+	print("Starting vocab-ls...")
+
 	reader := bufio.NewReader(os.Stdin)
 	decoder := json.NewDecoder(reader)
 	encoder := json.NewEncoder(os.Stdout)
