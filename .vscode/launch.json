@@ -6,7 +6,7 @@
   "configurations": [
     {
       "args": ["--extensionDevelopmentPath=${workspaceFolder}"],
-      "name": "Launch Client",
+      "name": "Launch Client and server",
       "outFiles": ["${workspaceFolder}/out/**/*.js"],
       "request": "launch",
       "type": "extensionHost"
@@ -19,6 +19,13 @@
       "program": "${fileDirname}",
       //   Launch with integrated terminal so we can also test with stdin
       "console": "integratedTerminal"
+    },
+    {
+      "name": "Attach to vocab-ls",
+      "type": "go",
+      "request": "attach",
+      "mode": "local",
+      "processId": 0
     }
   ]
 }

@@ -11,7 +11,7 @@ import (
 // hand loop https://github.com/microsoft/typescript-go/blob/bcb8510f109a472fe8ce00ab4c6512dba31bedb7/internal/lsp/server.go#L246
 
 func main() {
-	print("Starting vocab-ls...")
+	print("Starting vocab...\n")
 
 	reader := jsonrpc.NewJsonrpc(os.Stdin)
 
@@ -25,7 +25,8 @@ func main() {
 			continue
 		}
 
-		print(data)
+		formatted := fmt.Sprintf("Output: %+v\n", data)
+		print(formatted)
 	}
 
 	// 	type Request struct {

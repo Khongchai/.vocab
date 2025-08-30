@@ -26,9 +26,9 @@ export async function activate(context: vscode.ExtensionContext) {
   })();
 
   const clientOptions: LanguageClientOptions = (() => {
-    const outputChannel = vscode.window.createOutputChannel(".vocab");
+    const outputChannel = vscode.window.createOutputChannel("vocab");
     const traceOutputChannel =
-      vscode.window.createOutputChannel(".vocab (trace)");
+      vscode.window.createOutputChannel("vocab (trace)");
     return {
       outputChannel,
       traceOutputChannel,
