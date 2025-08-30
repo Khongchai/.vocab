@@ -1,6 +1,6 @@
 {
   "name": "vocab",
-  "displayName": ".vocab",
+  "displayName": "vocab",
   "description": "Vocab file parser",
   "version": "0.0.1",
   "publisher": "Khongchai",

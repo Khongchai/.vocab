@@ -46,6 +46,7 @@ type PublishDiagnosticsParams struct {
 	Diagnostics []Diagnostic `json:"diagnostics"`
 }
 
+// lkjsflk
 func main() {
 	reader := bufio.NewReader(os.Stdin)
 	decoder := json.NewDecoder(reader)

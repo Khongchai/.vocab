@@ -35,3 +35,8 @@ go.work.sum
 node_modules/
 
 dist/
+
+# Executable
+vocab-ls.exe
+# Executable
+vocab-ls

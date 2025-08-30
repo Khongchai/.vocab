@@ -14,7 +14,7 @@ export async function activate(context: vscode.ExtensionContext) {
     const lsPath = path.resolve(context.extensionPath, "..", "vocab-ls");
     const exePath = path.join(
       lsPath,
-      `.vocab-ls${process.platform === "win32" ? ".exe" : ""}`
+      `vocab-ls${process.platform === "win32" ? ".exe" : ""}`
     );
     const option: ServerOptions = {
       // Note: if we can't find the package during build, take a look at this
@@ -46,8 +46,8 @@ export async function activate(context: vscode.ExtensionContext) {
   })();
 
   client = new LanguageClient(
-    ".vocab",
-    ".vocab language server",
+    "vocab",
+    "vocab language server",
     serverOptions,
     clientOptions
   );
