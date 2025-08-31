@@ -16,8 +16,10 @@ import (
 func main() {
 	print("Starting vocab...\n")
 
+	_, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
 	reader := jsonrpc.NewJsonrpc(os.Stdin)
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 
 	for { // https://github.com/microsoft/typescript-go/blob/main/internal/lsp/server.go#L246
 		data, err := reader.Read()
@@ -27,43 +29,9 @@ func main() {
 			continue
 		}
 
-		formatted := fmt.Sprintf("Output: %+v\n", data)
+		formatted := fmt.Sprintf("Received request: %+v\n", data)
 		print(formatted)
 	}
-
-	// 	type Request struct {
-	// 	Jsonrpc string           `json:"jsonrpc"`
-	// 	ID      *json.RawMessage `json:"id,omitempty"`
-	// 	Method  string           `json:"method"`
-	// 	Params  json.RawMessage  `json:"params,omitempty"`
-	// }
-
-	// type Response struct {
-	// 	Jsonrpc string           `json:"jsonrpc"`
-	// 	ID      *json.RawMessage `json:"id,omitempty"`
-	// 	Result  interface{}      `json:"result,omitempty"`
-	// 	Error   interface{}      `json:"error,omitempty"`
-	// }
-
-	// type Diagnostic struct {
-	// 	Range struct {
-	// 		Start Position `json:"start"`
-	// 		End   Position `json:"end"`
-	// 	} `json:"range"`
-	// 	Severity int    `json:"severity"` // 1 = Error
-	// 	Source   string `json:"source"`
-	// 	Message  string `json:"message"`
-	// }
-
-	// type Position struct {
-	// 	Line      int `json:"line"`
-	// 	Character int `json:"character"`
-	// }
-
-	// type PublishDiagnosticsParams struct {
-	// 	URI         string       `json:"uri"`
-	// 	Diagnostics []Diagnostic `json:"diagnostics"`
-	// }
 
 	// for {
 	// 	var req Request

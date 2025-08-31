@@ -8,8 +8,7 @@ import (
 	"io"
 	"strconv"
 	lsproto "vocab/lsp"
-
-	"github.com/go-json-experiment/json"
+	// "encoding/json"
 )
 
 // ref:
@@ -33,18 +32,18 @@ func NewJsonrpc(reader io.Reader) *Jsonrpc {
 }
 
 // Blocks and read content of this json rpc message
-func (r *Jsonrpc) Read() (map[string]any, error) {
+func (r *Jsonrpc) Read() (*lsproto.Message, error) {
 	bytes, err := r.ReadBody()
 	if err != nil {
 		return nil, err
 	}
 
-	req := &lsproto.Request{}
-	if err := json.Unmarshal(bytes, req); err != nil {
-		return nil, fmt.Errorf("%w: %w", lsproto.ErrInvalidRequest, err)
+	message, err := lsproto.UnmarshalJson(bytes)
+	if err != nil {
+		return nil, fmt.Errorf("%#v: %w", lsproto.ErrInvalidRequest, err)
 	}
 
-	return req, nil
+	return message, nil
 }
 
 // Read the content of a json-rpc formatted message.
