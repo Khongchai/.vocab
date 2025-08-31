@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	"fmt"
 	"os"
@@ -9,6 +10,8 @@ import (
 	"time"
 	"vocab/jsonrpc"
 	lsproto "vocab/lsp"
+
+	"github.com/go-json-experiment/json"
 )
 
 // two options:
@@ -22,7 +25,9 @@ func main() {
 	defer stop()
 
 	reader := jsonrpc.NewJsonrpc(os.Stdin)
+	writer := bufio.NewWriter(os.Stdout)
 
+	// to attach a debugger, give sometime before starting the main loop
 	time.Sleep(10 * time.Second)
 
 	for { // https://github.com/microsoft/typescript-go/blob/main/internal/lsp/server.go#L246
@@ -33,9 +38,6 @@ func main() {
 			continue
 		}
 
-		formatted := fmt.Sprintf("Received message: %+v\n", data)
-		print(formatted)
-
 		switch data.Kind {
 		case lsproto.MessageKindNotification:
 			if n, ok := data.Msg.(lsproto.Notification); ok {
@@ -45,11 +47,43 @@ func main() {
 		case lsproto.MessageKindRequest:
 			if r, ok := data.Msg.(lsproto.RequestMessage); ok {
 				print(r.Method)
+				response := map[string]any{
+					"jsonrpc": "2.0",
+					"id":      r.ID, // echo the request id
+					"result": map[string]any{
+						"capabilities": map[string]any{
+							"textDocumentSync": map[string]any{
+								"openClose": true,
+								// 1 = Full, 2 = Incremental (LSP 3.17); pick what you implement
+								"change": 2,
+							},
+						},
+						// optional, helps debugging in client logs
+						"serverInfo": map[string]any{
+							"name":    "vocab-ls",
+							"version": "0.0.1",
+						},
+					},
+				}
+				out, err := json.Marshal(response)
+				if err != nil {
+					fmt.Fprint(os.Stderr, err)
+				}
+
+				if _, err := fmt.Fprintf(writer, "Content-Length: %d\r\n\r\n", len(out)); err != nil {
+					panic("wtf")
+				}
+				if _, err := writer.Write(out); err != nil {
+					panic("wtf bro")
+				}
+				writer.Flush()
 			}
 		case lsproto.MessageKindResponse:
 			if r, ok := data.Msg.(lsproto.ResponseMessage); ok {
 				print(r.ID)
 			}
+		default:
+			print("No default message handler found.")
 		}
 	}
 

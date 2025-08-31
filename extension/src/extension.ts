@@ -4,7 +4,10 @@ import {
   LanguageClient,
   LanguageClientOptions,
   ServerOptions,
+  CloseAction,
   TransportKind,
+  ErrorHandler,
+  ErrorAction,
 } from "vscode-languageclient/node";
 
 let client: LanguageClient | undefined;

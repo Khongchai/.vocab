@@ -9,7 +9,7 @@ import (
 	"fmt"
 )
 
-const jsonRPCVersion = `"2.0"`
+const JsonRPCVersion = `"2.0"`
 
 type RequestMethod = string
 
@@ -38,13 +38,13 @@ type Notification struct {
 type RequestMessage struct {
 	ID     int           `json:"id"`
 	Method RequestMethod `json:"method"`
-	Params any           `json:"params,omitzero"`
+	Params any           `json:"params,omitempty"`
 }
 
 type ResponseMessage struct {
-	ID     int `json:"id,omitzero"`
-	Result any `json:"result,omitzero"`
-	Error  any `json:"error,omitzero"`
+	ID     int `json:"id,omitempty"`
+	Result any `json:"result,omitempty"`
+	Error  any `json:"error,omitempty"`
 }
 
 func UnmarshalJson(raw []byte) (*Message, error) {
@@ -53,20 +53,30 @@ func UnmarshalJson(raw []byte) (*Message, error) {
 		return nil, fmt.Errorf("%#v: %w", ErrInvalidRequest, err)
 	}
 
-	var kind MessageKind
-	switch {
-	case out["id"] == nil:
-		kind = MessageKindNotification
-	case out["method"] != nil:
-		kind = MessageKindRequest
-	default:
-		kind = MessageKindResponse
+	// TODO manual map to avoid json.Unmarshal twice
+
+	if out["id"] == nil {
+		var notification Notification
+		json.Unmarshal(raw, &notification)
+		return &Message{
+			Kind: MessageKindNotification,
+			Msg:  notification,
+		}, nil
 	}
 
-	message := &Message{
-		Kind: kind,
-		Msg:  out,
+	if out["method"] != nil {
+		var request RequestMessage
+		json.Unmarshal(raw, &request)
+		return &Message{
+			Kind: MessageKindRequest,
+			Msg:  request,
+		}, nil
 	}
 
-	return message, nil
+	var response ResponseMessage
+	json.Unmarshal(raw, &response)
+	return &Message{
+		Kind: MessageKindResponse,
+		Msg:  response,
+	}, nil
 }
