@@ -6,7 +6,9 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 	"vocab/jsonrpc"
+	lsproto "vocab/lsp"
 )
 
 // two options:
@@ -21,6 +23,8 @@ func main() {
 
 	reader := jsonrpc.NewJsonrpc(os.Stdin)
 
+	time.Sleep(10 * time.Second)
+
 	for { // https://github.com/microsoft/typescript-go/blob/main/internal/lsp/server.go#L246
 		data, err := reader.Read()
 
@@ -29,8 +33,24 @@ func main() {
 			continue
 		}
 
-		formatted := fmt.Sprintf("Received request: %+v\n", data)
+		formatted := fmt.Sprintf("Received message: %+v\n", data)
 		print(formatted)
+
+		switch data.Kind {
+		case lsproto.MessageKindNotification:
+			if n, ok := data.Msg.(lsproto.Notification); ok {
+				// use n
+				print(n.Method)
+			}
+		case lsproto.MessageKindRequest:
+			if r, ok := data.Msg.(lsproto.RequestMessage); ok {
+				print(r.Method)
+			}
+		case lsproto.MessageKindResponse:
+			if r, ok := data.Msg.(lsproto.ResponseMessage); ok {
+				print(r.ID)
+			}
+		}
 	}
 
 	// for {

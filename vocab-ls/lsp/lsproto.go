@@ -27,7 +27,7 @@ const (
 
 type Message struct {
 	Kind MessageKind
-	msg  any
+	Msg  any
 }
 
 type Notification struct {
@@ -48,33 +48,25 @@ type ResponseMessage struct {
 }
 
 func UnmarshalJson(raw []byte) (*Message, error) {
-	var out map[string]interface{} = nil
+	var out map[string]any = nil
 	if err := json.Unmarshal(raw, &out); err != nil {
 		return nil, fmt.Errorf("%#v: %w", ErrInvalidRequest, err)
 	}
 
-	if out["id"] == nil {
-		var notification *Notification
-		json.Unmarshal(raw, notification)
-		return &Message{
-			Kind: MessageKindNotification,
-			msg:  notification,
-		}, nil
+	var kind MessageKind
+	switch {
+	case out["id"] == nil:
+		kind = MessageKindNotification
+	case out["method"] != nil:
+		kind = MessageKindRequest
+	default:
+		kind = MessageKindResponse
 	}
 
-	if out["method"] != nil {
-		var request *RequestMessage
-		json.Unmarshal(raw, request)
-		return &Message{
-			Kind: MessageKindRequest,
-			msg:  request,
-		}, nil
+	message := &Message{
+		Kind: kind,
+		Msg:  out,
 	}
 
-	var response *ResponseMessage
-	json.Unmarshal(raw, response)
-	return &Message{
-		Kind: MessageKindResponse,
-		msg:  response,
-	}, nil
+	return message, nil
 }
