@@ -1,8 +1,11 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
+	"os/signal"
+	"syscall"
 	"vocab/jsonrpc"
 )
 
@@ -14,10 +17,9 @@ func main() {
 	print("Starting vocab...\n")
 
 	reader := jsonrpc.NewJsonrpc(os.Stdin)
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 
-	// ctx := context.Background()
-
-	for {
+	for { // https://github.com/microsoft/typescript-go/blob/main/internal/lsp/server.go#L246
 		data, err := reader.Read()
 
 		if err != nil {
