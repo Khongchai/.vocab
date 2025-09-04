@@ -7,6 +7,23 @@ type ErrorCode struct {
 	Code int32
 }
 
+type TextDocumentSyncKind int
+
+const (
+	TextDocumentSyncKindNone TextDocumentSyncKind = iota
+	TextDocumentSyncKindFull
+	TextDocumentSyncKindIncremental
+)
+
+type DiagnosticsSeverity int
+
+const (
+	DiagnosticsSeverityError DiagnosticsSeverity = iota + 1
+	DiagnosticsSeverityWarning
+	DiagnosticsSeverityInformation
+	DiagnosticsSeverityHint
+)
+
 var (
 	// Defined by JSON-RPC
 	ErrParseError     = &ErrorCode{"ParseError", -32700}

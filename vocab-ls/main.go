@@ -7,7 +7,6 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 	"vocab/jsonrpc"
 	lsproto "vocab/lsp"
 
@@ -27,9 +26,6 @@ func main() {
 	reader := jsonrpc.NewJsonrpc(os.Stdin)
 	writer := bufio.NewWriter(os.Stdout)
 
-	// to attach a debugger, give sometime before starting the main loop
-	time.Sleep(10 * time.Second)
-
 	// engine := NewEngine(reader, writer)
 
 	// engine.start()
@@ -45,31 +41,93 @@ func main() {
 		switch data.Kind {
 		case lsproto.MessageKindNotification:
 			if n, ok := data.Msg.(lsproto.Notification); ok {
+				print("Received notification ", n.Method)
 				// use n
-				print(n.Method)
+				// text document will be sent here.
+				if n.Method == "textDocument/didChange" {
+					params := n.Params.(map[string]interface{})
+					document := params["textDocument"].(map[string]interface{})
+					documentUri := document["uri"].(string)
+					documentVersion := document["version"].(float64)
+
+					diagnosticsRange := map[string]any{
+						"start": map[string]any{
+							"line":      0,
+							"character": 0,
+						},
+						"end": map[string]any{
+							"line":      99999999,
+							"character": 99999999,
+						},
+					}
+
+					response := map[string]any{
+						"jsonrpc": "2.0",
+						"method":  "textDocument/publishDiagnostics",
+						"params": map[string]any{
+							"uri":     documentUri,
+							"version": documentVersion,
+							"diagnostics": [1]map[string]any{
+								// diagnostic object
+								{
+									"severity": lsproto.DiagnosticsSeverityError,
+									"range":    diagnosticsRange,
+									"message":  "This is a test; no need to panick!",
+								},
+							},
+						},
+					}
+
+					print("Sending all hell loose notification")
+
+					out, err := json.Marshal(response)
+					if err != nil {
+						fmt.Fprint(os.Stderr, err)
+					}
+					if _, err := fmt.Fprintf(writer, "Content-Length: %d\r\n\r\n", len(out)); err != nil {
+						panic("wtf")
+					}
+					if _, err := writer.Write(out); err != nil {
+						panic("wtf bro")
+					}
+					writer.Flush()
+				}
 			}
 		case lsproto.MessageKindRequest:
 			if r, ok := data.Msg.(lsproto.RequestMessage); ok {
-				print(r.Method)
-				response := map[string]any{
-					"jsonrpc": "2.0",
-					"id":      r.ID, // echo the request id
-					"result": map[string]any{
-						"capabilities": map[string]any{
-							"textDocumentSync": map[string]any{
-								"openClose": true,
-								// 1 = Full, 2 = Incremental (LSP 3.17); pick what you implement
-								"change": 2,
+				var response map[string]interface{} = nil
+				if r.Method == "initialize" {
+					response = map[string]any{
+						"jsonrpc": "2.0",
+						"id":      r.ID, // echo the request id
+						"result": map[string]any{
+							"capabilities": map[string]any{
+								// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#serverCapabilities
+								"textDocumentSync": map[string]any{
+									"openClose": true,
+									"change":    lsproto.TextDocumentSyncKindFull,
+								},
+								// TODO pull mode diagnostic
+								// "diagnosticProvider": map[string]any{
+								// 	// a change of date in one vocab can affect another (spaced repetition)
+								// 	"interFileDependencies": true,
+								// },
+							},
+							// optional, helps debugging in client logs
+							"serverInfo": map[string]any{
+								"name":    "vocab-ls",
+								"version": "0.0.1",
 							},
 						},
-						// optional, helps debugging in client logs
-						"serverInfo": map[string]any{
-							"name":    "vocab-ls",
-							"version": "0.0.1",
-						},
-					},
+					}
 				}
+
+				if response == nil { // not handled.
+					continue
+				}
+
 				out, err := json.Marshal(response)
+
 				if err != nil {
 					fmt.Fprint(os.Stderr, err)
 				}
@@ -90,61 +148,4 @@ func main() {
 			print("No default message handler found.")
 		}
 	}
-
-	// for {
-	// 	var req Request
-	// 	if err := decoder.Decode(&req); err != nil {
-	// 		fmt.Fprintln(os.Stderr, "decode error:", err)
-	// 		return
-	// 	}
-
-	// 	switch req.Method {
-	// 	case "initialize":
-	// 		// Respond with empty capabilities
-	// 		encoder.Encode(Response{
-	// 			Jsonrpc: "2.0",
-	// 			ID:      req.ID,
-	// 			Result: map[string]any{
-	// 				"capabilities": map[string]any{},
-	// 			},
-	// 		})
-
-	// 	case "initialized":
-	// 		// After initialization, send diagnostics for the whole file
-	// 		diagnostic := Diagnostic{
-	// 			Severity: 1, // Error
-	// 			Source:   "demo-lsp",
-	// 			Message:  "Everything is red 😈",
-	// 		}
-	// 		diagnostic.Range.Start = Position{Line: 0, Character: 0}
-	// 		diagnostic.Range.End = Position{Line: 9999, Character: 0}
-
-	// 		// Normally the URI is the open file, but we'll fake one
-	// 		params := PublishDiagnosticsParams{
-	// 			URI:         "file:///demo.go",
-	// 			Diagnostics: []Diagnostic{diagnostic},
-	// 		}
-
-	// 		notification := map[string]any{
-	// 			"jsonrpc": "2.0",
-	// 			"method":  "textDocument/publishDiagnostics",
-	// 			"params":  params,
-	// 		}
-	// 		encoder.Encode(notification)
-
-	// 	default:
-	// 		// Reply with empty result for unhandled requests
-	// 		encoder.Encode(Response{
-	// 			Jsonrpc: "2.0",
-	// 			ID:      req.ID,
-	// 			Result:  nil,
-	// 		})
-	// 	}
-
-	// 	select {
-	// 	case <-ctx.Done():
-	// 		return
-	// 	default:
-	// 	}
-	// }
 }

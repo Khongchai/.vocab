@@ -1,5 +1,5 @@
 - [x] Make extension plugin start server up
-- [ ] Make go server return all red text upon first key.
+- [x] Make go server return all red text upon first key.
 - [ ] Refactor into an engine
 
 # Main Requirement 0
@@ -13,6 +13,8 @@
 Inoltre, questo plugin sarà fantastico. Sono sicuro.
 ```
 
+- [ ] Token colors
+
 # Main Requirement 1
 
 Basic vocab capture
@@ -24,6 +26,7 @@ Basic vocab capture
 Inoltre, questo plugin sarà fantastico. Sono sicuro.
 ```
 - [ ] Match absolute text within > or >> section, if those matched text does not appear in the following section, underline the correct point
+- [ ] Don't clear diagnostics on document close. We need to keep it for spaced repetition later.
 
 # Main Requirement 2
 
@@ -52,5 +55,13 @@ Sarò lì
 ```
 - [ ] Plugin should know `sarò` is future form of `sono` and match against that.
 
-# Goals
+# Main requirement 5
+
+**Spaced repetition** 
+
+This requires [`interFileDependencies`](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#diagnosticOptions) server capability.
+
+
+# Side quests
+- [ ] Hover to show definition in English
 - [ ] Parallelize parsing of multiple vocab files with goroutine (see ts-go).

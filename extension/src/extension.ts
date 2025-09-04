@@ -56,6 +56,13 @@ export async function activate(context: vscode.ExtensionContext) {
   );
 
   await client.start();
+  await client.sendNotification("workspace/didChangeConfiguration", {
+    settings: {
+      "vscode-languageclient": {
+        trace: { server: "verbose" },
+      },
+    },
+  });
 }
 
 export async function deactivate() {
