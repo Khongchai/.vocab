@@ -30,6 +30,10 @@ func main() {
 	// to attach a debugger, give sometime before starting the main loop
 	time.Sleep(10 * time.Second)
 
+	// engine := NewEngine(reader, writer)
+
+	// engine.start()
+
 	for { // https://github.com/microsoft/typescript-go/blob/main/internal/lsp/server.go#L246
 		data, err := reader.Read()
 
