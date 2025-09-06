@@ -4,7 +4,8 @@
 
 # Main Requirement 0
 
-- [ ] Basic data structure for
+- [x] Basic data structure for
+- [ ] Use go structs for request and responses
 
 ```markdown
 # 04/09/2025
@@ -69,3 +70,4 @@ This requires [`interFileDependencies`](https://microsoft.github.io/language-ser
 # Side quests
 - [ ] Hover to show definition in English
 - [ ] Parallelize parsing of multiple vocab files with goroutine (see ts-go).
+- [ ] Make pull mode work

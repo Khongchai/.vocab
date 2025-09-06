@@ -24,6 +24,13 @@ const (
 	DiagnosticsSeverityHint
 )
 
+type DocumentDiagnosticReportKind string
+
+const (
+	DocumentDiagnosticReportKindFull      DocumentDiagnosticReportKind = "full"
+	DocumentDiagnosticReportKindUnchanged DocumentDiagnosticReportKind = "unchanged"
+)
+
 var (
 	// Defined by JSON-RPC
 	ErrParseError     = &ErrorCode{"ParseError", -32700}

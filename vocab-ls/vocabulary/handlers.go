@@ -1,4 +1,4 @@
-package handlers
+package vocabulary
 
 import lsproto "vocab/lsp"
 

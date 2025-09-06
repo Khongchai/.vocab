@@ -63,6 +63,8 @@ func (engine *Engine) Start() {
 			}
 		case lsproto.MessageKindRequest:
 			if r, ok := data.Msg.(lsproto.RequestMessage); ok {
+				engine.logger.Log("Received request ", r.Method)
+
 				response := engine.onRequest(r)
 				if response == nil {
 					continue

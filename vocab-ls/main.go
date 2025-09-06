@@ -61,6 +61,45 @@ func main() {
 			return response
 		},
 	}, map[string]func(lsproto.RequestMessage) any{
+		// not working yet, circle back to this later.
+		"textDocument/diagnostic": func(message lsproto.RequestMessage) any {
+			params := message.Params.(map[string]any)
+			document := params["textDocument"].(map[string]any)
+			documentUri := document["uri"].(string)
+
+			diagnosticsRange := map[string]any{
+				"start": map[string]any{
+					"line":      0,
+					"character": 0,
+				},
+				"end": map[string]any{
+					"line":      99999999,
+					"character": 99999999,
+				},
+			}
+
+			response := map[string]interface{}{
+				"jsonrpc": "2.0",
+				"id":      message.ID,
+				"result": map[string]any{
+					"relatedDocuments": map[string]any{
+						documentUri: map[string]any{
+							"kind": lsproto.DocumentDiagnosticReportKindFull,
+							"items": []map[string]any{
+								// diagnostic object
+								{
+									"severity": lsproto.DiagnosticsSeverityError,
+									"range":    diagnosticsRange,
+									"message":  "This is a test; no need to panick!",
+								},
+							},
+						},
+					},
+				},
+			}
+
+			return response
+		},
 		"initialize": func(message lsproto.RequestMessage) any {
 			response := map[string]any{
 				"jsonrpc": "2.0",
@@ -72,11 +111,10 @@ func main() {
 							"openClose": true,
 							"change":    lsproto.TextDocumentSyncKindFull,
 						},
-						// TODO pull mode diagnostic
-						// "diagnosticProvider": map[string]any{
-						// 	// a change of date in one vocab can affect another (spaced repetition)
-						// 	"interFileDependencies": true,
-						// },
+						"diagnosticProvider": map[string]any{
+							// a change of date in one vocab can affect another (spaced repetition)
+							"interFileDependencies": true,
+						},
 					},
 					// optional, helps debugging in client logs
 					"serverInfo": map[string]any{
