@@ -1,6 +1,6 @@
 - [x] Make extension plugin start server up
 - [x] Make go server return all red text upon first key.
-- [ ] Refactor into an engine
+- [x] Refactor into an engine
 
 # Main Requirement 0
 
