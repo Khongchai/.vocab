@@ -7,6 +7,7 @@ import (
 	"syscall"
 	"vocab/engine"
 	"vocab/lib"
+	lsproto "vocab/lsp"
 )
 
 // two options:
@@ -22,7 +23,71 @@ func main() {
 	inputReader := lib.NewInputReader(os.Stdin)
 	outputWriter := lib.NewOutputWriter(os.Stdout)
 	logger := lib.NewLogger(os.Stderr)
-	engine := engine.NewEngine(ctx, inputReader.Read, outputWriter.Write, logger)
+	engine := engine.NewEngine(ctx, inputReader.Read, outputWriter.Write, logger, map[string]func(lsproto.Notification) any{
+		"textDocument/didChange": func(rm lsproto.Notification) any {
+			params := rm.Params.(map[string]any)
+			document := params["textDocument"].(map[string]interface{})
+			documentUri := document["uri"].(string)
+			documentVersion := document["version"].(float64)
+
+			diagnosticsRange := map[string]any{
+				"start": map[string]any{
+					"line":      0,
+					"character": 0,
+				},
+				"end": map[string]any{
+					"line":      99999999,
+					"character": 99999999,
+				},
+			}
+
+			response := map[string]any{
+				"jsonrpc": "2.0",
+				"method":  "textDocument/publishDiagnostics",
+				"params": map[string]any{
+					"uri":     documentUri,
+					"version": documentVersion,
+					"diagnostics": [1]map[string]any{
+						// diagnostic object
+						{
+							"severity": lsproto.DiagnosticsSeverityError,
+							"range":    diagnosticsRange,
+							"message":  "This is a test; no need to panick!",
+						},
+					},
+				},
+			}
+
+			return response
+		},
+	}, map[string]func(lsproto.RequestMessage) any{
+		"initialize": func(message lsproto.RequestMessage) any {
+			response := map[string]any{
+				"jsonrpc": "2.0",
+				"id":      message.ID, // echo the request id
+				"result": map[string]any{
+					"capabilities": map[string]any{
+						// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#serverCapabilities
+						"textDocumentSync": map[string]any{
+							"openClose": true,
+							"change":    lsproto.TextDocumentSyncKindFull,
+						},
+						// TODO pull mode diagnostic
+						// "diagnosticProvider": map[string]any{
+						// 	// a change of date in one vocab can affect another (spaced repetition)
+						// 	"interFileDependencies": true,
+						// },
+					},
+					// optional, helps debugging in client logs
+					"serverInfo": map[string]any{
+						"name":    "vocab-ls",
+						"version": "0.0.1",
+					},
+				},
+			}
+			return response
+		},
+	})
 
 	engine.Start()
 }
