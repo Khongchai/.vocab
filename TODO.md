@@ -15,6 +15,10 @@ Inoltre, questo plugin sarà fantastico. Sono sicuro.
 
 - [ ] Token colors
 
+# Main Requirement 0.5
+
+- [ ] Multiple file handling? (how does one begin a new goroutine task)
+
 # Main Requirement 1
 
 Basic vocab capture
