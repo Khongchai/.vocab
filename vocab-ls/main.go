@@ -6,6 +6,7 @@ import (
 	"os/signal"
 	"syscall"
 	"vocab/engine"
+	"vocab/lib"
 )
 
 // two options:
@@ -18,7 +19,10 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	engine := engine.NewEngine(ctx, os.Stdin, os.Stdout)
+	inputReader := lib.NewInputReader(os.Stdin)
+	outputWriter := lib.NewOutputWriter(os.Stdout)
+	logger := lib.NewLogger(os.Stderr)
+	engine := engine.NewEngine(ctx, inputReader.Read, outputWriter.Write, logger)
 
 	engine.Start()
 }
