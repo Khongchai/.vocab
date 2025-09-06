@@ -13,12 +13,12 @@ import (
 // hand loop https://github.com/microsoft/typescript-go/blob/bcb8510f109a472fe8ce00ab4c6512dba31bedb7/internal/lsp/server.go#L246
 
 func main() {
-	print("Starting vocab...\n")
+	print("Starting vocab-ls...\n")
 
-	_, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	engine := engine.NewEngine(os.Stdin, os.Stdout)
+	engine := engine.NewEngine(ctx, os.Stdin, os.Stdout)
 
 	engine.Start()
 }

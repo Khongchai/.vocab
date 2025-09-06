@@ -14,15 +14,16 @@ import (
 )
 
 type Engine struct {
-	context context.Context
-	reader  *bufio.Reader
-	writer  *bufio.Writer
+	ctx    context.Context
+	reader *bufio.Reader
+	writer *bufio.Writer
 }
 
-func NewEngine(reader io.Reader, writer io.Writer) *Engine {
+func NewEngine(ctx context.Context, reader io.Reader, writer io.Writer) *Engine {
 	r := bufio.NewReader(reader)
 	w := bufio.NewWriter(writer)
 	engine := &Engine{
+		ctx:    ctx,
 		reader: r,
 		writer: w,
 	}
