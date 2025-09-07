@@ -48,6 +48,7 @@ func (ast *VocabAst) Update(uri string, text string, changeRange *lsproto.Range)
 	if changeRange != nil {
 		panic("Partial update not yet handled")
 	}
+
 }
 
 func (ast *VocabAst) GetCurrentDiagnostics(uri string) []lsproto.Diagnostic {
