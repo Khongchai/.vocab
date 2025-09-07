@@ -8,6 +8,7 @@ import (
 	"vocab/engine"
 	"vocab/lib"
 	lsproto "vocab/lsp"
+	"vocab/vocabulary"
 
 	"github.com/go-json-experiment/json"
 )
@@ -25,7 +26,7 @@ func main() {
 	inputReader := lib.NewInputReader(os.Stdin)
 	outputWriter := lib.NewOutputWriter(os.Stdout)
 	logger := lib.NewLogger(os.Stderr)
-	// ast := vocabular.NewAst()
+	ast := vocabulary.NewAst(ctx)
 	engine := engine.NewEngine(ctx, inputReader.Read, outputWriter.Write, logger, map[string]func(lsproto.Notification) any{
 		"textDocument/didChange": func(rm lsproto.Notification) any {
 			// TODO optimize later.
@@ -37,56 +38,49 @@ func main() {
 			}
 			json.Unmarshal(marshalled, &params)
 
+			for i := range params.ContentChanges {
+				change := params.ContentChanges[i]
+				ast.Update(params.TextDocument.Uri, change.Text, change.Range)
+			}
+
 			response := lsproto.NewPublishDiagnosticsNotfication(
 				lsproto.PublishDiagnosticsParams{
-					Uri:     params.TextDocument.Uri,
-					Version: params.TextDocument.Version,
-					Diagnostics: []lsproto.Diagnostic{
-						{
-							Severity: lsproto.DiagnosticsSeverityError,
-							Message:  "This is a test; no need to panick!",
-							Range: lsproto.Range{
-								Start: lsproto.Position{
-									Line:      0,
-									Character: 0,
-								},
-								End: lsproto.Position{
-									Line:      99999999,
-									Character: 99999999,
-								},
-							},
-						},
-					},
+					Uri:         params.TextDocument.Uri,
+					Version:     params.TextDocument.Version,
+					Diagnostics: ast.GetCurrentDiagnostics(params.TextDocument.Uri),
 				},
 			)
+
+			// response := lsproto.NewPublishDiagnosticsNotfication(
+			// 	lsproto.PublishDiagnosticsParams{
+			// 		Uri:     params.TextDocument.Uri,
+			// 		Version: params.TextDocument.Version,
+			// 		Diagnostics: []lsproto.Diagnostic{
+			// 			{
+			// 				Severity: lsproto.DiagnosticsSeverityError,
+			// 				Message:  "This is a test; no need to panick!",
+			// 				Range: lsproto.Range{
+			// 					Start: lsproto.Position{
+			// 						Line:      0,
+			// 						Character: 0,
+			// 					},
+			// 					End: lsproto.Position{
+			// 						Line:      99999999,
+			// 						Character: 99999999,
+			// 					},
+			// 				},
+			// 			},
+			// 		},
+			// 	},
+			// )
 
 			return response
 		},
 	}, map[string]func(lsproto.RequestMessage) any{
-		// not working yet, circle back to this later.
 		"textDocument/diagnostic": func(message lsproto.RequestMessage) any {
-			// params := message.Params.(map[string]any)
-			// document := params["textDocument"].(map[string]any)
-			// documentUri := document["uri"].(string)
-
 			response := lsproto.NewFullDocumentDiagnosticResponse(
 				message.ID,
-				[]lsproto.Diagnostic{
-					{
-						Severity: lsproto.DiagnosticsSeverityError,
-						Message:  "This is a test; no need to panick!",
-						Range: lsproto.Range{
-							Start: lsproto.Position{
-								Line:      0,
-								Character: 0,
-							},
-							End: lsproto.Position{
-								Line:      99999999,
-								Character: 99999999,
-							},
-						},
-					},
-				},
+				[]lsproto.Diagnostic{},
 				map[string][]lsproto.Diagnostic{},
 			)
 

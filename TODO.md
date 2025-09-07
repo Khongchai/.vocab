@@ -14,11 +14,6 @@
 Inoltre, questo plugin sarà fantastico. Sono sicuro.
 ```
 
-- [ ] Token colors
-
-# Main Requirement 0.5
-
-- [ ] Multiple file handling? (how does one begin a new goroutine task)
 
 # Main Requirement 1
 
@@ -32,6 +27,10 @@ Inoltre, questo plugin sarà fantastico. Sono sicuro.
 ```
 - [ ] Match absolute text within > or >> section, if those matched text does not appear in the following section, underline the correct point
 - [ ] Don't clear diagnostics on document close. We need to keep it for spaced repetition later.
+
+# Main Requirement 1.5 
+
+- [ ] Token colors
 
 # Main Requirement 2
 

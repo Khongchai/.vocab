@@ -1,31 +1,55 @@
 package vocabulary
 
-import "time"
+import (
+	"context"
+	"time"
+	lsproto "vocab/lsp"
+)
 
 type Word struct {
-	text string
+	Text string
 }
 
 type Sentence struct {
-	text string
+	Text string
 	// future positions for reviewed and such will be here.
 }
 
+type Date struct {
+	Text      string
+	Time      time.Time
+	TextRange lsproto.Range
+}
+
 type VocabularySection struct {
-	date          time.Time
-	newWords      []Word
-	reviewedWords []Word
-	sentences     []Sentence
+	Date          *Date
+	NewWords      []*Word
+	ReviewedWords []*Word
+	Sentences     []*Sentence
 }
 
 type Document struct {
-	sections []VocabularySection
+	Sections []*VocabularySection
 }
 
-type Ast struct {
-	documents []Document
+type VocabAst struct {
+	ctx       context.Context
+	documents map[string][]*Document
 }
 
-func (ast *Ast) parse() {
+func NewAst(ctx context.Context) *VocabAst {
+	return &VocabAst{
+		ctx:       ctx,
+		documents: map[string][]*Document{},
+	}
+}
 
+func (ast *VocabAst) Update(uri string, text string, changeRange *lsproto.Range) {
+	if changeRange != nil {
+		panic("Partial update not yet handled")
+	}
+}
+
+func (ast *VocabAst) GetCurrentDiagnostics(uri string) []lsproto.Diagnostic {
+	return []lsproto.Diagnostic{}
 }
