@@ -5,8 +5,7 @@
 # Main Requirement 0
 
 - [x] Basic data structure for
-- [ ] Use go structs for request and responses
-- [ ] Refactor handlers
+- [x] Use go structs for request and responses
 
 ```markdown
 # 04/09/2025

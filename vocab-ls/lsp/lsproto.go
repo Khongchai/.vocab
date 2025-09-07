@@ -5,8 +5,9 @@
 package lsproto
 
 import (
-	"encoding/json"
 	"fmt"
+
+	"github.com/go-json-experiment/json"
 )
 
 const JsonRPCVersion = `"2.0"`
@@ -38,13 +39,13 @@ type Notification struct {
 type RequestMessage struct {
 	ID     int           `json:"id"`
 	Method RequestMethod `json:"method"`
-	Params any           `json:"params,omitzero"`
+	Params any           `json:"params,omitempty"`
 }
 
 type ResponseMessage struct {
-	ID     int `json:"id,omitzero"`
-	Result any `json:"result,omitzero"`
-	Error  any `json:"error,omitzero"`
+	ID     int `json:"id,omitempty"`
+	Result any `json:"result,omitempty"`
+	Error  any `json:"error,omitempty"`
 }
 
 func UnmarshalJson(raw []byte) (*Message, error) {
@@ -52,8 +53,6 @@ func UnmarshalJson(raw []byte) (*Message, error) {
 	if err := json.Unmarshal(raw, &out); err != nil {
 		return nil, fmt.Errorf("%#v: %w", ErrInvalidRequest, err)
 	}
-
-	// TODO manual map to avoid json.Unmarshal twice
 
 	if out["id"] == nil {
 		var notification Notification

@@ -31,6 +31,22 @@ const (
 	DocumentDiagnosticReportKindUnchanged DocumentDiagnosticReportKind = "unchanged"
 )
 
+type OptionalVersionedTextDocumentIdentifier struct {
+	Uri     string  `json:"uri"`
+	Version float64 `json:"version,omitempty"`
+}
+
+type TextDocumentContentChangeEvent struct {
+	// If the document is a full change, range is null
+	Range *Range `json:"range,omitempty"`
+	Text  string `json:"text"`
+}
+
+type DidChangeTextDocumentParams struct {
+	TextDocument   OptionalVersionedTextDocumentIdentifier `json:"textDocument"`
+	ContentChanges []TextDocumentContentChangeEvent        `json:"contentChanges"`
+}
+
 func NewFullDocumentDiagnosticResponse(id int, documentsDiagnostics []Diagnostic, relatedDocumentsDiagnostics map[string][]Diagnostic) *documentDiagnosticResponse {
 	reports := map[string]FullDocumentDiagnosticReport{}
 
@@ -62,7 +78,7 @@ type documentDiagnosticResponse struct {
 type DocumentDiagnosticReport struct {
 	Kind             DocumentDiagnosticReportKind            `json:"kind"`
 	Items            []Diagnostic                            `json:"items"`
-	RelatedDocuments map[string]FullDocumentDiagnosticReport `json:"relatedDocuments,omitzero"`
+	RelatedDocuments map[string]FullDocumentDiagnosticReport `json:"relatedDocuments,omitempty"`
 }
 
 type FullDocumentDiagnosticReport struct {
@@ -87,12 +103,12 @@ type publishDiagnosticsNotification struct {
 type PublishDiagnosticsParams struct {
 	Uri         string       `json:"uri"`
 	Diagnostics []Diagnostic `json:"diagnostics"`
-	Version     float64      `json:"version,omitzero"`
+	Version     float64      `json:"version,omitempty"`
 }
 
 type Diagnostic struct {
 	Range    Range               `json:"range"`
-	Message  string              `json:"message,omitzero"`
+	Message  string              `json:"message,omitempty"`
 	Severity DiagnosticsSeverity `json:"severity"`
 }
 

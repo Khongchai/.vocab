@@ -8,6 +8,8 @@ import (
 	"vocab/engine"
 	"vocab/lib"
 	lsproto "vocab/lsp"
+
+	"github.com/go-json-experiment/json"
 )
 
 // two options:
@@ -23,17 +25,22 @@ func main() {
 	inputReader := lib.NewInputReader(os.Stdin)
 	outputWriter := lib.NewOutputWriter(os.Stdout)
 	logger := lib.NewLogger(os.Stderr)
+	// ast := vocabular.NewAst()
 	engine := engine.NewEngine(ctx, inputReader.Read, outputWriter.Write, logger, map[string]func(lsproto.Notification) any{
 		"textDocument/didChange": func(rm lsproto.Notification) any {
-			params := rm.Params.(map[string]any)
-			document := params["textDocument"].(map[string]interface{})
-			documentUri := document["uri"].(string)
-			documentVersion := document["version"].(float64)
+			// TODO optimize later.
+			var params lsproto.DidChangeTextDocumentParams
+			marshalled, err := json.Marshal(rm.Params)
+			if err != nil {
+				logger.Log("Error while unmarshalling params")
+				return nil
+			}
+			json.Unmarshal(marshalled, &params)
 
 			response := lsproto.NewPublishDiagnosticsNotfication(
 				lsproto.PublishDiagnosticsParams{
-					Uri:     documentUri,
-					Version: documentVersion,
+					Uri:     params.TextDocument.Uri,
+					Version: params.TextDocument.Version,
 					Diagnostics: []lsproto.Diagnostic{
 						{
 							Severity: lsproto.DiagnosticsSeverityError,

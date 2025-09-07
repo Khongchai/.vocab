@@ -22,6 +22,10 @@ type Document struct {
 	sections []VocabularySection
 }
 
-type World struct {
+type Ast struct {
 	documents []Document
+}
+
+func (ast *Ast) parse() {
+
 }
