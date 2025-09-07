@@ -31,6 +31,81 @@ const (
 	DocumentDiagnosticReportKindUnchanged DocumentDiagnosticReportKind = "unchanged"
 )
 
+func NewFullDocumentDiagnosticResponse(id int, documentsDiagnostics []Diagnostic, relatedDocumentsDiagnostics map[string][]Diagnostic) *documentDiagnosticResponse {
+	reports := map[string]FullDocumentDiagnosticReport{}
+
+	for key := range relatedDocumentsDiagnostics {
+		reports[key] = FullDocumentDiagnosticReport{
+			Kind:  DocumentDiagnosticReportKindFull,
+			Items: relatedDocumentsDiagnostics[key],
+		}
+	}
+
+	return &documentDiagnosticResponse{
+		Jsonrpc: JsonRPCVersion,
+		ID:      id,
+		Result: DocumentDiagnosticReport{
+			Kind:             DocumentDiagnosticReportKindFull,
+			Items:            documentsDiagnostics,
+			RelatedDocuments: reports,
+		},
+	}
+}
+
+// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_diagnostic
+type documentDiagnosticResponse struct {
+	Jsonrpc string                   `json:"jsonrpc"`
+	ID      int                      `json:"id"`
+	Result  DocumentDiagnosticReport `json:"result"`
+}
+
+type DocumentDiagnosticReport struct {
+	Kind             DocumentDiagnosticReportKind            `json:"kind"`
+	Items            []Diagnostic                            `json:"items"`
+	RelatedDocuments map[string]FullDocumentDiagnosticReport `json:"relatedDocuments,omitzero"`
+}
+
+type FullDocumentDiagnosticReport struct {
+	Kind  DocumentDiagnosticReportKind `json:"kind"`
+	Items []Diagnostic                 `json:"items"`
+}
+
+func NewPublishDiagnosticsNotfication(params PublishDiagnosticsParams) *publishDiagnosticsNotification {
+	return &publishDiagnosticsNotification{
+		Jsonrpc: JsonRPCVersion,
+		Method:  "textDocument/publishDiagnostics",
+		Params:  params,
+	}
+}
+
+type publishDiagnosticsNotification struct {
+	Jsonrpc string                   `json:"jsonrpc"`
+	Method  string                   `json:"method"`
+	Params  PublishDiagnosticsParams `json:"params"`
+}
+
+type PublishDiagnosticsParams struct {
+	Uri         string       `json:"uri"`
+	Diagnostics []Diagnostic `json:"diagnostics"`
+	Version     float64      `json:"version,omitzero"`
+}
+
+type Diagnostic struct {
+	Range    Range               `json:"range"`
+	Message  string              `json:"message,omitzero"`
+	Severity DiagnosticsSeverity `json:"severity"`
+}
+
+type Range struct {
+	Start Position `json:"start"`
+	End   Position `json:"end"`
+}
+
+type Position struct {
+	Line      int `json:"line"`
+	Character int `json:"character"`
+}
+
 var (
 	// Defined by JSON-RPC
 	ErrParseError     = &ErrorCode{"ParseError", -32700}

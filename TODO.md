@@ -6,6 +6,7 @@
 
 - [x] Basic data structure for
 - [ ] Use go structs for request and responses
+- [ ] Refactor handlers
 
 ```markdown
 # 04/09/2025

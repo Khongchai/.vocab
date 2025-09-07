@@ -38,13 +38,13 @@ type Notification struct {
 type RequestMessage struct {
 	ID     int           `json:"id"`
 	Method RequestMethod `json:"method"`
-	Params any           `json:"params,omitempty"`
+	Params any           `json:"params,omitzero"`
 }
 
 type ResponseMessage struct {
-	ID     int `json:"id,omitempty"`
-	Result any `json:"result,omitempty"`
-	Error  any `json:"error,omitempty"`
+	ID     int `json:"id,omitzero"`
+	Result any `json:"result,omitzero"`
+	Error  any `json:"error,omitzero"`
 }
 
 func UnmarshalJson(raw []byte) (*Message, error) {

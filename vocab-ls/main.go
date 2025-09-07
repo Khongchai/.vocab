@@ -30,73 +30,58 @@ func main() {
 			documentUri := document["uri"].(string)
 			documentVersion := document["version"].(float64)
 
-			diagnosticsRange := map[string]any{
-				"start": map[string]any{
-					"line":      0,
-					"character": 0,
-				},
-				"end": map[string]any{
-					"line":      99999999,
-					"character": 99999999,
-				},
-			}
-
-			response := map[string]any{
-				"jsonrpc": "2.0",
-				"method":  "textDocument/publishDiagnostics",
-				"params": map[string]any{
-					"uri":     documentUri,
-					"version": documentVersion,
-					"diagnostics": [1]map[string]any{
-						// diagnostic object
+			response := lsproto.NewPublishDiagnosticsNotfication(
+				lsproto.PublishDiagnosticsParams{
+					Uri:     documentUri,
+					Version: documentVersion,
+					Diagnostics: []lsproto.Diagnostic{
 						{
-							"severity": lsproto.DiagnosticsSeverityError,
-							"range":    diagnosticsRange,
-							"message":  "This is a test; no need to panick!",
+							Severity: lsproto.DiagnosticsSeverityError,
+							Message:  "This is a test; no need to panick!",
+							Range: lsproto.Range{
+								Start: lsproto.Position{
+									Line:      0,
+									Character: 0,
+								},
+								End: lsproto.Position{
+									Line:      99999999,
+									Character: 99999999,
+								},
+							},
 						},
 					},
 				},
-			}
+			)
 
 			return response
 		},
 	}, map[string]func(lsproto.RequestMessage) any{
 		// not working yet, circle back to this later.
 		"textDocument/diagnostic": func(message lsproto.RequestMessage) any {
-			params := message.Params.(map[string]any)
-			document := params["textDocument"].(map[string]any)
-			documentUri := document["uri"].(string)
+			// params := message.Params.(map[string]any)
+			// document := params["textDocument"].(map[string]any)
+			// documentUri := document["uri"].(string)
 
-			diagnosticsRange := map[string]any{
-				"start": map[string]any{
-					"line":      0,
-					"character": 0,
-				},
-				"end": map[string]any{
-					"line":      99999999,
-					"character": 99999999,
-				},
-			}
-
-			response := map[string]interface{}{
-				"jsonrpc": "2.0",
-				"id":      message.ID,
-				"result": map[string]any{
-					"relatedDocuments": map[string]any{
-						documentUri: map[string]any{
-							"kind": lsproto.DocumentDiagnosticReportKindFull,
-							"items": []map[string]any{
-								// diagnostic object
-								{
-									"severity": lsproto.DiagnosticsSeverityError,
-									"range":    diagnosticsRange,
-									"message":  "This is a test; no need to panick!",
-								},
+			response := lsproto.NewFullDocumentDiagnosticResponse(
+				message.ID,
+				[]lsproto.Diagnostic{
+					{
+						Severity: lsproto.DiagnosticsSeverityError,
+						Message:  "This is a test; no need to panick!",
+						Range: lsproto.Range{
+							Start: lsproto.Position{
+								Line:      0,
+								Character: 0,
+							},
+							End: lsproto.Position{
+								Line:      99999999,
+								Character: 99999999,
 							},
 						},
 					},
 				},
-			}
+				map[string][]lsproto.Diagnostic{},
+			)
 
 			return response
 		},
