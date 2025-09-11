@@ -9,11 +9,10 @@
 
 ```markdown
 # 04/09/2025
->> `inoltre`, something
-> `meglio`
+>> (it) `inoltre`
+> (de) `schön`, der Berg
 Inoltre, questo plugin sarà fantastico. Sono sicuro.
 ```
-
 
 # Main Requirement 1
 
@@ -21,8 +20,8 @@ Basic vocab capture
 
 ```markdown
 # 04/09/2025
->> `inoltre`
-> `meglio`
+>> (it) `inoltre`
+> (de) `schön`, der Berg
 Inoltre, questo plugin sarà fantastico. Sono sicuro.
 ```
 - [ ] Match absolute text within > or >> section, if those matched text does not appear in the following section, underline the correct point
@@ -35,6 +34,7 @@ Inoltre, questo plugin sarà fantastico. Sono sicuro.
 # Main Requirement 2
 
 - [ ] Handle multiple opened files in parallel (great opportunity to try out go's parallel power)
+Notes: in typescript-go, ast building is a parallelization task, but type checking isn't. For us though, we can parallelize both the ast-building phase (emits only syntax-related errors) and the spaced-repetition phase (basically the compile phase) because with spaced-repetition, we can look up words and find out where on which dates less than today they appear, if found, mark as red.
 
 # Main Requirement 3 
 
