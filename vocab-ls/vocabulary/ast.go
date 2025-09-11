@@ -43,6 +43,7 @@ type Document struct {
 type VocabAst struct {
 	ctx       context.Context
 	documents map[string][]*Document
+	scanner   *Scanner
 }
 
 func NewAst(ctx context.Context, uri string, text string, changeRange *lsproto.Range) *VocabAst {
@@ -58,6 +59,8 @@ func NewAst(ctx context.Context, uri string, text string, changeRange *lsproto.R
 	return ast
 }
 
+// TODO: Yield diagnostics result from scanner and all of its children.
 func (ast *VocabAst) GetCurrentDiagnostics(uri string) []lsproto.Diagnostic {
+	scannerDiagnostics := ast.scanner.GetCurrentDiagnostics(uri)
 	return []lsproto.Diagnostic{}
 }
