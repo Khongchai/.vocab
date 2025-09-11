@@ -26,7 +26,7 @@ func main() {
 	inputReader := lib.NewInputReader(os.Stdin)
 	outputWriter := lib.NewOutputWriter(os.Stdout)
 	logger := lib.NewLogger(os.Stderr)
-	program := vocabulary.NewProgram(ctx)
+	program := vocabulary.NewCompiler(ctx)
 	engine := engine.NewEngine(ctx, inputReader.Read, outputWriter.Write, logger, map[string]func(lsproto.Notification) any{
 		"textDocument/didChange": func(rm lsproto.Notification) any {
 			// TODO optimize later.
@@ -41,7 +41,7 @@ func main() {
 			for i := range params.ContentChanges {
 				change := params.ContentChanges[i]
 				// for now, sequential. In the future we can make this parallel
-				program.BuildAst(params.TextDocument.Uri, change.Text, change.Range)
+				program.ParseDocument(params.TextDocument.Uri, change.Text, change.Range)
 			}
 
 			program.Compile()
