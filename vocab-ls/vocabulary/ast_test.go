@@ -69,8 +69,9 @@ func TestValidSectionOpening(t *testing.T) {
 
 	for i, date := range dates {
 		ast := NewAst(context.Background())
+
 		// act
-		ast.Update("somewhere://overtherainbow", date.Text, nil)
+		ast.Make("somewhere://overtherainbow", date.Text, nil)
 
 		documents := ast.documents["somewhere://overtherainbow"]
 		if documents == nil {

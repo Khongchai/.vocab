@@ -6,6 +6,13 @@ import (
 	lsproto "vocab/lsp"
 )
 
+type Language string
+
+const (
+	Deutsch Language = "Tedesco"
+	Italian Language = "Italienisch"
+)
+
 type Word struct {
 	Text string
 }
@@ -26,6 +33,7 @@ type VocabularySection struct {
 	NewWords      []*Word
 	ReviewedWords []*Word
 	Sentences     []*Sentence
+	Language      Language
 }
 
 type Document struct {
@@ -37,18 +45,17 @@ type VocabAst struct {
 	documents map[string][]*Document
 }
 
-func NewAst(ctx context.Context) *VocabAst {
-	return &VocabAst{
-		ctx:       ctx,
-		documents: map[string][]*Document{},
-	}
-}
-
-func (ast *VocabAst) Update(uri string, text string, changeRange *lsproto.Range) {
+func NewAst(ctx context.Context, uri string, text string, changeRange *lsproto.Range) *VocabAst {
 	if changeRange != nil {
 		panic("Partial update not yet handled")
 	}
 
+	ast := &VocabAst{
+		ctx:       ctx,
+		documents: map[string][]*Document{},
+	}
+
+	return ast
 }
 
 func (ast *VocabAst) GetCurrentDiagnostics(uri string) []lsproto.Diagnostic {
