@@ -10,7 +10,7 @@ import (
 )
 
 func TestInitializeAst(t *testing.T) {
-	if NewAst(context.Background()) == nil {
+	if NewAst(context.Background(), "", "", nil) == nil {
 		t.Fatalf("Could not initialize ast, received nil")
 	}
 }

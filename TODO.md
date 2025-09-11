@@ -1,3 +1,4 @@
+- [ ] Write all test cases for scanner
 - [ ] Continue writing scanner
 
 # Requirements Below

@@ -58,7 +58,7 @@ func NewAst(ctx context.Context, uri string, text string, changeRange *lsproto.R
 
 	ast.scanner = NewScanner()
 
-	for token := scanner.CurrentToken; token != nil; scanner.NextToken() {
+	for token := ast.scanner.CurrentToken; token != nil; ast.scanner.NextToken() {
 
 	}
 
@@ -67,6 +67,5 @@ func NewAst(ctx context.Context, uri string, text string, changeRange *lsproto.R
 
 // TODO: Yield diagnostics result from scanner and all of its children.
 func (ast *VocabAst) GetCurrentDiagnostics(uri string) []lsproto.Diagnostic {
-	scannerDiagnostics := ast.scanner.GetCurrentDiagnostics(uri)
 	return []lsproto.Diagnostic{}
 }
