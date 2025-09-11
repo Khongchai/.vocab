@@ -1,3 +1,7 @@
+- [ ] Continue writing scanner
+
+# Requirements Below
+
 - [x] Make extension plugin start server up
 - [x] Make go server return all red text upon first key.
 - [x] Refactor into an engine

@@ -56,6 +56,12 @@ func NewAst(ctx context.Context, uri string, text string, changeRange *lsproto.R
 		documents: map[string][]*Document{},
 	}
 
+	ast.scanner = NewScanner()
+
+	for token := scanner.CurrentToken; token != nil; scanner.NextToken() {
+
+	}
+
 	return ast
 }
 
