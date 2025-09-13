@@ -42,7 +42,8 @@ type Document struct {
 
 type VocabAst struct {
 	ctx       context.Context
-	documents map[string][]*Document
+	uri       string
+	documents *Document
 	scanner   *Scanner
 }
 
@@ -53,10 +54,10 @@ func NewAst(ctx context.Context, uri string, text string, changeRange *lsproto.R
 
 	ast := &VocabAst{
 		ctx:       ctx,
-		documents: map[string][]*Document{},
+		documents: &Document{},
 	}
 
-	ast.scanner = NewScanner()
+	ast.scanner = NewScanner(uri)
 
 	for token := ast.scanner.CurrentToken; token != nil; ast.scanner.NextToken() {
 
