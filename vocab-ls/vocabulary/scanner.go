@@ -73,16 +73,23 @@ func (s *Scanner) Scan() (Token, string) {
 	// try parse markdown comment or word literal
 	if lib.Backtick == s.char() {
 		if s.peek(1) == lib.Backtick && s.peek(2) == lib.Backtick {
-			s.pos += 3
-			return TokenMarkdownComment, "```"
+			tripleTicks := "```"
+			s.pos += len(tripleTicks)
+			return TokenMarkdownComment, tripleTicks
 		}
 
-		collected := ""
-
+		collected := string(s.consume())
 		for {
 			if s.atEnd() {
 				return TokenText, collected
 			}
+			if lib.IsLineBreak(s.char()) {
+				return TokenText, collected
+			}
+			if s.char() == lib.Backtick {
+				return TokenWordLiteral, collected
+			}
+			collected = string(s.consume())
 		}
 	}
 
@@ -102,5 +109,13 @@ func (s *Scanner) char() rune {
 func (s *Scanner) consume() rune {
 	r := rune(s.text[s.pos])
 	s.pos++
+	return r
+}
+
+func (s *Scanner) peek(offset int) rune {
+	if s.pos+offset > len(s.text)-1 {
+		return -1
+	}
+	r := rune(s.text[s.pos+offset])
 	return r
 }
