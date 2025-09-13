@@ -61,8 +61,34 @@ func (s *Scanner) Scan() (Token, string) {
 	}
 
 	if lib.LessThan == s.char() {
-		// try parse <!-- end section -->
-		// comment
+		collected := string(s.consume())
+
+		if !(s.peek(0) == lib.ExclamationMark && s.peek(1) == lib.Minus && s.peek(2) == lib.Minus) {
+			return TokenText, collected
+		}
+
+		s.pos += 3
+		collected += "!--"
+
+		// keep consuming until end comment -- or end of file
+		for {
+			if s.peek(0) == lib.Minus && s.peek(1) == lib.Minus && s.peek(2) == lib.GreaterThan {
+				s.pos += 3
+				collected += "-->"
+				return TokenMarkdownComment, collected
+			}
+
+			if lib.IsLineBreak(s.char()) {
+				s.line++
+			}
+
+			collected += string(s.consume())
+
+			if s.atEnd() { // just return here, the next iteration will handle EOF
+				return TokenMarkdownComment, collected
+			}
+
+		}
 
 	}
 
@@ -112,6 +138,7 @@ func (s *Scanner) consume() rune {
 	return r
 }
 
+// Peek 0 is the same as calling s.text[0] but does not throw error and instead returns -1
 func (s *Scanner) peek(offset int) rune {
 	if s.pos+offset > len(s.text)-1 {
 		return -1
