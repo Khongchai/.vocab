@@ -59,10 +59,6 @@ func NewAst(ctx context.Context, uri string, text string, changeRange *lsproto.R
 
 	ast.scanner = NewScanner(uri)
 
-	for token := ast.scanner.CurrentToken; token != nil; ast.scanner.NextToken() {
-
-	}
-
 	return ast
 }
 
