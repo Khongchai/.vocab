@@ -80,12 +80,10 @@ func (s *Scanner) Scan() (Token, string) {
 	if lib.LessThan == s.char() {
 		// try parse <!-- end section -->
 		// comment
-		return TokenText, ""
 	}
 
 	if lib.GreaterThan == s.char() {
 		// try parse new vocab and reviewed vocab section
-		return TokenText, ""
 	}
 
 	return TokenText, string(s.char())
