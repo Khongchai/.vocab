@@ -15,9 +15,45 @@ type TestCase struct {
 	Expectations []Expectation
 }
 
+func testExpectations(t *testing.T, testCases []TestCase) {
+	for i := range testCases {
+		currentCase := testCases[i]
+		scanner := NewScanner(currentCase.Text)
+
+		for j := range currentCase.Expectations {
+			expectation := currentCase.Expectations[j]
+			actualToken, actualText := scanner.Scan()
+			actualLine := scanner.line
+			actualOffset := scanner.lineOffset
+			actualPos := scanner.pos
+
+			if actualLine != expectation.Line {
+				t.Fatalf("Line does not match expectation, expected %d, got %d", expectation.Line, actualLine)
+			}
+
+			if actualToken != expectation.TokenValue {
+				t.Fatalf("Token does not match, expected %d, got %d", expectation.TokenValue, actualToken)
+			}
+
+			if actualText != expectation.TextValue {
+				t.Fatalf("Text does not match: expected %s, got %s", expectation.TextValue, actualText)
+			}
+
+			if actualOffset != expectation.LineOffset {
+				t.Fatalf("Line offset does not match the length of expected token text. Expected %d, got %d", expectation.LineOffset, actualOffset)
+			}
+
+			if actualPos != expectation.Pos {
+				t.Fatalf("Offset does not match the length of expected token text. Expected %d, got %d", expectation.Pos, actualPos)
+			}
+		}
+
+	}
+}
+
 // Test against all recognized characters in the vocab syntax
 func TestBasicTokenScan(t *testing.T) {
-	testCases := []TestCase{
+	testExpectations(t, []TestCase{
 		{
 			Text: "Hello",
 			Expectations: []Expectation{
@@ -161,41 +197,8 @@ func TestBasicTokenScan(t *testing.T) {
 				},
 			},
 		},
-	}
+	})
 
-	for i := range testCases {
-		currentCase := testCases[i]
-		scanner := NewScanner(currentCase.Text)
-
-		for j := range currentCase.Expectations {
-			expectation := currentCase.Expectations[j]
-			actualToken, actualText := scanner.Scan()
-			actualLine := scanner.line
-			actualOffset := scanner.lineOffset
-			actualPos := scanner.pos
-
-			if actualLine != expectation.Line {
-				t.Fatalf("Line does not match expectation, expected %d, got %d", expectation.Line, actualLine)
-			}
-
-			if actualToken != expectation.TokenValue {
-				t.Fatalf("Token does not match, expected %d, got %d", expectation.TokenValue, actualToken)
-			}
-
-			if actualText != expectation.TextValue {
-				t.Fatalf("Text does not match: expected %s, got %s", expectation.TextValue, actualText)
-			}
-
-			if actualOffset != expectation.LineOffset {
-				t.Fatalf("Line offset does not match the length of expected token text. Expected %d, got %d", expectation.LineOffset, actualOffset)
-			}
-
-			if actualPos != expectation.Pos {
-				t.Fatalf("Offset does not match the length of expected token text. Expected %d, got %d", expectation.Pos, actualPos)
-			}
-		}
-
-	}
 }
 
 func TestNewline(t *testing.T) {
