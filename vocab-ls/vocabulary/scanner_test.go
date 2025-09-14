@@ -235,8 +235,15 @@ func TestNewline(t *testing.T) {
 					Pos:        7,
 				},
 				{
-					TextValue:  "World!",
+					TextValue:  "World",
 					TokenValue: TokenTextLiteral,
+					LineOffset: 5,
+					Line:       1,
+					Pos:        12,
+				},
+				{
+					TextValue:  "!",
+					TokenValue: TokenIgnored,
 					LineOffset: 6,
 					Line:       1,
 					Pos:        13,
