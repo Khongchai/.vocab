@@ -5,24 +5,29 @@ import "testing"
 // Test against all recognized characters in the vocab syntax
 func TestBasicTokenScan(t *testing.T) {
 	testCases := map[string]Token{
-		">":   TokenGreaterThan,
-		">>":  TokenDoubleGreaterThan,
-		",":   TokenComma,
-		"`":   TokenBacktick,
-		"(":   TokenOpenBracket,
-		")":   TokenCloseBracket,
-		"/":   TokenSlash,
-		"```": TokenMarkdownCodefence,
+		"Hello": TokenTextLiteral,
+		"234":   TokenNumericLiteral,
+		">":     TokenGreaterThan,
+		">>":    TokenDoubleGreaterThan,
+		",":     TokenComma,
+		"`":     TokenBacktick,
+		"(":     TokenOpenBracket,
+		")":     TokenCloseBracket,
+		"/":     TokenSlash,
+		"```":   TokenMarkdownCodefence,
+		"<!--":  TokenMarkdownCommentStart,
+		"-->":   TokenMarkdownCommentEnd,
 	}
 
 	scanner := NewScanner("xxx")
 	actual, actualText := scanner.Scan()
 
 	if actualText != "" {
-		t.Errorf("Before scanning, actual text should be empty")
+		t.Fatalf("Before scanning, actual text should be empty")
 	}
+
 	if actual != TokenUnknown {
-		t.Errorf("Before scanning, scanner token should be unknown")
+		t.Fatalf("Before scanning, scanner token should be unknown")
 	}
 
 	for tokenText := range testCases {
@@ -32,10 +37,10 @@ func TestBasicTokenScan(t *testing.T) {
 		expected := testCases[tokenText]
 
 		if actualText != tokenText {
-			t.Errorf("Text does not match: expected %s, got %s", tokenText, actualText)
+			t.Fatalf("Text does not match: expected %s, got %s", tokenText, actualText)
 		}
 		if actual != testCases[tokenText] {
-			t.Errorf("Token does not match, expected %d, got %d", actual, expected)
+			t.Fatalf("Token does not match, expected %d, got %d", actual, expected)
 		}
 	}
 }

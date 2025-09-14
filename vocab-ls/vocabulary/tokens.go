@@ -24,8 +24,9 @@ const (
 	TokenNumericLiteral // same as markdown text but a special case when it's a number for easier detection in parser
 	TokenTextLiteral    // all valid markdown text
 
-	TokenMarkdownComment
-	TokenMarkdownCodefence // ```
+	TokenMarkdownCommentStart // <!--
+	TokenMarkdownCommentEnd   // -->
+	TokenMarkdownCodefence    // ```
 
 	TokenDateExpression // xx/xx/xxxx
 	TokenWordExpression // `literally` `a` `word`
