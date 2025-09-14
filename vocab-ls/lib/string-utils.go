@@ -141,10 +141,26 @@ func IsLineBreak(ch rune) bool {
 	return false
 }
 
+func IsGermanOrItalianLetter(ch rune) bool {
+	// isSpecialChar checks if a rune is a German or Italian special character
+	switch ch {
+	// German
+	case 'Ä', 'ä', 'Ö', 'ö', 'Ü', 'ü', 'ß':
+		fallthrough
+	case 'À', 'à', 'È', 'è', 'É', 'é', 'Ì', 'ì', 'Ò', 'ò', 'Ù', 'ù':
+		return true
+	}
+	return false
+}
+
 func IsDigit(ch rune) bool {
 	return ch >= '0' && ch <= '9'
 }
 
 func IsASCIILetter(ch rune) bool {
 	return ch >= 'A' && ch <= 'Z' || ch >= 'a' && ch <= 'z'
+}
+
+func IsRecognizedLetter(ch rune) bool {
+	return IsASCIILetter(ch) || IsGermanOrItalianLetter(ch)
 }

@@ -1,6 +1,7 @@
 package vocabulary
 
 import (
+	"unicode/utf8"
 	"vocab/lib"
 )
 
@@ -23,28 +24,30 @@ func NewScanner(text string) *Scanner {
 
 func (s *Scanner) Scan() (Token, string) {
 	for {
-		if !lib.IsWhiteSpaceSingleLine(s.charAt(0)) {
+		c, cSize := s.charAt(0)
+		if !lib.IsWhiteSpaceSingleLine(c) {
 			break
 		}
-		s.forwardPos(len(string(s.charAt(0))))
+		s.forwardPos(cSize)
 	}
 
-	scanned := s.charAt(0)
+	scanned, scannedSize := s.charAt(0)
 
 	if s.atEnd() {
 		return TokenEOF, ""
 	}
 
-	if lib.IsASCIILetter(scanned) {
-		collected := string(s.charAt(0))
-		s.forwardPos(1)
+	if lib.IsRecognizedLetter(scanned) {
+		c, cSize := s.charAt(0)
+		collected := string(c)
+		s.forwardPos(cSize)
 		for {
-			cur := s.charAt(0)
-			if !lib.IsASCIILetter(cur) {
+			c, cSize = s.charAt(0)
+			if !lib.IsRecognizedLetter(c) {
 				break
 			}
-			collected += string(cur)
-			s.forwardPos(1)
+			collected += string(c)
+			s.forwardPos(cSize)
 		}
 		return TokenTextLiteral, collected
 	}
@@ -55,14 +58,14 @@ func (s *Scanner) Scan() (Token, string) {
 	}
 
 	if lib.IsDigit(scanned) {
-		collected := string(s.charAt(0))
+		collected := string(scanned)
 		s.forwardPos(1)
 		for {
-			cur := s.charAt(0)
-			if !lib.IsDigit(cur) {
+			c, _ := s.charAt(0)
+			if !lib.IsDigit(c) {
 				break
 			}
-			collected += string(cur)
+			collected += string(c)
 			s.forwardPos(1)
 		}
 		return TokenNumericLiteral, collected
@@ -79,7 +82,9 @@ func (s *Scanner) Scan() (Token, string) {
 		return TokenComma, ","
 
 	case lib.Minus:
-		if s.charAt(0) == lib.Minus && s.charAt(1) == lib.Minus && s.charAt(2) == lib.GreaterThan {
+		c2, _ := s.charAt(1)
+		c3, _ := s.charAt(2)
+		if c2 == lib.Minus && c3 == lib.GreaterThan {
 			s.forwardPos(3)
 			return TokenMarkdownCommentEnd, "-->"
 		}
@@ -87,7 +92,8 @@ func (s *Scanner) Scan() (Token, string) {
 		return TokenMinus, "-"
 
 	case lib.GreaterThan:
-		if lib.GreaterThan == s.charAt(1) {
+		next, _ := s.charAt(1)
+		if lib.GreaterThan == next {
 			s.forwardPos(2)
 			return TokenDoubleGreaterThan, ">>"
 		}
@@ -95,7 +101,10 @@ func (s *Scanner) Scan() (Token, string) {
 		return TokenGreaterThan, ">"
 
 	case lib.LessThan:
-		if s.charAt(1) == lib.ExclamationMark && s.charAt(2) == lib.Minus && s.charAt(3) == lib.Minus {
+		c1, _ := s.charAt(1)
+		c2, _ := s.charAt(2)
+		c3, _ := s.charAt(3)
+		if c1 == lib.ExclamationMark && c2 == lib.Minus && c3 == lib.Minus {
 			s.forwardPos(4)
 			return TokenMarkdownCommentStart, "<!--"
 		}
@@ -103,7 +112,9 @@ func (s *Scanner) Scan() (Token, string) {
 		return TokenLessThan, "<"
 
 	case lib.Backtick:
-		if s.charAt(1) == lib.Backtick && s.charAt(2) == lib.Backtick {
+		c1, _ := s.charAt(1)
+		c2, _ := s.charAt(2)
+		if c1 == lib.Backtick && c2 == lib.Backtick {
 			s.forwardPos(3)
 			return TokenMarkdownCodefence, "```"
 		}
@@ -121,7 +132,7 @@ func (s *Scanner) Scan() (Token, string) {
 	default:
 
 		// all ignored characters here
-		s.forwardPos(1)
+		s.forwardPos(scannedSize)
 		return TokenIgnored, string(scanned)
 	}
 
@@ -143,12 +154,12 @@ func (s *Scanner) forwardLine() {
 }
 
 // Does not throw error and return -1 if index out of range
-func (s *Scanner) charAt(offset int) rune {
+func (s *Scanner) charAt(offset int) (rune, int) {
 	if s.pos+offset > len(s.text)-1 {
-		return -1
+		return -1, 0
 	}
-	r := rune(s.text[s.pos+offset])
-	return r
+	r, size := utf8.DecodeRuneInString(s.text[s.pos+offset:])
+	return r, size
 }
 
 func (s *Scanner) CurrentPosition() int {

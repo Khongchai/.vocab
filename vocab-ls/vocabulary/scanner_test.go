@@ -56,6 +56,7 @@ func testExpectations(t *testing.T, testCases []TestCase) {
 // Test against all recognized characters in the vocab syntax
 func TestBasicTokenScan(t *testing.T) {
 	testExpectations(t, []TestCase{
+		{Text: "ÄäöÖé", Expectations: []Expectation{{TextValue: "ÄäöÖé", TokenValue: TokenTextLiteral, LineOffset: 10, Pos: 10}}},
 		{Text: "Hello", Expectations: []Expectation{{TextValue: "Hello", TokenValue: TokenTextLiteral, LineOffset: 5, Pos: 5}}},
 		{Text: "234", Expectations: []Expectation{{TextValue: "234", TokenValue: TokenNumericLiteral, LineOffset: 3, Pos: 3}}},
 		{Text: ">", Expectations: []Expectation{{TextValue: ">", TokenValue: TokenGreaterThan, LineOffset: 1, Pos: 1}}},
