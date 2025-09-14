@@ -5,7 +5,8 @@ import (
 )
 
 type Scanner struct {
-	text       string
+	text string
+	// This always report the next position to be read from.
 	pos        int
 	lineOffset int
 	line       int
@@ -150,6 +151,10 @@ func (s *Scanner) charAt(offset int) rune {
 	return r
 }
 
+func (s *Scanner) CurrentPosition() int {
+	return s.pos - 1
+}
+
 func GetTokenStartPos(s *Scanner, tokenText string) int {
-	return s.pos - len(tokenText)
+	return s.pos - len(tokenText) - 1
 }

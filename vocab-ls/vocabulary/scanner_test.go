@@ -218,6 +218,18 @@ func TestNewline(t *testing.T) {
 			},
 		},
 		{
+			Text: "\r",
+			Expectations: []Expectation{
+				{
+					TextValue:  "\r",
+					TokenValue: TokenLineBreak,
+					LineOffset: 0,
+					Line:       1,
+					Pos:        1,
+				},
+			},
+		},
+		{
 			Text: "Hello \nWorld!",
 			Expectations: []Expectation{
 				{
@@ -254,33 +266,123 @@ func TestNewline(t *testing.T) {
 }
 
 func TestDateScan(t *testing.T) {
-	// dateCapture := []Token{
-	// 	TokenNumericLiteral,
-	// 	TokenSlash,
-	// 	TokenNumericLiteral,
-	// 	TokenSlash,
-	// 	TokenNumericLiteral,
-	// }
-	// testCases := map[string][]Token{
-	// 	"00/00/0000":  dateCapture,
-	// 	"#20/05/2025": append([]Token{TokenTextLiteral}, dateCapture...),
-	// 	"# 20/05/2025": append([]Token{TokenTextLiteral}, dateCapture...),
-	// }
-
-	// for tokenText := range testCases {
-	// 	scanner := NewScanner(tokenText)
-
-	// 	actual, actualText := scanner.Scan()
-	// 	expected := testCases[tokenText]
-
-	// 	if actual != testCases[tokenText] {
-	// 		t.Fatalf("Token does not match, expected %d, got %d", actual, expected)
-	// 	}
-
-	// 	if actualText != tokenText {
-	// 		t.Fatalf("Text does not match: expected %s, got %s", tokenText, actualText)
-	// 	}
-	// }
+	testExpectations(t, []TestCase{
+		{
+			Text: "01/08/1997",
+			Expectations: []Expectation{
+				{
+					TextValue:  "01",
+					TokenValue: TokenNumericLiteral,
+					LineOffset: 2,
+					Line:       0,
+					Pos:        2,
+				},
+				{
+					TextValue:  "/",
+					TokenValue: TokenSlash,
+					LineOffset: 3,
+					Line:       0,
+					Pos:        3,
+				},
+				{
+					TextValue:  "08",
+					TokenValue: TokenNumericLiteral,
+					LineOffset: 5,
+					Line:       0,
+					Pos:        5,
+				},
+				{
+					TextValue:  "/",
+					TokenValue: TokenSlash,
+					LineOffset: 6,
+					Line:       0,
+					Pos:        6,
+				},
+				{
+					TextValue:  "1997",
+					TokenValue: TokenNumericLiteral,
+					LineOffset: 10,
+					Line:       0,
+					Pos:        10,
+				},
+			},
+		},
+		{
+			Text: "# **01/08/1997**",
+			Expectations: []Expectation{
+				{
+					TextValue:  "#",
+					TokenValue: TokenIgnored,
+					LineOffset: 1,
+					Line:       0,
+					Pos:        1,
+				},
+				{
+					TextValue:  "*",
+					TokenValue: TokenIgnored,
+					LineOffset: 3,
+					Line:       0,
+					Pos:        3,
+				},
+				{
+					TextValue:  "*",
+					TokenValue: TokenIgnored,
+					LineOffset: 4,
+					Line:       0,
+					Pos:        4,
+				},
+				{
+					TextValue:  "01",
+					TokenValue: TokenNumericLiteral,
+					LineOffset: 6,
+					Line:       0,
+					Pos:        6,
+				},
+				{
+					TextValue:  "/",
+					TokenValue: TokenSlash,
+					LineOffset: 7,
+					Line:       0,
+					Pos:        7,
+				},
+				{
+					TextValue:  "08",
+					TokenValue: TokenNumericLiteral,
+					LineOffset: 9,
+					Line:       0,
+					Pos:        9,
+				},
+				{
+					TextValue:  "/",
+					TokenValue: TokenSlash,
+					LineOffset: 10,
+					Line:       0,
+					Pos:        10,
+				},
+				{
+					TextValue:  "1997",
+					TokenValue: TokenNumericLiteral,
+					LineOffset: 14,
+					Line:       0,
+					Pos:        14,
+				},
+				{
+					TextValue:  "*",
+					TokenValue: TokenIgnored,
+					LineOffset: 15,
+					Line:       0,
+					Pos:        15,
+				},
+				{
+					TextValue:  "*",
+					TokenValue: TokenIgnored,
+					LineOffset: 16,
+					Line:       0,
+					Pos:        16,
+				},
+			},
+		},
+	})
 }
 
 func TestNewVocabScan(t *testing.T) {
