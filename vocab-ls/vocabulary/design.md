@@ -22,6 +22,6 @@ But this is just a todo section
 ```
 
 
-# Program
+# Compiler
 
-A vocab program can emit 
+The compiler finds out diagnostics error from spaced-repetition.
