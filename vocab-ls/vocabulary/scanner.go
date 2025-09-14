@@ -36,9 +36,9 @@ func (s *Scanner) Scan() (Token, string) {
 		return TokenComma, ","
 
 	case lib.Minus:
-		if s.charAt(0) == lib.Minus && s.charAt(1) == lib.GreaterThan && s.charAt(3) == lib.Minus {
+		if s.charAt(0) == lib.Minus && s.charAt(1) == lib.Minus && s.charAt(2) == lib.GreaterThan {
 			s.forwardPos(3)
-			return TokenMarkdownCommentStart, "-->"
+			return TokenMarkdownCommentEnd, "-->"
 		}
 		return TokenMinus, "-"
 
@@ -74,9 +74,15 @@ func (s *Scanner) Scan() (Token, string) {
 
 	default:
 		if lib.IsASCIILetter(scanned) {
-			collected := ""
-			for current := s.charAt(0); !lib.IsASCIILetter(current); s.forwardPos(1) {
-				collected += string(current)
+			collected := string(s.charAt(0))
+			s.forwardPos(1)
+			for {
+				cur := s.charAt(0)
+				if !lib.IsASCIILetter(cur) {
+					break
+				}
+				collected += string(cur)
+				s.forwardPos(1)
 			}
 			return TokenTextLiteral, collected
 		}
@@ -87,9 +93,15 @@ func (s *Scanner) Scan() (Token, string) {
 		}
 
 		if lib.IsDigit(scanned) {
-			collected := ""
-			for current := s.charAt(0); !lib.IsDigit(current); s.forwardPos(1) {
-				collected += string(current)
+			collected := string(s.charAt(0))
+			s.forwardPos(1)
+			for {
+				cur := s.charAt(0)
+				if !lib.IsDigit(cur) {
+					break
+				}
+				collected += string(cur)
+				s.forwardPos(1)
 			}
 			return TokenNumericLiteral, collected
 		}

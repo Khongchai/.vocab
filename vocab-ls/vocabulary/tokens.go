@@ -11,8 +11,6 @@ const (
 	TokenComma
 	TokenEOF
 	TokenLineBreak
-	TokenOpenBracket
-	TokenCloseBracket
 	TokenSpace
 	TokenMinus
 	TokenLessThan

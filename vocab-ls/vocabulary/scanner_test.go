@@ -11,36 +11,27 @@ func TestBasicTokenScan(t *testing.T) {
 		">>":    TokenDoubleGreaterThan,
 		",":     TokenComma,
 		"`":     TokenBacktick,
-		"(":     TokenOpenBracket,
-		")":     TokenCloseBracket,
+		"(":     TokenLeftParen,
+		")":     TokenRightParen,
 		"/":     TokenSlash,
 		"```":   TokenMarkdownCodefence,
 		"<!--":  TokenMarkdownCommentStart,
 		"-->":   TokenMarkdownCommentEnd,
-	}
-
-	scanner := NewScanner("xxx")
-	actual, actualText := scanner.Scan()
-
-	if actualText != "" {
-		t.Fatalf("Before scanning, actual text should be empty")
-	}
-
-	if actual != TokenUnknown {
-		t.Fatalf("Before scanning, scanner token should be unknown")
+		"-":     TokenMinus,
 	}
 
 	for tokenText := range testCases {
 		scanner := NewScanner(tokenText)
 
-		actual, actualText = scanner.Scan()
+		actual, actualText := scanner.Scan()
 		expected := testCases[tokenText]
+
+		if actual != testCases[tokenText] {
+			t.Fatalf("Token does not match, expected %d, got %d", actual, expected)
+		}
 
 		if actualText != tokenText {
 			t.Fatalf("Text does not match: expected %s, got %s", tokenText, actualText)
-		}
-		if actual != testCases[tokenText] {
-			t.Fatalf("Token does not match, expected %d, got %d", actual, expected)
 		}
 	}
 }
