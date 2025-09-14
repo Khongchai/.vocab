@@ -5,15 +5,14 @@ import "testing"
 // Test against all recognized characters in the vocab syntax
 func TestBasicTokenScan(t *testing.T) {
 	testCases := map[string]Token{
-		">":                  TokenGreaterThan,
-		">>":                 TokenDoubleGreaterThan,
-		",":                  TokenComma,
-		"`":                  TokenBacktick,
-		"(":                  TokenOpenBracket,
-		")":                  TokenCloseBracket,
-		"(xx)":               TokenLanguageIdent,
-		"20/05/2025":         TokenDateLiteral,
-		"<!-- something -->": TokenMarkdownComment,
+		">":   TokenGreaterThan,
+		">>":  TokenDoubleGreaterThan,
+		",":   TokenComma,
+		"`":   TokenBacktick,
+		"(":   TokenOpenBracket,
+		")":   TokenCloseBracket,
+		"/":   TokenSlash,
+		"```": TokenMarkdownCodefence,
 	}
 
 	scanner := NewScanner("xxx")
