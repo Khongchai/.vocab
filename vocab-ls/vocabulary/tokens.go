@@ -16,14 +16,17 @@ const (
 	TokenSpace
 	TokenMinus
 	TokenLessThan
+	TokenLeftParen
+	TokenRightParen
 
 	TokenLanguageIdent
 
-	TokenNumericLiteral
-	TokenWordLiteral // `literally` `a` `word`
+	TokenNumericLiteral // same as markdown text but a special case when it's a number for easier detection in parser
+	TokenTextLiteral    // all valid markdown text
 
-	TokenDateLiteral // special syntax for xx/xx/xxxx where x is any digit
 	TokenMarkdownComment
+	TokenMarkdownCodefence // ```
 
-	TokenText // all valid markdown text
+	TokenDateExpression // xx/xx/xxxx
+	TokenWordExpression // `literally` `a` `word`
 )
