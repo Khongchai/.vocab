@@ -40,6 +40,7 @@ func (s *Scanner) Scan() (Token, string) {
 			s.forwardPos(3)
 			return TokenMarkdownCommentEnd, "-->"
 		}
+		s.forwardPos(1)
 		return TokenMinus, "-"
 
 	case lib.GreaterThan:
@@ -60,8 +61,10 @@ func (s *Scanner) Scan() (Token, string) {
 
 	case lib.Backtick:
 		if s.charAt(1) == lib.Backtick && s.charAt(2) == lib.Backtick {
+			s.forwardPos(3)
 			return TokenMarkdownCodefence, "```"
 		}
+		s.forwardPos(1)
 		return TokenBacktick, "`"
 
 	case lib.LeftParen:
