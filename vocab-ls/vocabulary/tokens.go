@@ -3,7 +3,7 @@ package vocabulary
 type Token int
 
 const (
-	TokenUnknown Token = iota
+	TokenIgnored Token = iota
 	TokenGreaterThan
 	TokenDoubleGreaterThan
 	TokenBacktick

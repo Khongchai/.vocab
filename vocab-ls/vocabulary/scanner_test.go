@@ -16,6 +16,8 @@ type TestCase struct {
 }
 
 func testExpectations(t *testing.T, testCases []TestCase) {
+	t.Helper()
+
 	for i := range testCases {
 		currentCase := testCases[i]
 		scanner := NewScanner(currentCase.Text)
@@ -202,42 +204,46 @@ func TestBasicTokenScan(t *testing.T) {
 }
 
 func TestNewline(t *testing.T) {
-	// testCases := testCase{
-	// 	"\n":       {TokenLineBreak},
-	// 	"Hello \n": {TokenTextLiteral, TokenLineBreak},
-	// 	"12345 \n": {TokenNumericLiteral, TokenLineBreak},
-	// 	"\r\n":     {TokenLineBreak},
-	// }
-
-	// for tokenText := range testCases {
-	// 	scanner := NewScanner(tokenText)
-
-	// 	for i := range testCases[tokenText] {
-	// 		actualToken, actualText := scanner.Scan()
-	// 		expectedToken = tokenText
-
-	// 		if scanner.line != 0 {
-	// 			t.Fatalf("Line should still be zero")
-	// 		}
-
-	// 		if actualToken != testCases[tokenText][i] {
-	// 			t.Fatalf("Token does not match, expected %d, got %d", actualToken, expected)
-	// 		}
-
-	// 		if actualText != tokenText {
-	// 			t.Fatalf("Text does not match: expected %s, got %s", tokenText, actualText)
-	// 		}
-
-	// 		if scanner.lineOffset != len(tokenText) {
-	// 			t.Fatalf("Line offset does not match the length of expected token text. Expected %d, got %d", scanner.lineOffset, len(tokenText))
-	// 		}
-
-	// 		if scanner.pos != len(tokenText) {
-	// 			t.Fatalf("Offset does not match the length of expected token text. Expected %d, got %d", scanner.lineOffset, len(tokenText))
-	// 		}
-	// 	}
-
-	// }
+	testExpectations(t, []TestCase{
+		{
+			Text: "\n",
+			Expectations: []Expectation{
+				{
+					TextValue:  "\n",
+					TokenValue: TokenLineBreak,
+					LineOffset: 0,
+					Line:       1,
+					Pos:        1,
+				},
+			},
+		},
+		{
+			Text: "Hello \nWorld!",
+			Expectations: []Expectation{
+				{
+					TextValue:  "Hello",
+					TokenValue: TokenTextLiteral,
+					LineOffset: 5,
+					Line:       0,
+					Pos:        5,
+				},
+				{
+					TextValue:  "\n",
+					TokenValue: TokenLineBreak,
+					LineOffset: 0,
+					Line:       1,
+					Pos:        7,
+				},
+				{
+					TextValue:  "World!",
+					TokenValue: TokenTextLiteral,
+					LineOffset: 6,
+					Line:       1,
+					Pos:        13,
+				},
+			},
+		},
+	})
 }
 
 func TestDateScan(t *testing.T) {

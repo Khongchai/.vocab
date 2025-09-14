@@ -21,12 +21,54 @@ func NewScanner(text string) *Scanner {
 }
 
 func (s *Scanner) Scan() (Token, string) {
+	for {
+		if !lib.IsWhiteSpaceSingleLine(s.charAt(0)) {
+			break
+		}
+		s.forwardPos(len(string(s.charAt(0))))
+	}
+
+	scanned := s.charAt(0)
+
 	if s.atEnd() {
 		return TokenEOF, ""
 	}
 
+	if lib.IsASCIILetter(scanned) {
+		collected := string(s.charAt(0))
+		s.forwardPos(1)
+		for {
+			cur := s.charAt(0)
+			if !lib.IsASCIILetter(cur) {
+				break
+			}
+			collected += string(cur)
+			s.forwardPos(1)
+		}
+		return TokenTextLiteral, collected
+	}
+
+	if lib.IsLineBreak(scanned) {
+		s.forwardLine()
+		return TokenLineBreak, string(scanned)
+	}
+
+	if lib.IsDigit(scanned) {
+		collected := string(s.charAt(0))
+		s.forwardPos(1)
+		for {
+			cur := s.charAt(0)
+			if !lib.IsDigit(cur) {
+				break
+			}
+			collected += string(cur)
+			s.forwardPos(1)
+		}
+		return TokenNumericLiteral, collected
+	}
+
 	// It should not be possible to overscan!
-	switch scanned := s.charAt(0); scanned {
+	switch scanned {
 	case lib.Slash:
 		s.forwardPos(1)
 		return TokenSlash, "/"
@@ -76,42 +118,10 @@ func (s *Scanner) Scan() (Token, string) {
 		return TokenRightParen, ")"
 
 	default:
-		if lib.IsASCIILetter(scanned) {
-			collected := string(s.charAt(0))
-			s.forwardPos(1)
-			for {
-				cur := s.charAt(0)
-				if !lib.IsASCIILetter(cur) {
-					break
-				}
-				collected += string(cur)
-				s.forwardPos(1)
-			}
-			return TokenTextLiteral, collected
-		}
-
-		if lib.IsLineBreak(scanned) {
-			s.forwardLine()
-			return TokenLineBreak, ""
-		}
-
-		if lib.IsDigit(scanned) {
-			collected := string(s.charAt(0))
-			s.forwardPos(1)
-			for {
-				cur := s.charAt(0)
-				if !lib.IsDigit(cur) {
-					break
-				}
-				collected += string(cur)
-				s.forwardPos(1)
-			}
-			return TokenNumericLiteral, collected
-		}
 
 		// all ignored characters here
 		s.forwardPos(1)
-		return TokenUnknown, string(scanned)
+		return TokenIgnored, string(scanned)
 	}
 
 }
@@ -138,4 +148,8 @@ func (s *Scanner) charAt(offset int) rune {
 	}
 	r := rune(s.text[s.pos+offset])
 	return r
+}
+
+func GetTokenStartPos(s *Scanner, tokenText string) int {
+	return s.pos - len(tokenText)
 }
