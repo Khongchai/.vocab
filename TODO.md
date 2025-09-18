@@ -70,6 +70,16 @@ Sarò lì
 
 This requires [`interFileDependencies`](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#diagnosticOptions) server capability.
 
+# Possible Requirement 1
+
+Markiert es wenn ein neues Wort nicht in seiner Infinitivform ist:
+
+```
+# 18/09/2025
+> entrambe // wurde rot markiert weil die Infinitivform "Entrambi" ist.
+Devi fare entrambe le cose.
+```
+
 
 # Side quests
 - [ ] Hover to show definition in English
