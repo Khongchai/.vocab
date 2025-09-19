@@ -1,5 +1,5 @@
-- [ ] Write all test cases for scanner
-- [ ] Continue writing scanner
+- [ ] Update scanner test case now that vocab is its own language.
+- [ ] Write parser. All syntax-related errors will be thrown here.
 
 # Requirements Below
 

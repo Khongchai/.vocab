@@ -5,6 +5,8 @@ import (
 	"vocab/lib"
 )
 
+// Diagnostics error from scanners are added when multi-tokens identifier fail to match something.
+// Most of vocab tokens are pretty simple, so we'll omit the for now.
 type Scanner struct {
 	text string
 	// This always report the next position to be read from.
