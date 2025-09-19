@@ -38,11 +38,11 @@ export async function activate(context: vscode.ExtensionContext) {
       documentSelector: [
         {
           scheme: "file",
-          language: "markdown",
+          language: "vocab",
         },
         {
           scheme: "untitled",
-          language: "markdown",
+          language: "vocab",
         },
       ],
     };

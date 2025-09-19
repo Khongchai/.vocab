@@ -10,17 +10,16 @@
   "categories": [
     "Other"
   ],
-  "activationEventsComment": "We don't need any events because we're contributing a new language.",
   "activationEvents": [
-    "onLanguage:markdown"
+    "onLanguage:vocab"
   ],
   "main": "./dist/extension.js",
   "contributes": {
     "languages": [
       {
-        "id": "markdown",
+        "id": "vocab",
         "extensions": [
-          ".vocab.markdown"
+          ".vocab"
         ]
       }
     ]
