@@ -1,4 +1,7 @@
-- [ ] Update scanner test case now that vocab is its own language.
+- [ ] Update scanner test case and implementation now that vocab is its own language.
+    - [ ] Make scanner recognize date expression.
+    - [ ] Remove all markdown reference
+- [ ] Add a comment case.
 - [ ] Write parser. All syntax-related errors will be thrown here.
 
 # Requirements Below
