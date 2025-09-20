@@ -120,9 +120,10 @@ func TestNewVocabScan(t *testing.T) {
 			Expectations: []Expectation{
 				{TextValue: ">", TokenValue: TokenGreaterThan, Line: 0, LineOffset: 1, Pos: 1},
 				{TextValue: "(it)", TokenValue: TokenLanguageExpression, Line: 0, LineOffset: 6, Pos: 6},
-				{TextValue: "`ciao`", TokenValue: TokenLanguageExpression, Line: 0, LineOffset: 13, Pos: 13},
+				{TextValue: "`ciao`", TokenValue: TokenWordExpression, Line: 0, LineOffset: 13, Pos: 13},
 				{TextValue: ",", TokenValue: TokenComma, Line: 0, LineOffset: 14, Pos: 14},
-				{TextValue: "bello!", TokenValue: TokenText, Line: 0, LineOffset: 20, Pos: 20},
+				{TextValue: "bello", TokenValue: TokenText, Line: 0, LineOffset: 20, Pos: 20},
+				{TextValue: "!", TokenValue: TokenText, Line: 0, LineOffset: 21, Pos: 21},
 			},
 		},
 	})
@@ -152,11 +153,11 @@ func TestReviewedVocabScan(t *testing.T) {
 			Text: ">> (de) halo, schön!",
 			Expectations: []Expectation{
 				{TextValue: ">>", TokenValue: TokenDoubleGreaterThan, Line: 0, LineOffset: 2, Pos: 2},
-				{TextValue: "(de)", TokenValue: TokenLeftParen, Line: 0, LineOffset: 7, Pos: 7},
+				{TextValue: "(de)", TokenValue: TokenLanguageExpression, Line: 0, LineOffset: 7, Pos: 7},
 				{TextValue: "halo", TokenValue: TokenText, Line: 0, LineOffset: 12, Pos: 12},
 				{TextValue: ",", TokenValue: TokenComma, Line: 0, LineOffset: 13, Pos: 13},
-				{TextValue: "schön", TokenValue: TokenText, Line: 0, LineOffset: 17, Pos: 17},
-				{TextValue: "!", TokenValue: TokenText, Line: 0, LineOffset: 17, Pos: 17},
+				{TextValue: "schön", TokenValue: TokenText, Line: 0, LineOffset: 20, Pos: 20},
+				{TextValue: "!", TokenValue: TokenText, Line: 0, LineOffset: 21, Pos: 21},
 			},
 		},
 	})
