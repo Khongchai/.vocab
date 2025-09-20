@@ -55,7 +55,6 @@ func (p *Parser) Parse() {
 
 		switch p.token {
 		case TokenDateExpression:
-			p.ast.Sections = append(p.ast.Sections, &VocabularySection{})
 			p.parseDateExpression()
 		case TokenGreaterThan:
 			p.parseVocabSection()
@@ -68,6 +67,8 @@ func (p *Parser) Parse() {
 }
 
 func (p *Parser) parseDateExpression() {
+	p.ast.Sections = append(p.ast.Sections, &VocabularySection{})
+
 	text := p.text
 
 	parsed, err := time.Parse("02/01/2006", text)
