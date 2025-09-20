@@ -1,9 +1,7 @@
 package vocabulary
 
 import (
-	"context"
 	"time"
-	lsproto "vocab/lsp"
 )
 
 type Language string
@@ -57,31 +55,21 @@ type VocabularySection struct {
 
 type Document struct {
 	Sections []*VocabularySection
+	uri      string
 }
+
+// func (d *Document) String() string {
+// 	var sb strings.Builder
+// 	for i, section := range d.Sections {
+// 		sectionString := section.String()
+// 		sb.WriteString(sectionString)
+// 		if i != len(d.Sections)-1 {
+// 			sb.WriteString(", ")
+// 		}
+// 	}
+// 	return sb.String()
+// }
 
 type VocabAst struct {
-	ctx       context.Context
-	uri       string
-	documents *Document
-	scanner   *Scanner
-}
-
-func NewAst(ctx context.Context, uri string, text string, changeRange *lsproto.Range) *VocabAst {
-	if changeRange != nil {
-		panic("Partial update not yet handled")
-	}
-
-	ast := &VocabAst{
-		ctx:       ctx,
-		documents: &Document{},
-	}
-
-	ast.scanner = NewScanner(uri)
-
-	return ast
-}
-
-// TODO: Yield diagnostics result from scanner and all of its children.
-func (ast *VocabAst) GetCurrentDiagnostics(uri string) []lsproto.Diagnostic {
-	return []lsproto.Diagnostic{}
+	Documents []*Document
 }

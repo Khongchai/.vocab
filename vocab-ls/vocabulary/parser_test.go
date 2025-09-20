@@ -1,12 +1,45 @@
 package vocabulary
 
 import (
+	"encoding/json"
+	"strings"
 	"testing"
 	"time"
 )
 
-func testParseExpectation(t *testing.T, text string, expected []*VocabularySection) {
+func printJSON(v any) string {
+	b, _ := json.MarshalIndent(v, "", "  ")
+	return string(b)
+}
+
+func testParseExpectation(t *testing.T, text string, sections []*VocabularySection) {
 	t.Helper()
+
+	parser := &Parser{
+		Ctx: t.Context(),
+		Uri: "xxx",
+	}
+
+	split := strings.Split(text, "\n")
+	for i := range split {
+		split[i] = strings.TrimSpace(split[i])
+	}
+	joined := strings.Join(split, "\n")
+	var result *VocabAst = parser.Parse(joined)
+
+	if len(result.Documents) != 1 {
+		t.Fatalf("Document length not 1, got: %d", len(result.Documents))
+	}
+
+	document := result.Documents[0]
+	got := printJSON(document)
+
+	newDoc := &Document{uri: "xxx", Sections: sections}
+	expected := printJSON(newDoc)
+
+	if expected != got {
+		t.Fatalf("Parsing test failed. Expected:\n%s \nGot:\n%s", expected, got)
+	}
 }
 
 func TestFullSectionParsing(t *testing.T) {

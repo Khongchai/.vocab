@@ -26,8 +26,8 @@ func NewCompiler(ctx context.Context) *Compiler {
 }
 
 func (p *Compiler) ParseDocument(documentUri string, text string, changeRange *lsproto.Range) {
-	ast := NewAst(p.ctx, documentUri, text, changeRange)
-	p.Asts = append(p.Asts, ast)
+	// ast := NewAst(p.ctx, documentUri, text, changeRange)
+	// p.Asts = append(p.Asts, ast)
 }
 
 func (p *Compiler) Compile() {
