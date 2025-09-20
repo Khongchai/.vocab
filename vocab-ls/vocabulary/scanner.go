@@ -135,7 +135,7 @@ func (s *Scanner) Scan() (Token, string) {
 	case lib.LeftParen:
 		possibleClosing, _ := s.charAt(3)
 		if possibleClosing == lib.RightParen {
-			expr := s.text[s.pos:4]
+			expr := s.text[s.pos : 4+s.pos]
 			s.forwardPos(4)
 			return TokenLanguageExpression, expr
 		}
