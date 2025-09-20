@@ -140,7 +140,12 @@ func (s *Scanner) Scan() (Token, string) {
 			return TokenLanguageExpression, expr
 		}
 
-		return TokenText, "("
+		// To keep things consistent, we consume some number of text up until len("(xx)") before continuing.
+		remainingSize := len(s.text[s.pos:])
+		consumableSize := min(4, remainingSize)
+		consumed := s.text[s.pos:consumableSize]
+		s.forwardPos(len(consumed))
+		return TokenText, consumed
 
 	default:
 		s.forwardPos(scannedSize)
