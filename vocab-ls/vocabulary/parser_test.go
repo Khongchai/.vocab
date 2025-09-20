@@ -15,27 +15,23 @@ func printJSON(v any) string {
 func testParseExpectation(t *testing.T, text string, sections []*VocabularySection) {
 	t.Helper()
 
-	parser := &Parser{
-		Ctx: t.Context(),
-		Uri: "xxx",
-	}
-
 	split := strings.Split(text, "\n")
 	for i := range split {
 		split[i] = strings.TrimSpace(split[i])
 	}
 	joined := strings.Join(split, "\n")
-	var result *VocabAst = parser.Parse(joined)
 
-	if len(result.Documents) != 1 {
-		t.Fatalf("Document length not 1, got: %d", len(result.Documents))
-	}
+	parser := NewParser(t.Context(), "xxx", NewScanner(joined))
 
-	document := result.Documents[0]
-	got := printJSON(document)
+	// act
+	parser.Parse()
 
-	newDoc := &Document{uri: "xxx", Sections: sections}
-	expected := printJSON(newDoc)
+	var result *VocabAst = parser.ast
+
+	got := printJSON(result)
+
+	newAst := &VocabAst{uri: "xxx", Sections: sections}
+	expected := printJSON(newAst)
 
 	if expected != got {
 		t.Fatalf("Parsing test failed. Expected:\n%s \nGot:\n%s", expected, got)
@@ -56,7 +52,7 @@ func TestFullSectionParsing(t *testing.T) {
 			C'era una volta un piccolo villaggio in Italia. In questo villaggio, viveva una giovane maga. La maga si chiamava Luna, e il suo potere era molto semplice: poteva far brillare le stelle nel cielo. 
 		`, []*VocabularySection{
 			{
-				Date: &Date{Text: "20/08/2025", Time: time.Date(2025, time.August, 20, 0, 0, 0, 0, time.Local), Start: 0, End: 10},
+				Date: &DateSection{Text: "20/08/2025", Time: time.Date(2025, time.August, 20, 0, 0, 0, 0, time.Local), Start: 0, End: 10},
 				NewWords: []*WordsSection{
 					{
 						Language: Italiano,
@@ -75,7 +71,7 @@ func TestFullSectionParsing(t *testing.T) {
 					},
 				},
 				ReviewedWords: []*WordsSection{},
-				Sentences: []*Sentence{
+				Sentences: []*SentenceSection{
 					{
 						StartLine: 3,
 						EndLine:   3,
@@ -93,7 +89,7 @@ func TestFullSectionParsing(t *testing.T) {
 				},
 			},
 			{
-				Date: &Date{Text: "21/08/2025", Time: time.Date(2025, time.August, 20, 0, 0, 0, 0, time.Local), Start: 0, End: 10},
+				Date: &DateSection{Text: "21/08/2025", Time: time.Date(2025, time.August, 20, 0, 0, 0, 0, time.Local), Start: 0, End: 10},
 				NewWords: []*WordsSection{
 					{
 						Language: Italiano,
@@ -112,7 +108,7 @@ func TestFullSectionParsing(t *testing.T) {
 						},
 					},
 				},
-				Sentences: []*Sentence{
+				Sentences: []*SentenceSection{
 					{
 						StartLine: 6,
 						EndLine:   6,

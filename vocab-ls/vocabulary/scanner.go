@@ -181,7 +181,3 @@ func (s *Scanner) charAt(offset int) (rune, int) {
 func (s *Scanner) CurrentPosition() int {
 	return s.pos - 1
 }
-
-func GetTokenStartPos(s *Scanner, tokenText string) int {
-	return s.pos - len(tokenText) - 1
-}
