@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-type Expectation struct {
+type ScanExpect struct {
 	TextValue  string
 	TokenValue Token
 	Line       int
@@ -13,12 +13,12 @@ type Expectation struct {
 	Pos        int
 }
 
-type TestCase struct {
+type ScanCase struct {
 	Text         string
-	Expectations []Expectation
+	Expectations []ScanExpect
 }
 
-func testExpectations(t *testing.T, testCases []TestCase) {
+func testScanExpectations(t *testing.T, testCases []ScanCase) {
 	t.Helper()
 
 	for i := range testCases {
@@ -61,31 +61,31 @@ func testExpectations(t *testing.T, testCases []TestCase) {
 
 // Test against all recognized characters in the vocab syntax
 func TestBasicTokenScan(t *testing.T) {
-	testExpectations(t, []TestCase{
-		{Text: "ÄäöÖé", Expectations: []Expectation{{TextValue: "ÄäöÖé", TokenValue: TokenText, LineOffset: 10, Pos: 10}}},
-		{Text: "Hello", Expectations: []Expectation{{TextValue: "Hello", TokenValue: TokenText, LineOffset: 5, Pos: 5}}},
-		{Text: "20/08/2025", Expectations: []Expectation{{TextValue: "20/08/2025", TokenValue: TokenDateExpression, LineOffset: 10, Pos: 10}}},
-		{Text: ">", Expectations: []Expectation{{TextValue: ">", TokenValue: TokenGreaterThan, LineOffset: 1, Pos: 1}}},
-		{Text: ">>", Expectations: []Expectation{{TextValue: ">>", TokenValue: TokenDoubleGreaterThan, LineOffset: 2, Pos: 2}}},
-		{Text: ",", Expectations: []Expectation{{TextValue: ",", TokenValue: TokenComma, LineOffset: 1, Pos: 1}}},
-		{Text: "`foo`", Expectations: []Expectation{{TextValue: "`foo`", TokenValue: TokenWordExpression, LineOffset: 5, Pos: 5}}},
-		{Text: "`foo", Expectations: []Expectation{{TextValue: "`foo", TokenValue: TokenText, LineOffset: 4, Pos: 4}}},
-		{Text: "(it)", Expectations: []Expectation{{TextValue: "(it)", TokenValue: TokenLanguageExpression, LineOffset: 4, Pos: 4}}},
-		{Text: "(i)", Expectations: []Expectation{{TextValue: "(i)", TokenValue: TokenText, LineOffset: 3, Pos: 3}}},
-		{Text: "/", Expectations: []Expectation{{TextValue: "/", TokenValue: TokenSlash, LineOffset: 1, Pos: 1}}},
-		{Text: "<!--", Expectations: []Expectation{{TextValue: "<!--", TokenValue: TokenMarkdownCommentStart, LineOffset: 4, Pos: 4}}},
-		{Text: "-->", Expectations: []Expectation{{TextValue: "-->", TokenValue: TokenMarkdownCommentEnd, LineOffset: 3, Pos: 3}}},
-		{Text: "-", Expectations: []Expectation{{TextValue: "-", TokenValue: TokenMinus, LineOffset: 1, Pos: 1}}},
+	testScanExpectations(t, []ScanCase{
+		{Text: "ÄäöÖé", Expectations: []ScanExpect{{TextValue: "ÄäöÖé", TokenValue: TokenText, LineOffset: 10, Pos: 10}}},
+		{Text: "Hello", Expectations: []ScanExpect{{TextValue: "Hello", TokenValue: TokenText, LineOffset: 5, Pos: 5}}},
+		{Text: "20/08/2025", Expectations: []ScanExpect{{TextValue: "20/08/2025", TokenValue: TokenDateExpression, LineOffset: 10, Pos: 10}}},
+		{Text: ">", Expectations: []ScanExpect{{TextValue: ">", TokenValue: TokenGreaterThan, LineOffset: 1, Pos: 1}}},
+		{Text: ">>", Expectations: []ScanExpect{{TextValue: ">>", TokenValue: TokenDoubleGreaterThan, LineOffset: 2, Pos: 2}}},
+		{Text: ",", Expectations: []ScanExpect{{TextValue: ",", TokenValue: TokenComma, LineOffset: 1, Pos: 1}}},
+		{Text: "`foo`", Expectations: []ScanExpect{{TextValue: "`foo`", TokenValue: TokenWordExpression, LineOffset: 5, Pos: 5}}},
+		{Text: "`foo", Expectations: []ScanExpect{{TextValue: "`foo", TokenValue: TokenText, LineOffset: 4, Pos: 4}}},
+		{Text: "(it)", Expectations: []ScanExpect{{TextValue: "(it)", TokenValue: TokenLanguageExpression, LineOffset: 4, Pos: 4}}},
+		{Text: "(i)", Expectations: []ScanExpect{{TextValue: "(i)", TokenValue: TokenText, LineOffset: 3, Pos: 3}}},
+		{Text: "/", Expectations: []ScanExpect{{TextValue: "/", TokenValue: TokenSlash, LineOffset: 1, Pos: 1}}},
+		{Text: "<!--", Expectations: []ScanExpect{{TextValue: "<!--", TokenValue: TokenMarkdownCommentStart, LineOffset: 4, Pos: 4}}},
+		{Text: "-->", Expectations: []ScanExpect{{TextValue: "-->", TokenValue: TokenMarkdownCommentEnd, LineOffset: 3, Pos: 3}}},
+		{Text: "-", Expectations: []ScanExpect{{TextValue: "-", TokenValue: TokenMinus, LineOffset: 1, Pos: 1}}},
 	})
 
 }
 
 func TestNewline(t *testing.T) {
-	testExpectations(t, []TestCase{
-		{Text: "\n", Expectations: []Expectation{{TextValue: "\n", TokenValue: TokenLineBreak, LineOffset: 0, Line: 1, Pos: 1}}},
-		{Text: "\r", Expectations: []Expectation{{TextValue: "\r", TokenValue: TokenLineBreak, LineOffset: 0, Line: 1, Pos: 1}}},
+	testScanExpectations(t, []ScanCase{
+		{Text: "\n", Expectations: []ScanExpect{{TextValue: "\n", TokenValue: TokenLineBreak, LineOffset: 0, Line: 1, Pos: 1}}},
+		{Text: "\r", Expectations: []ScanExpect{{TextValue: "\r", TokenValue: TokenLineBreak, LineOffset: 0, Line: 1, Pos: 1}}},
 		{Text: "Hello \nWorld!",
-			Expectations: []Expectation{
+			Expectations: []ScanExpect{
 				{TextValue: "Hello", TokenValue: TokenText, LineOffset: 5, Line: 0, Pos: 5},
 				{TextValue: "\n", TokenValue: TokenLineBreak, LineOffset: 0, Line: 1, Pos: 7},
 				{TextValue: "World", TokenValue: TokenText, LineOffset: 5, Line: 1, Pos: 12},
@@ -96,10 +96,10 @@ func TestNewline(t *testing.T) {
 }
 
 func TestNewVocabScan(t *testing.T) {
-	testExpectations(t, []TestCase{
+	testScanExpectations(t, []ScanCase{
 		{
 			Text: ">Hello, World",
-			Expectations: []Expectation{
+			Expectations: []ScanExpect{
 				{TextValue: ">", TokenValue: TokenGreaterThan, Line: 0, LineOffset: 1, Pos: 1},
 				{TextValue: "Hello", TokenValue: TokenText, Line: 0, LineOffset: 6, Pos: 6},
 				{TextValue: ",", TokenValue: TokenComma, Line: 0, LineOffset: 7, Pos: 7},
@@ -108,7 +108,7 @@ func TestNewVocabScan(t *testing.T) {
 		},
 		{
 			Text: "> Hello, World",
-			Expectations: []Expectation{
+			Expectations: []ScanExpect{
 				{TextValue: ">", TokenValue: TokenGreaterThan, Line: 0, LineOffset: 1, Pos: 1},
 				{TextValue: "Hello", TokenValue: TokenText, Line: 0, LineOffset: 7, Pos: 7},
 				{TextValue: ",", TokenValue: TokenComma, Line: 0, LineOffset: 8, Pos: 8},
@@ -117,7 +117,7 @@ func TestNewVocabScan(t *testing.T) {
 		},
 		{
 			Text: "> (it) `ciao`, bello!",
-			Expectations: []Expectation{
+			Expectations: []ScanExpect{
 				{TextValue: ">", TokenValue: TokenGreaterThan, Line: 0, LineOffset: 1, Pos: 1},
 				{TextValue: "(it)", TokenValue: TokenLanguageExpression, Line: 0, LineOffset: 6, Pos: 6},
 				{TextValue: "`ciao`", TokenValue: TokenWordExpression, Line: 0, LineOffset: 13, Pos: 13},
@@ -130,10 +130,10 @@ func TestNewVocabScan(t *testing.T) {
 }
 
 func TestReviewedVocabScan(t *testing.T) {
-	testExpectations(t, []TestCase{
+	testScanExpectations(t, []ScanCase{
 		{
 			Text: ">>Hello, World",
-			Expectations: []Expectation{
+			Expectations: []ScanExpect{
 				{TextValue: ">>", TokenValue: TokenDoubleGreaterThan, Line: 0, LineOffset: 2, Pos: 2},
 				{TextValue: "Hello", TokenValue: TokenText, Line: 0, LineOffset: 7, Pos: 7},
 				{TextValue: ",", TokenValue: TokenComma, Line: 0, LineOffset: 8, Pos: 8},
@@ -142,7 +142,7 @@ func TestReviewedVocabScan(t *testing.T) {
 		},
 		{
 			Text: ">> Hello, World",
-			Expectations: []Expectation{
+			Expectations: []ScanExpect{
 				{TextValue: ">>", TokenValue: TokenDoubleGreaterThan, Line: 0, LineOffset: 2, Pos: 2},
 				{TextValue: "Hello", TokenValue: TokenText, Line: 0, LineOffset: 8, Pos: 8},
 				{TextValue: ",", TokenValue: TokenComma, Line: 0, LineOffset: 9, Pos: 9},
@@ -151,7 +151,7 @@ func TestReviewedVocabScan(t *testing.T) {
 		},
 		{
 			Text: ">> (de) halo, schön!",
-			Expectations: []Expectation{
+			Expectations: []ScanExpect{
 				{TextValue: ">>", TokenValue: TokenDoubleGreaterThan, Line: 0, LineOffset: 2, Pos: 2},
 				{TextValue: "(de)", TokenValue: TokenLanguageExpression, Line: 0, LineOffset: 7, Pos: 7},
 				{TextValue: "halo", TokenValue: TokenText, Line: 0, LineOffset: 12, Pos: 12},
@@ -159,26 +159,6 @@ func TestReviewedVocabScan(t *testing.T) {
 				{TextValue: "schön", TokenValue: TokenText, Line: 0, LineOffset: 20, Pos: 20},
 				{TextValue: "!", TokenValue: TokenText, Line: 0, LineOffset: 21, Pos: 21},
 			},
-		},
-	})
-}
-
-// Move this to parser later.
-func TestFullSectionScan(t *testing.T) {
-	testExpectations(t, []TestCase{
-		{
-			Text: `# This is a full section!
-Here are my notes.
-
-# 03/09/2025
-> (it) Ciao!
-> (de) was, wer
-Wer, wie, was?!
-
-## 04/09/2025
->> (de) was, wer
-ugabuga
-`,
 		},
 	})
 }

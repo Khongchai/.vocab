@@ -9,31 +9,50 @@ import (
 type Language string
 
 const (
-	Deutsch Language = "Tedesco"
-	Italian Language = "Italienisch"
+	Deutsch  Language = "Tedesco"
+	Italiano Language = "Italienisch"
 )
 
 type Word struct {
+	// Text represent the actual string value of a word without its article. For example, l'uccello should be normalized to uccello
 	Text string
+	// Full text is the full content including its article.
+	FullText string
+	// the start of FullText
+	// "hello" start = 0
+	Start int
+	// the end of FullText
+	// "hello" end = 4
+	End int
 }
 
 type Sentence struct {
-	Text string
+	StartLine int
+	EndLine   int
+	StartPos  int
+	EndPos    int
+	Text      string
 	// future positions for reviewed and such will be here.
 }
 
 type Date struct {
-	Text      string
-	Time      time.Time
-	TextRange lsproto.Range
+	Text  string
+	Time  time.Time
+	Start int
+	End   int
+}
+
+type WordsSection struct {
+	Words    []*Word
+	Language Language
+	Line     int
 }
 
 type VocabularySection struct {
 	Date          *Date
-	NewWords      []*Word
-	ReviewedWords []*Word
+	NewWords      []*WordsSection
+	ReviewedWords []*WordsSection
 	Sentences     []*Sentence
-	Language      Language
 }
 
 type Document struct {
