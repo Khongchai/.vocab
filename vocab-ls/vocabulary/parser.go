@@ -4,12 +4,16 @@ import (
 	"context"
 	"time"
 	lsproto "vocab/lsp"
+	"vocab/syntax"
 )
 
 type ParsingError string
 
 const (
-	MalformedDate ParsingError = "Malformed date"
+	MalformedDate            ParsingError = "Malformed date"
+	ExpectVocabulary                      = "Expect Vocabulary"
+	ExpectLanguageExpression              = "The language of this section is not specified. Specified either (it) or (de)"
+	UnrecognizedLanguage                  = "Unrecognized language identifier. Specify either (it) or (de)"
 )
 
 type Parser struct {
@@ -57,7 +61,7 @@ func (p *Parser) Parse() {
 		case TokenDateExpression:
 			p.parseDateExpression()
 		case TokenGreaterThan:
-			p.parseVocabSection()
+			fallthrough
 		case TokenDoubleGreaterThan:
 			p.parseVocabSection()
 		default:
@@ -71,18 +75,64 @@ func (p *Parser) parseDateExpression() {
 
 	text := p.text
 
-	parsed, err := time.Parse("02/01/2006", text)
+	parsed, err := time.Parse(syntax.DateLayout, text)
 	if err != nil {
-		p.errorHere(err, "Invalid date format")
+		p.errorHere(&err, "Invalid date format")
 	}
 
 	date := &DateSection{Text: text, Time: parsed, Start: p.tokenStart, End: p.tokenEnd}
 	p.currentVocabSection().Date = date
 }
 
+func (p *Parser) parseVocabSection() {
+	currentSection := p.currentVocabSection()
+	words := &WordsSection{
+		Line: p.line,
+	}
+	if p.token == TokenGreaterThan {
+		currentSection.NewWords = append(currentSection.NewWords, words)
+	} else {
+		currentSection.ReviewedWords = append(currentSection.NewWords, words)
+	}
+
+	p.nextToken()
+	if p.token != TokenLanguageExpression {
+		p.errorHere(nil, ExpectLanguageExpression)
+		return
+	}
+	if p.text == "(it)" {
+		words.Language = Italiano
+	} else if p.text == "(de)" {
+		words.Language = Deutsch
+	} else {
+		p.errorHere(nil, UnrecognizedLanguage)
+		words.Language = Unrecognized
+	}
+
+	parsing := ""
+
+	for {
+		switch p.token {
+		case TokenText:
+			parsing += p.text
+		case TokenComma:
+			parsing = ""
+		case TokenEOF:
+			return
+		case TokenLineBreak:
+			return
+		default:
+			p.errorHere(nil, ExpectVocabulary)
+		}
+	}
+}
+
 // Add a diagnostics error to this line.
-func (p *Parser) errorHere(original error, message ParsingError) {
-	p.writeCallback(original)
+func (p *Parser) errorHere(original *error, message ParsingError) {
+	if original != nil {
+		errorMessage := (*original).Error()
+		p.writeCallback(errorMessage)
+	}
 	diag := p.currentVocabSection().Diagnostics
 	newError := &lsproto.Diagnostic{
 		Severity: lsproto.DiagnosticsSeverityError,

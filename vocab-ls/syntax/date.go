@@ -9,4 +9,5 @@ const (
 	LanguageIdentifierRightParenPos = 3
 	HTMLCommentOpeningLength        = len("<!--")
 	HTMLCommentClosingLength        = len("-->")
+	DateLayout                      = "02/01/2006"
 )

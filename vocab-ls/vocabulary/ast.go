@@ -8,8 +8,9 @@ import (
 type Language string
 
 const (
-	Deutsch  Language = "Tedesco"
-	Italiano Language = "Italienisch"
+	Unrecognized Language = ""
+	Deutsch      Language = "Tedesco"
+	Italiano     Language = "Italienisch"
 )
 
 type Word struct {
