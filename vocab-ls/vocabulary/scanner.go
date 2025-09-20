@@ -114,12 +114,6 @@ func (s *Scanner) Scan() (Token, string) {
 		return TokenLessThan, "<"
 
 	case lib.Backtick:
-		c1, _ := s.charAt(1)
-		c2, _ := s.charAt(2)
-		if c1 == lib.Backtick && c2 == lib.Backtick {
-			s.forwardPos(3)
-			return TokenMarkdownCodefence, "```"
-		}
 		s.forwardPos(1)
 		return TokenBacktick, "`"
 

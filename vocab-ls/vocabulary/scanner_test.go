@@ -66,7 +66,6 @@ func TestBasicTokenScan(t *testing.T) {
 		{Text: "(", Expectations: []Expectation{{TextValue: "(", TokenValue: TokenLeftParen, LineOffset: 1, Pos: 1}}},
 		{Text: ")", Expectations: []Expectation{{TextValue: ")", TokenValue: TokenRightParen, LineOffset: 1, Pos: 1}}},
 		{Text: "/", Expectations: []Expectation{{TextValue: "/", TokenValue: TokenSlash, LineOffset: 1, Pos: 1}}},
-		{Text: "```", Expectations: []Expectation{{TextValue: "```", TokenValue: TokenMarkdownCodefence, LineOffset: 3, Pos: 3}}},
 		{Text: "<!--", Expectations: []Expectation{{TextValue: "<!--", TokenValue: TokenMarkdownCommentStart, LineOffset: 4, Pos: 4}}},
 		{Text: "-->", Expectations: []Expectation{{TextValue: "-->", TokenValue: TokenMarkdownCommentEnd, LineOffset: 3, Pos: 3}}},
 		{Text: "-", Expectations: []Expectation{{TextValue: "-", TokenValue: TokenMinus, LineOffset: 1, Pos: 1}}},

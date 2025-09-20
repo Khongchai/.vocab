@@ -24,7 +24,6 @@ const (
 
 	TokenMarkdownCommentStart // <!--
 	TokenMarkdownCommentEnd   // -->
-	TokenMarkdownCodefence    // ```
 
 	TokenDateExpression // xx/xx/xxxx
 	TokenWordExpression // `literally` `a` `word`
