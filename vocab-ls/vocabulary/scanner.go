@@ -3,6 +3,7 @@ package vocabulary
 import (
 	"unicode/utf8"
 	"vocab/lib"
+	"vocab/syntax"
 )
 
 // Diagnostics error from scanners are added when multi-tokens identifier fail to match something.
@@ -51,7 +52,7 @@ func (s *Scanner) Scan() (Token, string) {
 			collected += string(c)
 			s.forwardPos(cSize)
 		}
-		return TokenTextLiteral, collected
+		return TokenText, collected
 	}
 
 	if lib.IsLineBreak(scanned) {
@@ -62,15 +63,15 @@ func (s *Scanner) Scan() (Token, string) {
 	if lib.IsDigit(scanned) {
 		collected := string(scanned)
 		s.forwardPos(1)
-		for {
+		for i := 1; i < syntax.DateLength; i++ {
 			c, _ := s.charAt(0)
-			if !lib.IsDigit(c) {
-				break
+			if !lib.IsDigit(c) && i != syntax.DateSlashFirstPosition && i != syntax.DateSlashSecondPostion {
+				return TokenText, collected
 			}
 			collected += string(c)
 			s.forwardPos(1)
 		}
-		return TokenNumericLiteral, collected
+		return TokenDateExpression, collected
 	}
 
 	// It should not be possible to overscan!
@@ -118,18 +119,18 @@ func (s *Scanner) Scan() (Token, string) {
 		return TokenBacktick, "`"
 
 	case lib.LeftParen:
-		s.forwardPos(1)
+		possibleClosing, _ := s.charAt(3)
+		if possibleClosing == lib.RightParen {
+			s.forwardPos(4)
+			expr := s.text[s.pos:4]
+			return TokenLanguageExpression, expr
+		}
+
 		return TokenLeftParen, "("
 
-	case lib.RightParen:
-		s.forwardPos(1)
-		return TokenRightParen, ")"
-
 	default:
-
-		// all ignored characters here
 		s.forwardPos(scannedSize)
-		return TokenIgnored, string(scanned)
+		return TokenText, string(scanned)
 	}
 
 }

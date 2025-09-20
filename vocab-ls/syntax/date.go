@@ -3,7 +3,7 @@ package syntax
 const (
 	DateLength                      = len("xx/xx/xxxx")
 	DateSlashFirstPosition          = 2
-	DateSlashSecondPostiion         = 4
+	DateSlashSecondPostion          = 5
 	LanguageIdentifierLength        = len("(xx)")
 	LanguageIdentifierLeftParenPos  = 0
 	LanguageIdentifierRightParenPos = 3

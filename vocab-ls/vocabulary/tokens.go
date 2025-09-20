@@ -3,8 +3,7 @@ package vocabulary
 type Token int
 
 const (
-	TokenIgnored Token = iota
-	TokenGreaterThan
+	TokenGreaterThan Token = iota
 	TokenDoubleGreaterThan
 	TokenBacktick
 	TokenSlash
@@ -17,14 +16,12 @@ const (
 	TokenLeftParen
 	TokenRightParen
 
-	TokenLanguageIdent
-
-	TokenNumericLiteral // same as markdown text but a special case when it's a number for easier detection in parser
-	TokenTextLiteral    // all valid markdown text
-
 	TokenMarkdownCommentStart // <!--
 	TokenMarkdownCommentEnd   // -->
 
-	TokenDateExpression // xx/xx/xxxx
-	TokenWordExpression // `literally` `a` `word`
+	TokenDateExpression     // xx/xx/xxxx
+	TokenWordExpression     // `literally` `a` `word`
+	TokenLanguageExpression // (de) or (it)
+
+	TokenText // all text that do not match anything above
 )

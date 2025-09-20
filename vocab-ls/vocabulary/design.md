@@ -1,6 +1,16 @@
+# Terminals
+
+- DateExpression: `nn/nn/nnnn` where `n` can be any number
+
+- LanguageExpression: `\`(it)\`` with two values: de, and it for German and Italian respectively.
+
+- `,`: separates reviewed or new vocabulary.
+
+- New line: mark the end of a section (date, new vocab, reviewed vocab, and sentences).
+ 
 # Scanner
 
-Does not emit any diagnostics as we are not yet sure at this level whether we're parsing markdown element or vocab elements.
+Does not emit any diagnostics.
 
 # Parser
 
