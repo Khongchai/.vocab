@@ -1,5 +1,5 @@
 # vocab
-.vocab.markdown plugin for vscode
+The `vocab` language server for vscode.
 
 # Refs for Development
 
