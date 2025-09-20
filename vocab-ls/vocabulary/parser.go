@@ -11,9 +11,9 @@ type ParsingError string
 
 const (
 	MalformedDate            ParsingError = "Malformed date"
-	ExpectVocabulary                      = "Expect Vocabulary"
-	ExpectLanguageExpression              = "The language of this section is not specified. Specified either (it) or (de)"
-	UnrecognizedLanguage                  = "Unrecognized language identifier. Specify either (it) or (de)"
+	ExpectVocabulary         ParsingError = "Expect Vocabulary"
+	ExpectLanguageExpression ParsingError = "The language of this section is not specified. Specified either (it) or (de)"
+	UnrecognizedLanguage     ParsingError = "Unrecognized language identifier. Specify either (it) or (de)"
 )
 
 type Parser struct {
@@ -125,6 +125,10 @@ func (p *Parser) parseVocabSection() {
 			p.errorHere(nil, ExpectVocabulary)
 		}
 	}
+}
+
+func (p *Parser) parseSentenceSection() {
+
 }
 
 // Add a diagnostics error to this line.
