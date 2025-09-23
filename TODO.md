@@ -69,9 +69,13 @@ Sarò lì
 
 # Main requirement 5
 
-**Spaced repetition** 
+**Spaced repetition (compilation)** 
 
 This requires [`interFileDependencies`](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#diagnosticOptions) server capability.
+
+# Main requirement 6
+
+**Sync to phone app and once reviewed make a commit to update**
 
 # Possible Requirement 1
 
