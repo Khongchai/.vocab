@@ -2,6 +2,7 @@ package vocabulary
 
 import (
 	"context"
+	"strings"
 	"time"
 	lsproto "vocab/lsp"
 	"vocab/syntax"
@@ -140,7 +141,18 @@ func (p *Parser) parseVocabSection() {
 }
 
 func (p *Parser) parseSentenceSection() {
+	var sb strings.Builder
 
+	for {
+		switch p.token {
+		case TokenEOF:
+			fallthrough
+		case TokenLineBreak:
+			return
+		default:
+			sb.WriteString(p.text)
+		}
+	}
 }
 
 // Add a diagnostics error to this line.
