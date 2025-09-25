@@ -21,7 +21,7 @@ func testParseExpectation(t *testing.T, text string, sections []*VocabularySecti
 	}
 	joined := strings.Join(split, "\n")
 
-	parser := NewParser(t.Context(), "xxx", NewScanner(joined))
+	parser := NewParser(t.Context(), "xxx", NewScanner(joined), func(a any) {})
 
 	// act
 	parser.Parse()

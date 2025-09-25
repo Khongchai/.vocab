@@ -11,9 +11,12 @@ type ParsingError string
 
 const (
 	MalformedDate            ParsingError = "Malformed date"
+	ExpectDate               ParsingError = "Expect Date"
 	ExpectVocabulary         ParsingError = "Expect Vocabulary"
 	ExpectLanguageExpression ParsingError = "The language of this section is not specified. Specified either (it) or (de)"
 	UnrecognizedLanguage     ParsingError = "Unrecognized language identifier. Specify either (it) or (de)"
+	ExpectVocabSection       ParsingError = "Expect Vocab Section"
+	ExpectDateSection        ParsingError = "Expect Date Section"
 )
 
 type Parser struct {
@@ -57,14 +60,22 @@ func (p *Parser) Parse() {
 			return
 		}
 
+		lastSection := p.ast.Sections[len(p.ast.Sections)-1]
+
 		switch p.token {
 		case TokenDateExpression:
 			p.parseDateExpression()
 		case TokenGreaterThan:
 			fallthrough
 		case TokenDoubleGreaterThan:
+			if lastSection.Date == nil {
+				p.errorHere(nil, ExpectDateSection)
+			}
 			p.parseVocabSection()
 		default:
+			if len(lastSection.NewWords) == 0 && len(lastSection.ReviewedWords) == 0 {
+				p.errorHere(nil, ExpectVocabSection)
+			}
 			p.parseSentenceSection()
 		}
 	}
@@ -100,11 +111,12 @@ func (p *Parser) parseVocabSection() {
 		p.errorHere(nil, ExpectLanguageExpression)
 		return
 	}
-	if p.text == "(it)" {
+	switch p.text {
+	case "(it)":
 		words.Language = Italiano
-	} else if p.text == "(de)" {
+	case "(de)":
 		words.Language = Deutsch
-	} else {
+	default:
 		p.errorHere(nil, UnrecognizedLanguage)
 		words.Language = Unrecognized
 	}
@@ -137,7 +149,6 @@ func (p *Parser) errorHere(original *error, message ParsingError) {
 		errorMessage := (*original).Error()
 		p.writeCallback(errorMessage)
 	}
-	diag := p.currentVocabSection().Diagnostics
 	newError := &lsproto.Diagnostic{
 		Severity: lsproto.DiagnosticsSeverityError,
 		Message:  string(message),
@@ -152,7 +163,8 @@ func (p *Parser) errorHere(original *error, message ParsingError) {
 			},
 		},
 	}
-	diag = append(diag, newError)
+	diag := p.currentVocabSection().Diagnostics
+	p.currentVocabSection().Diagnostics = append(diag, newError)
 }
 
 func (p *Parser) currentVocabSection() *VocabularySection {
