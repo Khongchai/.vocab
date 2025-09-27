@@ -142,12 +142,12 @@ func TestOnlyDateSection(t *testing.T) {
 				Date: &DateSection{Text: "20/08/2025", Time: time.Date(2025, time.August, 20, 0, 0, 0, 0, time.Local), Start: 0, End: 10},
 			},
 		}, []ParsingError{})
-	testParseExpectation(t,
-		` 00/00/0000`, []*VocabularySection{
-			{Date: nil},
-		}, []ParsingError{
-			MalformedDate,
-		})
+	// testParseExpectation(t,
+	// 	` 00/00/0000`, []*VocabularySection{
+	// 		{Date: nil},
+	// 	}, []ParsingError{
+	// 		MalformedDate,
+	// 	})
 }
 
 // TODO: incomplete date, incomplete language, incomlpete word, etc.

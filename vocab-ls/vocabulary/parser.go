@@ -54,6 +54,8 @@ func NewParser(ctx context.Context, uri string, scanner *Scanner, writeCallback 
 func (p *Parser) Parse() {
 	p.ast.Sections = []*VocabularySection{}
 
+	var lastSection *VocabularySection = nil
+
 	for {
 		p.nextToken()
 
@@ -61,7 +63,9 @@ func (p *Parser) Parse() {
 			return
 		}
 
-		lastSection := p.ast.Sections[len(p.ast.Sections)-1]
+		if len(p.ast.Sections) > 0 {
+			lastSection = p.ast.Sections[len(p.ast.Sections)-1]
+		}
 
 		switch p.token {
 		case TokenDateExpression:
@@ -98,7 +102,8 @@ func (p *Parser) parseDateExpression() {
 		}
 	}
 
-	date := &DateSection{Text: text, Time: parsed, Start: p.tokenStart, End: p.tokenEnd}
+	parsedAsLocalTime := time.Date(parsed.Year(), parsed.Month(), parsed.Day(), 0, 0, 0, 0, time.Local)
+	date := &DateSection{Text: text, Time: parsedAsLocalTime, Start: p.tokenStart, End: p.tokenEnd}
 	p.currentVocabSection().Date = date
 }
 
