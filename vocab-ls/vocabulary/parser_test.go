@@ -143,6 +143,18 @@ func TestOnlyDateSection(t *testing.T) {
 			},
 		}, []ParsingError{})
 	// testParseExpectation(t,
+	// 	``, []*VocabularySection{
+	// 		{
+	// 			Date: nil,
+	// 		},
+	// 	}, []ParsingError{})
+	// testParseExpectation(t,
+	// 	`20/`, []*VocabularySection{
+	// 		{Date: nil},
+	// 	}, []ParsingError{
+	// 		MalformedDate,
+	// 	})
+	// testParseExpectation(t,
 	// 	` 00/00/0000`, []*VocabularySection{
 	// 		{Date: nil},
 	// 	}, []ParsingError{
