@@ -26,15 +26,12 @@ func NewScanner(text string) *Scanner {
 }
 
 func (s *Scanner) Scan() (Token, string) {
-	for {
-		c, cSize := s.charAt(0)
-		if !lib.IsWhiteSpaceSingleLine(c) {
-			break
-		}
-		s.forwardPos(cSize)
-	}
-
 	scanned, scannedSize := s.charAt(0)
+
+	if lib.IsWhiteSpaceSingleLine(scanned) {
+		s.forwardPos(scannedSize)
+		return TokenWhitespace, " "
+	}
 
 	if s.atEnd() {
 		return TokenEOF, ""
