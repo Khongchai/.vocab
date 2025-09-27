@@ -32,7 +32,7 @@ type Parser struct {
 	tokenEnd   int // end pos on line
 	line       int // line, 0-indexed
 
-	writeCallback func(any)
+	errorCallback func(any)
 }
 
 func NewParser(ctx context.Context, uri string, scanner *Scanner, writeCallback func(any)) *Parser {
@@ -47,7 +47,7 @@ func NewParser(ctx context.Context, uri string, scanner *Scanner, writeCallback 
 		tokenStart: -1,
 		tokenEnd:   -1,
 
-		writeCallback: writeCallback,
+		errorCallback: writeCallback,
 	}
 }
 
@@ -89,7 +89,13 @@ func (p *Parser) parseDateExpression() {
 
 	parsed, err := time.Parse(syntax.DateLayout, text)
 	if err != nil {
-		p.errorHere(&err, "Invalid date format")
+		p.errorHere(&err, MalformedDate)
+		for {
+			p.nextToken()
+			if p.token == TokenLineBreak {
+				return
+			}
+		}
 	}
 
 	date := &DateSection{Text: text, Time: parsed, Start: p.tokenStart, End: p.tokenEnd}
@@ -159,7 +165,7 @@ func (p *Parser) parseSentenceSection() {
 func (p *Parser) errorHere(original *error, message ParsingError) {
 	if original != nil {
 		errorMessage := (*original).Error()
-		p.writeCallback(errorMessage)
+		p.errorCallback(errorMessage)
 	}
 	newError := &lsproto.Diagnostic{
 		Severity: lsproto.DiagnosticsSeverityError,

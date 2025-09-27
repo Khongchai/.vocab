@@ -12,7 +12,7 @@ func printJSON(v any) string {
 	return string(b)
 }
 
-func testParseExpectation(t *testing.T, text string, sections []*VocabularySection) {
+func testParseExpectation(t *testing.T, text string, sections []*VocabularySection, expectedErrors []ParsingError) {
 	t.Helper()
 
 	split := strings.Split(text, "\n")
@@ -21,7 +21,10 @@ func testParseExpectation(t *testing.T, text string, sections []*VocabularySecti
 	}
 	joined := strings.Join(split, "\n")
 
-	parser := NewParser(t.Context(), "xxx", NewScanner(joined), func(a any) {})
+	var parsedErrors []any
+	parser := NewParser(t.Context(), "xxx", NewScanner(joined), func(a any) {
+		parsedErrors = append(parsedErrors, a)
+	})
 
 	// act
 	parser.Parse()
@@ -35,6 +38,16 @@ func testParseExpectation(t *testing.T, text string, sections []*VocabularySecti
 
 	if expected != got {
 		t.Fatalf("Parsing test failed. Expected:\n%s \nGot:\n%s", expected, got)
+	}
+
+	if len(expectedErrors) != len(parsedErrors) {
+		t.Fatalf("Parsing test failed. Expected error length != parsedErrors")
+	}
+
+	for i := range expectedErrors {
+		if expectedErrors[i] != parsedErrors[i] {
+			t.Fatalf("Parsing test failed. Expected error: %+v, got %+v", expectedErrors[i], parsedErrors[i])
+		}
 	}
 }
 
@@ -118,11 +131,23 @@ func TestFullSectionParsing(t *testing.T) {
 					},
 				},
 			},
-		})
+		}, []ParsingError{})
 }
 
 // Incomplete sections don't necessarily emit diagnostics error as missing vocabulary is already covered by the compiler.
-func TestIncompleteSection(t *testing.T) {
+func TestOnlyDateSection(t *testing.T) {
+	testParseExpectation(t,
+		` 20/08/2025`, []*VocabularySection{
+			{
+				Date: &DateSection{Text: "20/08/2025", Time: time.Date(2025, time.August, 20, 0, 0, 0, 0, time.Local), Start: 0, End: 10},
+			},
+		}, []ParsingError{})
+	testParseExpectation(t,
+		` 00/00/0000`, []*VocabularySection{
+			{Date: nil},
+		}, []ParsingError{
+			MalformedDate,
+		})
 }
 
 // TODO: incomplete date, incomplete language, incomlpete word, etc.
