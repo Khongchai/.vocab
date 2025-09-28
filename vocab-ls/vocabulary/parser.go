@@ -33,9 +33,10 @@ type Parser struct {
 	line       int // line, 0-indexed
 
 	errorCallback func(any)
+	printCallback func(any)
 }
 
-func NewParser(ctx context.Context, uri string, scanner *Scanner, writeCallback func(any)) *Parser {
+func NewParser(ctx context.Context, uri string, scanner *Scanner, errorCallback func(any), printCallback func(any)) *Parser {
 	return &Parser{
 		ctx:     ctx,
 		uri:     uri,
@@ -47,7 +48,8 @@ func NewParser(ctx context.Context, uri string, scanner *Scanner, writeCallback 
 		tokenStart: -1,
 		tokenEnd:   -1,
 
-		errorCallback: writeCallback,
+		errorCallback: errorCallback,
+		printCallback: printCallback,
 	}
 }
 
@@ -75,6 +77,7 @@ func (p *Parser) Parse() {
 			//20/09/2025
 			continue
 		case TokenDateExpression:
+			p.ast.Sections = append(p.ast.Sections, &VocabularySection{})
 			p.parseDateExpression()
 		case TokenGreaterThan:
 			fallthrough
@@ -84,8 +87,10 @@ func (p *Parser) Parse() {
 			}
 			p.parseVocabSection()
 		default:
-			if len(lastSection.NewWords) == 0 && len(lastSection.ReviewedWords) == 0 {
+			if lastSection == nil || len(lastSection.NewWords) == 0 && len(lastSection.ReviewedWords) == 0 {
+				p.ast.Sections = append(p.ast.Sections, &VocabularySection{})
 				p.errorHere(nil, ExpectVocabSection)
+				return
 			}
 			p.parseSentenceSection()
 		}
@@ -93,7 +98,6 @@ func (p *Parser) Parse() {
 }
 
 func (p *Parser) parseDateExpression() {
-	p.ast.Sections = append(p.ast.Sections, &VocabularySection{})
 
 	parsed, err := time.Parse(syntax.DateLayout, p.text)
 	parsedAsLocalTime := time.Date(parsed.Year(), parsed.Month(), parsed.Day(), 0, 0, 0, 0, time.Local)
@@ -175,8 +179,9 @@ func (p *Parser) parseSentenceSection() {
 // Add a diagnostics error to this line.
 func (p *Parser) errorHere(original *error, message ParsingError) {
 	if original != nil {
-		p.errorCallback(message)
+		p.printCallback(&original)
 	}
+	p.errorCallback(message)
 	newError := &lsproto.Diagnostic{
 		Severity: lsproto.DiagnosticsSeverityError,
 		Message:  string(message),
@@ -196,7 +201,12 @@ func (p *Parser) errorHere(original *error, message ParsingError) {
 }
 
 func (p *Parser) currentVocabSection() *VocabularySection {
-	return p.ast.Sections[len(p.ast.Sections)-1]
+	sectionCount := len(p.ast.Sections)
+	if sectionCount == 0 {
+		return nil
+	}
+	last := p.ast.Sections[sectionCount-1]
+	return last
 }
 
 func (p *Parser) nextToken() {

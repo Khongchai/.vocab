@@ -62,8 +62,10 @@ func (s *Scanner) Scan() (Token, string) {
 		s.forwardPos(1)
 		for i := 1; i < syntax.DateLength; i++ {
 			c, _ := s.charAt(0)
-			if !lib.IsDigit(c) && i != syntax.DateSlashFirstPosition && i != syntax.DateSlashSecondPostion {
-				return TokenText, collected
+			if !lib.IsDigit(c) {
+				if lib.Slash != c && (i == syntax.DateSlashFirstPosition || i == syntax.DateSlashSecondPostion) {
+					return TokenText, collected
+				}
 			}
 			collected += string(c)
 			s.forwardPos(1)

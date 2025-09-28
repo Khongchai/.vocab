@@ -65,6 +65,7 @@ func TestBasicTokenScan(t *testing.T) {
 		{Text: "ÄäöÖé", Expectations: []ScanExpect{{TextValue: "ÄäöÖé", TokenValue: TokenText, LineOffset: 10, Pos: 10}}},
 		{Text: "Hello", Expectations: []ScanExpect{{TextValue: "Hello", TokenValue: TokenText, LineOffset: 5, Pos: 5}}},
 		{Text: "20/08/2025", Expectations: []ScanExpect{{TextValue: "20/08/2025", TokenValue: TokenDateExpression, LineOffset: 10, Pos: 10}}},
+		{Text: "23/00", Expectations: []ScanExpect{{TextValue: "23/00", TokenValue: TokenText, LineOffset: 5, Pos: 5}}},
 		{Text: ">", Expectations: []ScanExpect{{TextValue: ">", TokenValue: TokenGreaterThan, LineOffset: 1, Pos: 1}}},
 		{Text: ">>", Expectations: []ScanExpect{{TextValue: ">>", TokenValue: TokenDoubleGreaterThan, LineOffset: 2, Pos: 2}}},
 		{Text: ",", Expectations: []ScanExpect{{TextValue: ",", TokenValue: TokenComma, LineOffset: 1, Pos: 1}}},

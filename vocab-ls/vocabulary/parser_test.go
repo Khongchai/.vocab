@@ -22,9 +22,10 @@ func testParseExpectation(t *testing.T, text string, sections []*VocabularySecti
 	joined := strings.Join(split, "\n")
 
 	var parsedErrors []any
-	parser := NewParser(t.Context(), "xxx", NewScanner(joined), func(a any) {
-		parsedErrors = append(parsedErrors, a)
-	})
+	parser := NewParser(t.Context(), "xxx", NewScanner(joined),
+		func(a any) {
+			parsedErrors = append(parsedErrors, a)
+		}, func(a any) {})
 
 	// act
 	parser.Parse()
@@ -169,49 +170,42 @@ func TestOnlyDateSection(t *testing.T) {
 		var parsedError ParsingError = ""
 		parser := NewParser(t.Context(), "xxx", NewScanner(expectation.Input), func(a any) {
 			parsedError = a.(ParsingError)
-		})
+		}, func(a any) {})
 		parser.Parse()
-		gotTime := parser.ast.Sections[0].Date.Time
-		if expectation.ParsedDate != gotTime {
-			t.Fatalf("Date mismatched, expected: %+v, got %+v", expectation.ParsedDate, gotTime)
-		}
 
-		gotStart := parser.ast.Sections[0].Date.Start
-		gotEnd := parser.ast.Sections[0].Date.End
-		if gotStart != expectation.Start || gotEnd != expectation.End {
-			t.Fatalf("Start and end don't match, expected %d, %d -- got %d, %d", expectation.Start, expectation.End, gotStart, gotEnd)
-		}
+		sectionDate := parser.ast.Sections[0].Date
 
 		if expectation.Error != "" && expectation.Error != parsedError {
 			t.Fatalf("Error mismatch, expected: %s, got %s", expectation.Error, parsedError)
 		}
+
+		gotTime := sectionDate.Time
+		if expectation.ParsedDate != gotTime {
+			t.Fatalf("Date mismatched, expected: %+v, got %+v", expectation.ParsedDate, gotTime)
+		}
+
+		gotStart := sectionDate.Start
+		gotEnd := sectionDate.End
+		if gotStart != expectation.Start || gotEnd != expectation.End {
+			t.Fatalf("Start and end don't match, expected %d, %d -- got %d, %d", expectation.Start, expectation.End, gotStart, gotEnd)
+		}
+	}
+}
+
+func TestIncompleteDateSection(t *testing.T) {
+	var parsedError ParsingError = ""
+	parser := NewParser(t.Context(), "xxx", NewScanner("23/00"), func(a any) {
+		parsedError = a.(ParsingError)
+	}, func(a any) {})
+	parser.Parse()
+
+	if parsedError != ExpectVocabSection {
+		t.Errorf("Expected parsed error to be MalformedDate, instead got %s", parsedError)
 	}
 
-	// var result *VocabAst = parser.ast
-	// testParseExpectation(t,
-	// 	` 20/08/2025`, []*VocabularySection{
-	// 		{
-	// 			Date: &DateSection{Text: "20/08/2025", Time: time.Date(2025, time.August, 20, 0, 0, 0, 0, time.Local), Start: 0, End: 10},
-	// 		},
-	// 	}, []ParsingError{})
-	// testParseExpectation(t,
-	// 	``, []*VocabularySection{
-	// 		{
-	// 			Date: nil,
-	// 		},
-	// 	}, []ParsingError{})
-	// testParseExpectation(t,
-	// 	`20/`, []*VocabularySection{
-	// 		{Date: nil},
-	// 	}, []ParsingError{
-	// 		MalformedDate,
-	// 	})
-	// testParseExpectation(t,
-	// 	` 00/00/0000`, []*VocabularySection{
-	// 		{Date: nil},
-	// 	}, []ParsingError{
-	// 		MalformedDate,
-	// 	})
+	if parser.tokenStart != 0 && parser.tokenEnd != 5 {
+		t.Errorf("Token start and end not 0 and 5, :%d, %d", parser.tokenStart, parser.tokenEnd)
+	}
 }
 
 // TODO: incomplete date, incomplete language, incomlpete word, etc.
