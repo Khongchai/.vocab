@@ -68,6 +68,12 @@ func (p *Parser) Parse() {
 		}
 
 		switch p.token {
+		case TokenWhitespace:
+			// This would match the leading space in all cases below, for example
+			// 20/09/2025
+			// instead of
+			//20/09/2025
+			continue
 		case TokenDateExpression:
 			p.parseDateExpression()
 		case TokenGreaterThan:
@@ -89,22 +95,22 @@ func (p *Parser) Parse() {
 func (p *Parser) parseDateExpression() {
 	p.ast.Sections = append(p.ast.Sections, &VocabularySection{})
 
-	text := p.text
+	parsed, err := time.Parse(syntax.DateLayout, p.text)
+	parsedAsLocalTime := time.Date(parsed.Year(), parsed.Month(), parsed.Day(), 0, 0, 0, 0, time.Local)
+	date := &DateSection{Text: p.text, Time: parsedAsLocalTime, Start: p.tokenStart, End: p.tokenEnd}
+	p.currentVocabSection().Date = date
 
-	parsed, err := time.Parse(syntax.DateLayout, text)
-	if err != nil {
-		p.errorHere(&err, MalformedDate)
-		for {
-			p.nextToken()
-			if p.token == TokenLineBreak {
-				return
-			}
-		}
+	if err == nil {
+		return
 	}
 
-	parsedAsLocalTime := time.Date(parsed.Year(), parsed.Month(), parsed.Day(), 0, 0, 0, 0, time.Local)
-	date := &DateSection{Text: text, Time: parsedAsLocalTime, Start: p.tokenStart, End: p.tokenEnd}
-	p.currentVocabSection().Date = date
+	p.errorHere(&err, MalformedDate)
+	for {
+		p.nextToken()
+		if p.token == TokenLineBreak || p.token == TokenEOF {
+			return
+		}
+	}
 }
 
 func (p *Parser) parseVocabSection() {
@@ -169,8 +175,7 @@ func (p *Parser) parseSentenceSection() {
 // Add a diagnostics error to this line.
 func (p *Parser) errorHere(original *error, message ParsingError) {
 	if original != nil {
-		errorMessage := (*original).Error()
-		p.errorCallback(errorMessage)
+		p.errorCallback(message)
 	}
 	newError := &lsproto.Diagnostic{
 		Severity: lsproto.DiagnosticsSeverityError,

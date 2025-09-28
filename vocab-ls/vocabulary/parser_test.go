@@ -136,12 +136,64 @@ func TestFullSectionParsing(t *testing.T) {
 
 // Incomplete sections don't necessarily emit diagnostics error as missing vocabulary is already covered by the compiler.
 func TestOnlyDateSection(t *testing.T) {
-	testParseExpectation(t,
-		` 20/08/2025`, []*VocabularySection{
-			{
-				Date: &DateSection{Text: "20/08/2025", Time: time.Date(2025, time.August, 20, 0, 0, 0, 0, time.Local), Start: 0, End: 10},
-			},
-		}, []ParsingError{})
+	type Expectation struct {
+		Input      string
+		ParsedDate time.Time
+		Start      int
+		End        int
+		Error      ParsingError
+	}
+	expectations := []Expectation{
+		{
+			Input:      "20/08/2025",
+			ParsedDate: time.Date(2025, time.August, 20, 0, 0, 0, 0, time.Local),
+			Start:      0,
+			End:        10,
+		},
+		{
+			Input:      " 20/08/2025 ",
+			ParsedDate: time.Date(2025, time.August, 20, 0, 0, 0, 0, time.Local),
+			Start:      1,
+			End:        11,
+		},
+		{
+			Input:      "00/00/0000",
+			ParsedDate: time.Date(1, 1, 1, 0, 0, 0, 0, time.Local),
+			Start:      0,
+			End:        10,
+			Error:      MalformedDate,
+		},
+	}
+
+	for _, expectation := range expectations {
+		var parsedError ParsingError = ""
+		parser := NewParser(t.Context(), "xxx", NewScanner(expectation.Input), func(a any) {
+			parsedError = a.(ParsingError)
+		})
+		parser.Parse()
+		gotTime := parser.ast.Sections[0].Date.Time
+		if expectation.ParsedDate != gotTime {
+			t.Fatalf("Date mismatched, expected: %+v, got %+v", expectation.ParsedDate, gotTime)
+		}
+
+		gotStart := parser.ast.Sections[0].Date.Start
+		gotEnd := parser.ast.Sections[0].Date.End
+		if gotStart != expectation.Start || gotEnd != expectation.End {
+			t.Fatalf("Start and end don't match, expected %d, %d -- got %d, %d", expectation.Start, expectation.End, gotStart, gotEnd)
+		}
+
+		if expectation.Error != "" && expectation.Error != parsedError {
+			t.Fatalf("Error mismatch, expected: %s, got %s", expectation.Error, parsedError)
+		}
+	}
+
+	// var result *VocabAst = parser.ast
+	// testParseExpectation(t,
+	// 	` 20/08/2025`, []*VocabularySection{
+	// 		{
+	// 			Date: &DateSection{Text: "20/08/2025", Time: time.Date(2025, time.August, 20, 0, 0, 0, 0, time.Local), Start: 0, End: 10},
+	// 		},
+	// 	}, []ParsingError{})
 	// testParseExpectation(t,
 	// 	``, []*VocabularySection{
 	// 		{
