@@ -30,18 +30,17 @@ type Section interface {
 	SectionName() string
 }
 
-type SentenceSection struct {
-	StartLine int
-	EndLine   int
-	StartPos  int
-	EndPos    int
-	Text      string
-	// future positions for reviewed and such will be here.
+type UtteranceSection struct {
+	Line  int
+	Text  string
+	Start int
+	End   int
 }
 
-func (d *SentenceSection) SectionName() string { return "Sentence" }
+func (d *UtteranceSection) SectionName() string { return "Utterance" }
 
 type DateSection struct {
+	Line  int
 	Text  string
 	Time  time.Time
 	Start int
@@ -62,7 +61,7 @@ type VocabularySection struct {
 	Date          *DateSection
 	NewWords      []*WordsSection
 	ReviewedWords []*WordsSection
-	Sentences     []*SentenceSection
+	Utterance     []*UtteranceSection
 	Diagnostics   []*lsproto.Diagnostic
 }
 

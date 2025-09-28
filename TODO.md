@@ -1,10 +1,11 @@
 - [x] Update scanner test case and implementation now that vocab is its own language.
     - [x] Make scanner recognize date expression.
     - [x] Remove all markdown reference
-- [ ] Continue writing parser, all syntactic errors are thrown here.
-    - [ ] Finish implementing first parser version
-    - [ ] Write test for all the tiny cases
-    - [ ] Make big test case pass
+- [x] Continue writing parser, all syntactic errors are thrown here.
+    - [x] Finish implementing first parser version
+    - [x] Write test for all the tiny cases
+    - [ ] Make TestFullSectionParsing then 
+    - [ ] Write small cases
     - [ ] Then compiler!
 - [ ] Add a comment case.
 

@@ -92,7 +92,7 @@ func (p *Parser) Parse() {
 				p.errorHere(nil, ExpectVocabSection)
 				return
 			}
-			p.parseSentenceSection()
+			p.parseUtteranceSection()
 		}
 	}
 }
@@ -101,7 +101,7 @@ func (p *Parser) parseDateExpression() {
 
 	parsed, err := time.Parse(syntax.DateLayout, p.text)
 	parsedAsLocalTime := time.Date(parsed.Year(), parsed.Month(), parsed.Day(), 0, 0, 0, 0, time.Local)
-	date := &DateSection{Text: p.text, Time: parsedAsLocalTime, Start: p.tokenStart, End: p.tokenEnd}
+	date := &DateSection{Text: p.text, Time: parsedAsLocalTime, Start: p.tokenStart, End: p.tokenEnd, Line: p.line}
 	p.currentVocabSection().Date = date
 
 	if err == nil {
@@ -161,7 +161,7 @@ func (p *Parser) parseVocabSection() {
 	}
 }
 
-func (p *Parser) parseSentenceSection() {
+func (p *Parser) parseUtteranceSection() {
 	var sb strings.Builder
 
 	for {
@@ -169,6 +169,8 @@ func (p *Parser) parseSentenceSection() {
 		case TokenEOF:
 			fallthrough
 		case TokenLineBreak:
+			newUtterance := &UtteranceSection{}
+			p.currentVocabSection().Utterance = append(p.currentVocabSection().Utterance, newUtterance)
 			return
 		default:
 			sb.WriteString(p.text)

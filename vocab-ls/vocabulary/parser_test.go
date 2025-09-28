@@ -85,20 +85,18 @@ func TestFullSectionParsing(t *testing.T) {
 					},
 				},
 				ReviewedWords: []*WordsSection{},
-				Sentences: []*SentenceSection{
+				Utterance: []*UtteranceSection{
 					{
-						StartLine: 3,
-						EndLine:   3,
-						StartPos:  0,
-						EndPos:    len("Ho una magia molto speciale. Non ti conviene metterti contro di me!"),
-						Text:      "Ho una magia molto speciale. Non ti conviene metterti contro di me!",
+						Line:  3,
+						Start: 0,
+						End:   len("Ho una magia molto speciale. Non ti conviene metterti contro di me!"),
+						Text:  "Ho una magia molto speciale. Non ti conviene metterti contro di me!",
 					},
 					{
-						StartLine: 4,
-						EndLine:   4,
-						StartPos:  0,
-						EndPos:    len("Ne, will gar nicht mit ihm anlegen."),
-						Text:      "Ne, will gar nicht mit ihm anlegen.",
+						Line:  4,
+						Start: 0,
+						End:   len("Ne, will gar nicht mit ihm anlegen."),
+						Text:  "Ne, will gar nicht mit ihm anlegen.",
 					},
 				},
 			},
@@ -122,13 +120,12 @@ func TestFullSectionParsing(t *testing.T) {
 						},
 					},
 				},
-				Sentences: []*SentenceSection{
+				Utterance: []*UtteranceSection{
 					{
-						StartLine: 6,
-						EndLine:   6,
-						StartPos:  0,
-						EndPos:    len("C'era una volta un piccolo villaggio in Italia. In questo villaggio, viveva una giovane maga. La maga si chiamava Luna, e il suo potere era molto semplice: poteva far brillare le stelle nel cielo."),
-						Text:      "C'era una volta un piccolo villaggio in Italia. In questo villaggio, viveva una giovane maga. La maga si chiamava Luna, e il suo potere era molto semplice: poteva far brillare le stelle nel cielo. ",
+						Line:  6,
+						Start: 0,
+						End:   len("C'era una volta un piccolo villaggio in Italia. In questo villaggio, viveva una giovane maga. La maga si chiamava Luna, e il suo potere era molto semplice: poteva far brillare le stelle nel cielo."),
+						Text:  "C'era una volta un piccolo villaggio in Italia. In questo villaggio, viveva una giovane maga. La maga si chiamava Luna, e il suo potere era molto semplice: poteva far brillare le stelle nel cielo. ",
 					},
 				},
 			},
@@ -208,6 +205,61 @@ func TestIncompleteDateSection(t *testing.T) {
 	}
 }
 
-// TODO: incomplete date, incomplete language, incomlpete word, etc.
-func TestSyntacticError(t *testing.T) {
+// TODO
+// word section missing language identifier
+// word section missing date
+// word section with malformed date
+// func TestWordSections(t *testing.T) {
+// 	// correct word section
+// 	testParseExpectation(t,
+// 		`
+// 			20/08/2025
+// 			> (it) la magia, bene
+// 			> (de) die Gelegenheit
+// 			>> (de) anlegen
+// 		`, []*VocabularySection{
+// 			{
+// 				Date: &DateSection{Text: "20/08/2025", Time: time.Date(2025, time.August, 20, 0, 0, 0, 0, time.Local), Start: 0, End: 10},
+// 				NewWords: []*WordsSection{
+// 					{
+// 						Language: Italiano,
+// 						Line:     1,
+// 						Words: []*Word{
+// 							{Text: "magia", FullText: "la magia", Start: 7, End: 14},
+// 							{Text: "bene", FullText: "bene", Start: 17, End: 20},
+// 						},
+// 					},
+// 					{
+// 						Language: Deutsch,
+// 						Line:     2,
+// 						Words: []*Word{
+// 							{Text: "anlegen", FullText: "anlegen", Start: 7, End: 13},
+// 						},
+// 					},
+// 				},
+// 				ReviewedWords: []*WordsSection{},
+// 				Utterance: []*UtteranceSection{
+// 					{
+// 						Start: 0,
+// 						End:   len("Ho una magia molto speciale. Non ti conviene metterti contro di me!"),
+// 						Text:  "Ho una magia molto speciale. Non ti conviene metterti contro di me!",
+// 					},
+// 					{
+// 						Start: 0,
+// 						End:   len("Ne, will gar nicht mit ihm anlegen."),
+// 						Text:  "Ne, will gar nicht mit ihm anlegen.",
+// 					},
+// 				},
+// 			},
+// 			{},
+// 		}, []ParsingError{})
+// }
+
+// Test one paragraph
+// Test multiple paragraph
+// Test sentence in Italian
+// Test sentence in German
+// Test sentence without Date
+func TestParagraphsSection() {
+
 }
