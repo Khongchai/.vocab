@@ -8,16 +8,15 @@ import (
 	"vocab/syntax"
 )
 
-type ParsingError string
-
 const (
-	MalformedDate            ParsingError = "Malformed date"
-	ExpectDate               ParsingError = "Expect Date"
-	ExpectVocabulary         ParsingError = "Expect Vocabulary"
-	ExpectLanguageExpression ParsingError = "The language of this section is not specified. Specified either (it) or (de)"
-	UnrecognizedLanguage     ParsingError = "Unrecognized language identifier. Specify either (it) or (de)"
-	ExpectVocabSection       ParsingError = "Expect Vocab Section"
-	ExpectDateSection        ParsingError = "Expect Date Section"
+	MalformedDate            string = "Malformed date"
+	ExpectDate               string = "Expect Date"
+	ExpectVocabulary         string = "Expect Vocabulary"
+	ExpectLanguageExpression string = "The language of this section is not specified. Specified either (it) or (de)"
+	UnrecognizedLanguage     string = "Unrecognized language identifier. Specify either (it) or (de)"
+	ExpectVocabSection       string = "Expect Vocab Section"
+	ExpectDateSection        string = "Expect Date Section"
+	UnexpectedToken          string = "Unexpected Token"
 )
 
 type Parser struct {
@@ -104,17 +103,13 @@ func (p *Parser) parseDateExpression() {
 	date := &DateSection{Text: p.text, Time: parsedAsLocalTime, Start: p.tokenStart, End: p.tokenEnd, Line: p.line}
 	p.currentVocabSection().Date = date
 
-	if err == nil {
+	if err != nil {
+		p.errorHere(&err, MalformedDate)
 		return
 	}
 
-	p.errorHere(&err, MalformedDate)
-	for {
-		p.nextToken()
-		if p.token == TokenLineBreak || p.token == TokenEOF {
-			return
-		}
-	}
+	p.nextToken()
+
 }
 
 func (p *Parser) parseVocabSection() {
@@ -179,7 +174,7 @@ func (p *Parser) parseUtteranceSection() {
 }
 
 // Add a diagnostics error to this line.
-func (p *Parser) errorHere(original *error, message ParsingError) {
+func (p *Parser) errorHere(original *error, message string) {
 	if original != nil {
 		p.printCallback(&original)
 	}

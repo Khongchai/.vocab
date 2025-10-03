@@ -12,7 +12,7 @@ func printJSON(v any) string {
 	return string(b)
 }
 
-func testParseExpectation(t *testing.T, text string, sections []*VocabularySection, expectedErrors []ParsingError) {
+func testParseExpectation(t *testing.T, text string, sections []*VocabularySection, expectedErrors []string) {
 	t.Helper()
 
 	split := strings.Split(text, "\n")
@@ -129,7 +129,7 @@ func TestFullSectionParsing(t *testing.T) {
 					},
 				},
 			},
-		}, []ParsingError{})
+		}, []string{})
 }
 
 // Incomplete sections don't necessarily emit diagnostics error as missing vocabulary is already covered by the compiler.
@@ -139,7 +139,7 @@ func TestOnlyDateSection(t *testing.T) {
 		ParsedDate time.Time
 		Start      int
 		End        int
-		Error      ParsingError
+		Error      string
 	}
 	expectations := []Expectation{
 		{
@@ -164,9 +164,9 @@ func TestOnlyDateSection(t *testing.T) {
 	}
 
 	for _, expectation := range expectations {
-		var parsedError ParsingError = ""
+		var parsedError string = ""
 		parser := NewParser(t.Context(), "xxx", NewScanner(expectation.Input), func(a any) {
-			parsedError = a.(ParsingError)
+			parsedError = a.(string)
 		}, func(a any) {})
 		parser.Parse()
 
@@ -190,9 +190,9 @@ func TestOnlyDateSection(t *testing.T) {
 }
 
 func TestIncompleteDateSection(t *testing.T) {
-	var parsedError ParsingError = ""
+	var parsedError string = ""
 	parser := NewParser(t.Context(), "xxx", NewScanner("23/00"), func(a any) {
-		parsedError = a.(ParsingError)
+		parsedError = a.(string)
 	}, func(a any) {})
 	parser.Parse()
 
@@ -201,6 +201,26 @@ func TestIncompleteDateSection(t *testing.T) {
 	}
 
 	if parser.tokenStart != 0 && parser.tokenEnd != 5 {
+		t.Errorf("Token start and end not 0 and 5, :%d, %d", parser.tokenStart, parser.tokenEnd)
+	}
+}
+
+func TestInvalidDateSectionUnexpectedToken(t *testing.T) {
+	var parsedError string = ""
+	parser := NewParser(t.Context(), "xxx", NewScanner("08/09/2025 foo"), func(a any) {
+		parsedError = a.(string)
+	}, func(a any) {})
+	parser.Parse()
+
+	if parsedError != ExpectVocabSection {
+		t.Errorf("Expected parsed error to be UnexpectedToken, instead got %s", parsedError)
+	}
+
+	if parser.line != 0 {
+		t.Errorf("Expect line to be 0, instead got: %d", parser.line)
+	}
+
+	if parser.tokenStart != 11 && parser.tokenEnd != 14 {
 		t.Errorf("Token start and end not 0 and 5, :%d, %d", parser.tokenStart, parser.tokenEnd)
 	}
 }
@@ -260,6 +280,6 @@ func TestIncompleteDateSection(t *testing.T) {
 // Test sentence in Italian
 // Test sentence in German
 // Test sentence without Date
-func TestParagraphsSection() {
+// func TestParagraphsSection() {
 
-}
+// }
