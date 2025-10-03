@@ -64,6 +64,10 @@ func (p *Parser) Parse() {
 			return
 		}
 
+		if p.token == TokenLineBreakTrivia {
+			continue
+		}
+
 		if len(p.ast.Sections) > 0 {
 			lastSection = p.ast.Sections[len(p.ast.Sections)-1]
 		}
@@ -148,7 +152,7 @@ func (p *Parser) parseVocabSection() {
 			parsing = ""
 		case TokenEOF:
 			return
-		case TokenLineBreak:
+		case TokenLineBreakTrivia:
 			return
 		default:
 			p.errorHere(nil, ExpectVocabulary)
@@ -163,7 +167,7 @@ func (p *Parser) parseUtteranceSection() {
 		switch p.token {
 		case TokenEOF:
 			fallthrough
-		case TokenLineBreak:
+		case TokenLineBreakTrivia:
 			newUtterance := &UtteranceSection{}
 			p.currentVocabSection().Utterance = append(p.currentVocabSection().Utterance, newUtterance)
 			return

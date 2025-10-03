@@ -54,7 +54,7 @@ func (s *Scanner) Scan() (Token, string) {
 
 	if lib.IsLineBreak(scanned) {
 		s.forwardLine()
-		return TokenLineBreak, string(scanned)
+		return TokenLineBreakTrivia, string(scanned)
 	}
 
 	if lib.IsDigit(scanned) {
