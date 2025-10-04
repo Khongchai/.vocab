@@ -5,40 +5,36 @@ import (
 	lsproto "vocab/lsp"
 )
 
-type DiagnosticsArray []lsproto.Diagnostic
-type DiagnosticsMap map[string]DiagnosticsArray
+type WordBranch struct {
+	Branch              *VocabularySection
+	CompiledDiagnostics *lsproto.Diagnostic
+}
+
+type WordTree struct {
+	Branches map[string]*[]WordBranch
+}
 
 // The program design is to allow fast lookup of word: "Given a word, is it time to review this?"
 //
 // `Entries` is therefore a hash map of words to a linked list of sorted dates.
 type Compiler struct {
-	ctx         context.Context
-	diagnostics DiagnosticsMap
-	Asts        []*VocabAst
-	Entries     map[string][]*VocabularySection
+	ctx  context.Context
+	tree *WordTree
 }
 
 func NewCompiler(ctx context.Context) *Compiler {
 	return &Compiler{
 		ctx:  ctx,
-		Asts: []*VocabAst{},
+		tree: &WordTree{},
 	}
 }
 
-func (p *Compiler) ParseDocument(documentUri string, text string, changeRange *lsproto.Range) {
-	// ast := NewAst(p.ctx, documentUri, text, changeRange)
-	// p.Asts = append(p.Asts, ast)
-}
-
-func (p *Compiler) Compile() {
-	p.compile()
-}
-
-func (p *Compiler) GetDiagnostics(documentUri string) DiagnosticsArray {
-	return p.diagnostics[documentUri]
+// Accept new document uri, turn it into a branch, put into word tree for quick lookup LATER and compile it NOW.
+func (p *Compiler) Accept(documentUri string, text string, changeRange *lsproto.Range) {
+	ast := NewAst(p.ctx, documentUri, text, changeRange)
+	p.Asts = append(p.Asts, ast)
 }
 
 func (p *Compiler) compile() {
-	// TODO
-	// This would compile the ast into diagnostics. This includes both syntactic and spaced-repetition-related errors.
+	p.compile()
 }
