@@ -64,20 +64,14 @@ func (p *Parser) Parse() {
 			return
 		}
 
-		if p.token == TokenLineBreakTrivia {
-			continue
-		}
-
 		if len(p.ast.Sections) > 0 {
 			lastSection = p.ast.Sections[len(p.ast.Sections)-1]
 		}
 
 		switch p.token {
+		case TokenLineBreakTrivia:
+			continue
 		case TokenWhitespace:
-			// This would match the leading space in all cases below, for example
-			// 20/09/2025
-			// instead of
-			//20/09/2025
 			continue
 		case TokenDateExpression:
 			p.ast.Sections = append(p.ast.Sections, &VocabularySection{})
@@ -101,7 +95,6 @@ func (p *Parser) Parse() {
 }
 
 func (p *Parser) parseDateExpression() {
-
 	parsed, err := time.Parse(syntax.DateLayout, p.text)
 	parsedAsLocalTime := time.Date(parsed.Year(), parsed.Month(), parsed.Day(), 0, 0, 0, 0, time.Local)
 	date := &DateSection{Text: p.text, Time: parsedAsLocalTime, Start: p.tokenStart, End: p.tokenEnd, Line: p.line}
@@ -127,7 +120,8 @@ func (p *Parser) parseVocabSection() {
 		currentSection.ReviewedWords = append(currentSection.NewWords, words)
 	}
 
-	p.nextToken()
+	p.nextTokenNotWhitespace()
+
 	if p.token != TokenLanguageExpression {
 		p.errorHere(nil, ExpectLanguageExpression)
 		return
@@ -144,18 +138,24 @@ func (p *Parser) parseVocabSection() {
 
 	parsing := ""
 
+	p.nextTokenNotWhitespace()
+
+outer:
 	for {
 		switch p.token {
-		case TokenText:
-			parsing += p.text
-		case TokenComma:
+		case TokenEOF, TokenLineBreakTrivia, TokenComma:
+			newWord := &Word{Text: parsing, Start: p.tokenStart, End: p.tokenEnd}
+			words.Words = append(words.Words, newWord)
+
+			if p.token == TokenLineBreakTrivia || p.token == TokenEOF {
+				break outer
+			}
+
 			parsing = ""
-		case TokenEOF:
-			return
-		case TokenLineBreakTrivia:
-			return
+			p.nextTokenNotWhitespace()
 		default:
-			p.errorHere(nil, ExpectVocabulary)
+			parsing += p.text
+			p.nextToken()
 		}
 	}
 }
@@ -166,10 +166,12 @@ func (p *Parser) parseUtteranceSection() {
 	for {
 		switch p.token {
 		case TokenEOF:
-			fallthrough
+			return
 		case TokenLineBreakTrivia:
 			newUtterance := &UtteranceSection{}
+			newUtterance.Text = sb.String()
 			p.currentVocabSection().Utterance = append(p.currentVocabSection().Utterance, newUtterance)
+			p.nextToken()
 			return
 		default:
 			sb.WriteString(p.text)
@@ -177,7 +179,7 @@ func (p *Parser) parseUtteranceSection() {
 	}
 }
 
-// Add a diagnostics error to this line.
+// Add a diagnostics error to this line and forward until new line.
 func (p *Parser) errorHere(original *error, message string) {
 	if original != nil {
 		p.printCallback(&original)
@@ -199,6 +201,24 @@ func (p *Parser) errorHere(original *error, message string) {
 	}
 	diag := p.currentVocabSection().Diagnostics
 	p.currentVocabSection().Diagnostics = append(diag, newError)
+
+	for {
+		p.nextToken()
+
+		if p.token == TokenLineBreakTrivia || p.token == TokenEOF {
+			break
+		}
+	}
+}
+
+func (p *Parser) nextTokenNotWhitespace() {
+	p.nextToken()
+	for {
+		if p.token != TokenWhitespace {
+			return
+		}
+		p.nextToken()
+	}
 }
 
 func (p *Parser) currentVocabSection() *VocabularySection {

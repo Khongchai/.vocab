@@ -14,14 +14,12 @@ const (
 )
 
 type Word struct {
-	// Text represent the actual string value of a word without its article. For example, l'uccello should be normalized to uccello
+	// Text represent the actual string value of a word with or without its article.
 	Text string
-	// Full text is the full content including its article.
-	FullText string
-	// the start of FullText
+	// the start of Text
 	// "hello" start = 0
 	Start int
-	// the end of FullText
+	// the end of Text
 	// "hello" end = 4
 	End int
 }

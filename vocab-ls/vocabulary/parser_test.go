@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 	"time"
+	test "vocab/vocab_testing"
 )
 
 func printJSON(v any) string {
@@ -12,14 +13,24 @@ func printJSON(v any) string {
 	return string(b)
 }
 
+func trimLines(text string) string {
+	split := strings.Split(text, "\n")
+	filtered := []string{}
+	for i := range split {
+		trimmed := strings.TrimSpace(split[i])
+		if trimmed == "" {
+			continue
+		}
+		filtered = append(filtered, trimmed)
+	}
+	joined := strings.Join(filtered, "\n")
+	return joined
+}
+
 func testParseExpectation(t *testing.T, text string, sections []*VocabularySection, expectedErrors []string) {
 	t.Helper()
 
-	split := strings.Split(text, "\n")
-	for i := range split {
-		split[i] = strings.TrimSpace(split[i])
-	}
-	joined := strings.Join(split, "\n")
+	joined := trimLines(text)
 
 	var parsedErrors []any
 	parser := NewParser(t.Context(), "xxx", NewScanner(joined),
@@ -72,15 +83,15 @@ func TestFullSectionParsing(t *testing.T) {
 						Language: Italiano,
 						Line:     1,
 						Words: []*Word{
-							{Text: "magia", FullText: "la magia", Start: 7, End: 14},
-							{Text: "bene", FullText: "bene", Start: 17, End: 20},
+							{Text: "la magia", Start: 7, End: 14},
+							{Text: "bene", Start: 17, End: 20},
 						},
 					},
 					{
 						Language: Deutsch,
 						Line:     2,
 						Words: []*Word{
-							{Text: "anlegen", FullText: "anlegen", Start: 7, End: 13},
+							{Text: "anlegen", Start: 7, End: 13},
 						},
 					},
 				},
@@ -107,7 +118,7 @@ func TestFullSectionParsing(t *testing.T) {
 						Language: Italiano,
 						Line:     5,
 						Words: []*Word{
-							{Text: "brillare", FullText: "brillare", Start: 7, End: 14},
+							{Text: "brillare", Start: 7, End: 14},
 						},
 					},
 				},
@@ -116,7 +127,7 @@ func TestFullSectionParsing(t *testing.T) {
 						Language: Italiano,
 						Line:     5,
 						Words: []*Word{
-							{Text: "maga", FullText: "la maga", Start: 7, End: 14},
+							{Text: "maga", Start: 7, End: 14},
 						},
 					},
 				},
@@ -225,55 +236,107 @@ func TestInvalidDateSectionUnexpectedToken(t *testing.T) {
 	}
 }
 
+func TestSingleWordSection(t *testing.T) {
+	text := trimLines(`
+		20/08/2025
+		> (it) la magia, bene,scorprire
+	`)
+
+	var parsedError string = ""
+	parser := NewParser(t.Context(), "xxx", NewScanner(text), func(a any) {
+		parsedError = a.(string)
+	}, func(a any) {})
+	parser.Parse()
+
+	test.Expect(t, "", parsedError)
+	test.Expect(t, 1, parser.line)
+	test.Expect(t, 1, len(parser.ast.Sections))
+
+	section := parser.ast.Sections[0]
+	test.Expect(t, time.Date(2025, time.August, 20, 0, 0, 0, 0, time.Local), section.Date.Time)
+	test.Expect(t, 0, section.Date.Line)
+	test.Expect(t, 0, section.Date.Start)
+	test.Expect(t, 10, section.Date.End)
+	test.Expect(t, 1, len(section.NewWords))
+
+	newWords := section.NewWords
+	test.Expect(t, 1, len(newWords))
+	test.Expect(t, Italiano, newWords[0].Language)
+	test.Expect(t, 1, newWords[0].Line)
+
+	words := newWords[0].Words
+	test.Expect(t, "la magia", words[0].Text)
+	test.Expect(t, "bene", words[1].Text)
+	test.Expect(t, "scorprire", words[2].Text)
+}
+
 // TODO
 // word section missing language identifier
 // word section missing date
 // word section with malformed date
-// func TestWordSections(t *testing.T) {
-// 	// correct word section
-// 	testParseExpectation(t,
-// 		`
-// 			20/08/2025
-// 			> (it) la magia, bene
-// 			> (de) die Gelegenheit
-// 			>> (de) anlegen
-// 		`, []*VocabularySection{
-// 			{
-// 				Date: &DateSection{Text: "20/08/2025", Time: time.Date(2025, time.August, 20, 0, 0, 0, 0, time.Local), Start: 0, End: 10},
-// 				NewWords: []*WordsSection{
-// 					{
-// 						Language: Italiano,
-// 						Line:     1,
-// 						Words: []*Word{
-// 							{Text: "magia", FullText: "la magia", Start: 7, End: 14},
-// 							{Text: "bene", FullText: "bene", Start: 17, End: 20},
-// 						},
-// 					},
-// 					{
-// 						Language: Deutsch,
-// 						Line:     2,
-// 						Words: []*Word{
-// 							{Text: "anlegen", FullText: "anlegen", Start: 7, End: 13},
-// 						},
-// 					},
-// 				},
-// 				ReviewedWords: []*WordsSection{},
-// 				Utterance: []*UtteranceSection{
-// 					{
-// 						Start: 0,
-// 						End:   len("Ho una magia molto speciale. Non ti conviene metterti contro di me!"),
-// 						Text:  "Ho una magia molto speciale. Non ti conviene metterti contro di me!",
-// 					},
-// 					{
-// 						Start: 0,
-// 						End:   len("Ne, will gar nicht mit ihm anlegen."),
-// 						Text:  "Ne, will gar nicht mit ihm anlegen.",
-// 					},
-// 				},
-// 			},
-// 			{},
-// 		}, []ParsingError{})
-// }
+func TestWordSections(t *testing.T) {
+	// text := `
+	// 	20/08/2025
+	// 	> (it) la magia, bene
+	// `
+	// var parsedError string = ""
+	// parser := NewParser(t.Context(), "xxx", NewScanner(text), func(a any) {
+	// 	parsedError = a.(string)
+	// }, func(a any) {})
+	// parser.Parse()
+
+	// if parsedError != "" {
+	// 	t.Errorf("Expected no error, got: %s", parsedError)
+	// }
+
+	// if parser.line != 1 {
+	// 	t.Errorf("Expect line to be 1, instead got: %d", parser.line)
+	// }
+
+	// // correct word section
+	// testParseExpectation(t,
+	// 	`
+	// 		20/08/2025
+	// 		> (it) la magia, bene
+	// 		> (de) die Gelegenheit
+	// 		>> (de) anlegen
+	// 	`, []*VocabularySection{
+	// 		{
+	// 			Date: &DateSection{Text: "20/08/2025", Time: time.Date(2025, time.August, 20, 0, 0, 0, 0, time.Local), Start: 0, End: 10},
+	// 			NewWords: []*WordsSection{
+	// 				{
+	// 					Language: Italiano,
+	// 					Line:     1,
+	// 					Words: []*Word{
+	// 						{Text: "magia", Text: "la magia", Start: 7, End: 14},
+	// 						{Text: "bene", Text: "bene", Start: 17, End: 20},
+	// 					},
+	// 				},
+	// 				{
+	// 					Language: Deutsch,
+	// 					Line:     2,
+	// 					Words: []*Word{
+	// 						{Text: "anlegen", Text: "anlegen", Start: 7, End: 13},
+	// 					},
+	// 				},
+	// 			},
+	// 			ReviewedWords: []*WordsSection{},
+	// 			Utterance: []*UtteranceSection{
+	// 				{
+	// 					Start: 0,
+	// 					End:   len("Ho una magia molto speciale. Non ti conviene metterti contro di me!"),
+	// 					Text:  "Ho una magia molto speciale. Non ti conviene metterti contro di me!",
+	// 				},
+	// 				{
+	// 					Start: 0,
+	// 					End:   len("Ne, will gar nicht mit ihm anlegen."),
+	// 					Text:  "Ne, will gar nicht mit ihm anlegen.",
+	// 				},
+	// 			},
+	// 		},
+	// 		{},
+	// 	}, []ParsingError{})
+}
 
 // Test one paragraph
 // Test multiple paragraph
