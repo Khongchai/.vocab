@@ -77,10 +77,15 @@ func (p *Parser) Parse() {
 			}
 			p.parseVocabSection()
 		default:
-			if lastSection == nil || len(lastSection.NewWords) == 0 && len(lastSection.ReviewedWords) == 0 {
+			if lastSection == nil {
 				p.ast.Sections = append(p.ast.Sections, &VocabularySection{})
 				p.errorHere(nil, ExpectDateSection)
-				return
+				continue
+			}
+			if len(lastSection.NewWords) == 0 && len(lastSection.ReviewedWords) == 0 {
+				p.ast.Sections = append(p.ast.Sections, &VocabularySection{})
+				p.errorHere(nil, ExpectVocabSection)
+				continue
 			}
 			p.parseUtteranceSection()
 		}
