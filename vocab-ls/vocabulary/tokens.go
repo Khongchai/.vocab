@@ -10,7 +10,7 @@ const (
 	TokenSlash
 	TokenComma
 	TokenEOF
-	TokenLineBreakTrivia // skipped in parser
+	TokenLineBreak
 	TokenSpace
 	TokenMinus
 	TokenLessThan

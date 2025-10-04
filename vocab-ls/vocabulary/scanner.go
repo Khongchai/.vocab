@@ -54,7 +54,7 @@ func (s *Scanner) Scan() (Token, string) {
 
 	if lib.IsLineBreak(scanned) {
 		s.forwardLine()
-		return TokenLineBreakTrivia, string(scanned)
+		return TokenLineBreak, string(scanned)
 	}
 
 	if lib.IsDigit(scanned) {
@@ -154,6 +154,9 @@ func (s *Scanner) Scan() (Token, string) {
 
 func (s *Scanner) atEnd() bool {
 	return s.pos >= len(s.text)
+}
+func (s *Scanner) PeekNext() (rune, int) {
+	return s.charAt(1)
 }
 
 func (s *Scanner) forwardPos(by int) {

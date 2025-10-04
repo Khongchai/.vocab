@@ -83,13 +83,13 @@ func TestBasicTokenScan(t *testing.T) {
 
 func TestNewline(t *testing.T) {
 	testScanExpectations(t, []ScanCase{
-		{Text: "\n", Expectations: []ScanExpect{{TextValue: "\n", TokenValue: TokenLineBreakTrivia, LineOffset: 0, Line: 1, Pos: 1}}},
-		{Text: "\r", Expectations: []ScanExpect{{TextValue: "\r", TokenValue: TokenLineBreakTrivia, LineOffset: 0, Line: 1, Pos: 1}}},
+		{Text: "\n", Expectations: []ScanExpect{{TextValue: "\n", TokenValue: TokenLineBreak, LineOffset: 0, Line: 1, Pos: 1}}},
+		{Text: "\r", Expectations: []ScanExpect{{TextValue: "\r", TokenValue: TokenLineBreak, LineOffset: 0, Line: 1, Pos: 1}}},
 		{Text: "Hello \nWorld!",
 			Expectations: []ScanExpect{
 				{TextValue: "Hello", TokenValue: TokenText, LineOffset: 5, Line: 0, Pos: 5},
 				{TextValue: " ", TokenValue: TokenWhitespace, LineOffset: 6, Line: 0, Pos: 6},
-				{TextValue: "\n", TokenValue: TokenLineBreakTrivia, LineOffset: 0, Line: 1, Pos: 7},
+				{TextValue: "\n", TokenValue: TokenLineBreak, LineOffset: 0, Line: 1, Pos: 7},
 				{TextValue: "World", TokenValue: TokenText, LineOffset: 5, Line: 1, Pos: 12},
 				{TextValue: "!", TokenValue: TokenText, LineOffset: 6, Line: 1, Pos: 13},
 			},

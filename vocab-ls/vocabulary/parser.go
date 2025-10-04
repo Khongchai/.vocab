@@ -70,7 +70,7 @@ func (p *Parser) Parse() {
 		}
 
 		switch p.token {
-		case TokenLineBreakTrivia, TokenWhitespace:
+		case TokenLineBreak, TokenWhitespace:
 			continue
 		case TokenDateExpression:
 			startNewSection()
@@ -159,7 +159,7 @@ func (p *Parser) parseVocabSection() {
 
 	for {
 		switch p.token {
-		case TokenLineBreakTrivia, TokenEOF:
+		case TokenLineBreak, TokenEOF:
 			if parsing != "" {
 				newWordFromText(parsing)
 			}
@@ -185,18 +185,23 @@ func (p *Parser) parseVocabSection() {
 func (p *Parser) parseUtteranceSection() {
 	var sb strings.Builder
 
+	start := p.tokenStart
+
 	for {
 		switch p.token {
-		case TokenEOF:
-			return
-		case TokenLineBreakTrivia:
-			newUtterance := &UtteranceSection{}
-			newUtterance.Text = sb.String()
+		case TokenLineBreak, TokenEOF:
+			text := sb.String()
+			newUtterance := &UtteranceSection{
+				Line:  p.line,
+				Start: start,
+				End:   start + len(text),
+				Text:  sb.String(),
+			}
 			p.currentVocabSection().Utterance = append(p.currentVocabSection().Utterance, newUtterance)
-			p.nextToken()
 			return
 		default:
 			sb.WriteString(p.text)
+			p.nextToken()
 		}
 	}
 }
@@ -227,7 +232,7 @@ func (p *Parser) errorHere(original *error, message string) {
 	for {
 		p.nextToken()
 
-		if p.token == TokenLineBreakTrivia || p.token == TokenEOF {
+		if p.token == TokenLineBreak || p.token == TokenEOF {
 			break
 		}
 	}
@@ -258,5 +263,5 @@ func (p *Parser) nextToken() {
 	p.text = text
 	p.token = token
 	p.tokenEnd = p.scanner.lineOffset
-	p.tokenStart = p.tokenEnd - len(text)
+	p.tokenStart = max(p.tokenEnd-len(text), 0)
 }

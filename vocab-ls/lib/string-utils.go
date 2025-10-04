@@ -142,11 +142,11 @@ func IsLineBreak(ch rune) bool {
 }
 
 func IsGermanOrItalianLetter(ch rune) bool {
-	// isSpecialChar checks if a rune is a German or Italian special character
 	switch ch {
 	// German
 	case 'Ä', 'ä', 'Ö', 'ö', 'Ü', 'ü', 'ß':
 		fallthrough
+	// Italian
 	case 'À', 'à', 'È', 'è', 'É', 'é', 'Ì', 'ì', 'Ò', 'ò', 'Ù', 'ù':
 		return true
 	}

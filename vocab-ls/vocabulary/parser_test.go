@@ -248,7 +248,7 @@ func TestUtteranceSection(t *testing.T) {
 	test.Expect(t, len("Das lenkt mich wirklich ab!"), utterance[0].End)
 
 	test.Expect(t, "Sag einfach Bescheid, was dir gerade am meisten anspricht!", utterance[1].Text)
-	test.Expect(t, 2, utterance[1].Line)
+	test.Expect(t, 3, utterance[1].Line)
 	test.Expect(t, 0, utterance[1].Start)
 	test.Expect(t, len("Sag einfach Bescheid, was dir gerade am meisten anspricht!"), utterance[1].End)
 }
