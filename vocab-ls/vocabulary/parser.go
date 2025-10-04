@@ -143,26 +143,38 @@ func (p *Parser) parseVocabSection() {
 
 	p.nextTokenNotWhitespace()
 
+	newWordFromText := func(t string) {
+		isWordLiteral := p.token == TokenWordLiteral
+		text := func() string {
+			if isWordLiteral {
+				return p.text
+			}
+			return t
+		}()
+
+		newWord := &Word{Text: text, Start: p.tokenStart, End: p.tokenEnd, Literally: isWordLiteral}
+		words.Words = append(words.Words, newWord)
+
+	}
+
 	for {
 		switch p.token {
-		case TokenWordLiteral, TokenEOF, TokenLineBreakTrivia, TokenComma:
-			isWordLiteral := p.token == TokenWordLiteral
-			text := func() string {
-				if isWordLiteral {
-					return p.text
-				}
-				return parsing
-			}()
-
-			newWord := &Word{Text: text, Start: p.tokenStart, End: p.tokenEnd, Literally: isWordLiteral}
-			words.Words = append(words.Words, newWord)
-
-			if p.token == TokenLineBreakTrivia || p.token == TokenEOF {
+		case TokenLineBreakTrivia, TokenEOF:
+			if parsing == "" {
 				return
 			}
+		case TokenWordLiteral:
+			newWordFromText(parsing)
+			p.nextTokenNotWhitespace()
+		case TokenComma:
+			if parsing == "" {
+				continue
+			}
+
+			newWordFromText(parsing)
+			p.nextTokenNotWhitespace()
 
 			parsing = ""
-			p.nextTokenNotWhitespace()
 		default:
 			parsing += p.text
 			p.nextToken()

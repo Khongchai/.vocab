@@ -114,24 +114,20 @@ func (s *Scanner) Scan() (Token, string) {
 		return TokenLessThan, "<"
 
 	case lib.Backtick:
-		collected := ""
-		s.forwardPos(1)
+		nextChar, nextCharLength := s.charAt(1)
+		collected := string(nextChar)
+		s.forwardPos(nextCharLength)
 
 		for {
-			cur, curLength := s.charAt(0)
+			next, nextLength := s.charAt(1)
 
-			if cur == lib.Backtick {
-				s.forwardPos(curLength)
+			if next == lib.Backtick || next == -1 || lib.IsLineBreak(next) {
+				s.forwardPos(1)
 				return TokenWordLiteral, collected
 			}
 
-			collected += string(cur)
-			s.forwardPos(curLength)
-
-			// autoclose, no error
-			if s.atEnd() || lib.IsLineBreak(cur) {
-				return TokenWordLiteral, collected
-			}
+			collected += string(next)
+			s.forwardPos(nextLength)
 		}
 
 	case lib.LeftParen:

@@ -181,8 +181,17 @@ func TestWordExpressionMissingClosingBacktickShouldAutoClose(t *testing.T) {
 	parser := NewParser(t.Context(), "xxx", NewScanner(text), func(any) {})
 	parser.Parse()
 
+	// (de)
+	section2 := parser.currentVocabSection()
+	words2 := section2.NewWords[0]
+	test.Expect(t, Deutsch, words2.Language)
+	test.Expect(t, 3, words2.Line)
+	test.Expect(t, 1, len(words2.Words))
+	test.Expect(t, "der Inhalt", words2.Words[0].Text)
+	test.Expect(t, true, words2.Words[0].Literally)
+
 	// (it)
-	section1 := parser.currentVocabSection()
+	section1 := parser.ast.Sections[0]
 	words1 := section1.NewWords[0]
 	test.Expect(t, Italiano, words1.Language)
 	test.Expect(t, 1, words1.Line)
@@ -190,14 +199,6 @@ func TestWordExpressionMissingClosingBacktickShouldAutoClose(t *testing.T) {
 	test.Expect(t, "la magia, bene", words1.Words[0].Text)
 	test.Expect(t, true, words1.Words[0].Literally)
 
-	// (de)
-	section2 := parser.currentVocabSection()
-	words2 := section2.NewWords[0]
-	test.Expect(t, Deutsch, words2.Language)
-	test.Expect(t, 3, words2.Line)
-	test.Expect(t, 3, len(words2.Words))
-	test.Expect(t, "der Inhalt", words2.Words[0].Text)
-	test.Expect(t, true, words2.Words[0].Literally)
 }
 
 func TestMultipleWordSection(t *testing.T) {
