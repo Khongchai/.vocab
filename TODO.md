@@ -7,11 +7,11 @@
     - [x] Finish implementing first parser version
     - [x] Write test for all the tiny cases
 # 04/10/2025
-    - [ ] Fix utterance parsing
+    - [x] Fix utterance parsing
+    - [ ] Stop including parens in language identifier!
     - [ ] Make TestFullSectionParsing then 
     - [ ] Write small cases
     - [ ] Then compiler!
-    - [ ] Stop including parens in language identifier!
 - [ ] Add a comment case.
 
 # Requirements Below
@@ -96,6 +96,8 @@ Markiert es wenn ein neues Wort nicht in seiner Infinitivform ist:
 > entrambe // wurde rot markiert weil die Infinitivform "Entrambi" ist.
 Devi fare entrambe le cose.
 ```
+# Improvements
+- [ ] Remove space from parser and skip in tokenizer instead
 
 # Side quests
 - [ ] Hover to show definition in English
