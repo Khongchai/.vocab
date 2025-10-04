@@ -69,16 +69,12 @@ func (p *Parser) Parse() {
 		}
 
 		switch p.token {
-		case TokenLineBreakTrivia:
-			continue
-		case TokenWhitespace:
+		case TokenLineBreakTrivia, TokenWhitespace:
 			continue
 		case TokenDateExpression:
 			p.ast.Sections = append(p.ast.Sections, &VocabularySection{})
 			p.parseDateExpression()
-		case TokenGreaterThan:
-			fallthrough
-		case TokenDoubleGreaterThan:
+		case TokenGreaterThan, TokenDoubleGreaterThan:
 			if lastSection.Date == nil {
 				p.errorHere(nil, ExpectDateSection)
 			}
