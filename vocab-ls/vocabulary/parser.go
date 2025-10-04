@@ -169,6 +169,7 @@ func (p *Parser) parseVocabSection() {
 			p.nextTokenNotWhitespace()
 		case TokenComma:
 			if parsing == "" {
+				p.nextTokenNotWhitespace()
 				continue
 			}
 
