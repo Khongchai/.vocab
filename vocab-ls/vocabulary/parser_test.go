@@ -162,9 +162,10 @@ func TestIncompleteDateSection(t *testing.T) {
 	parser.Parse()
 
 	test.Expect(t, 1, len(parser.currentVocabSection().Diagnostics))
-	test.Expect(t, MalformedDate, parser.currentVocabSection().Diagnostics[0].Message)
-	test.Expect(t, 0, parser.tokenStart)
-	test.Expect(t, 5, parser.tokenEnd)
+	diag := parser.currentVocabSection().Diagnostics[0]
+	test.Expect(t, ExpectDateSection, diag.Message)
+	test.Expect(t, 0, diag.Range.Start.Character)
+	test.Expect(t, 5, diag.Range.End.Character)
 }
 
 func TestInvalidDateSectionUnexpectedToken(t *testing.T) {

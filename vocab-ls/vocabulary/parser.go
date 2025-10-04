@@ -10,12 +10,11 @@ import (
 
 const (
 	MalformedDate            string = "Malformed date"
-	ExpectDate               string = "Expect Date"
+	ExpectDateSection        string = "Expect a date section here."
 	ExpectVocabulary         string = "Expect Vocabulary"
 	ExpectLanguageExpression string = "The language of this section is not specified. Specified either (it) or (de)"
 	UnrecognizedLanguage     string = "Unrecognized language identifier. Specify either (it) or (de)"
 	ExpectVocabSection       string = "Expect Vocab Section"
-	ExpectDateSection        string = "Expect Date Section"
 	UnexpectedToken          string = "Unexpected Token"
 )
 
@@ -80,7 +79,7 @@ func (p *Parser) Parse() {
 		default:
 			if lastSection == nil || len(lastSection.NewWords) == 0 && len(lastSection.ReviewedWords) == 0 {
 				p.ast.Sections = append(p.ast.Sections, &VocabularySection{})
-				p.errorHere(nil, ExpectVocabSection)
+				p.errorHere(nil, ExpectDateSection)
 				return
 			}
 			p.parseUtteranceSection()
