@@ -22,86 +22,6 @@ func trimLines(text string) string {
 	return joined
 }
 
-// func TestFullSectionParsing(t *testing.T) {
-// testParseExpectation(t,
-// 	`
-// 		20/08/2025
-// 		> (it) la magia, bene
-// 		> (de) anlegen
-// 		Ho una magia molto speciale. Non ti conviene metterti contro di me!
-// 		Ne, will gar nicht mit ihm anlegen.
-// 		21/08/2025
-// 		> (it) brillare
-// 		>> (it) la maga
-// 		C'era una volta un piccolo villaggio in Italia. In questo villaggio, viveva una giovane maga. La maga si chiamava Luna, e il suo potere era molto semplice: poteva far brillare le stelle nel cielo.
-// 	`, []*VocabularySection{
-// 		{
-// 			Date: &DateSection{Text: "20/08/2025", Time: time.Date(2025, time.August, 20, 0, 0, 0, 0, time.Local), Start: 0, End: 10},
-// 			NewWords: []*WordsSection{
-// 				{
-// 					Language: Italiano,
-// 					Line:     1,
-// 					Words: []*Word{
-// 						{Text: "la magia", Start: 7, End: 14},
-// 						{Text: "bene", Start: 17, End: 20},
-// 					},
-// 				},
-// 				{
-// 					Language: Deutsch,
-// 					Line:     2,
-// 					Words: []*Word{
-// 						{Text: "anlegen", Start: 7, End: 13},
-// 					},
-// 				},
-// 			},
-// 			ReviewedWords: []*WordsSection{},
-// 			Utterance: []*UtteranceSection{
-// 				{
-// 					Line:  3,
-// 					Start: 0,
-// 					End:   len("Ho una magia molto speciale. Non ti conviene metterti contro di me!"),
-// 					Text:  "Ho una magia molto speciale. Non ti conviene metterti contro di me!",
-// 				},
-// 				{
-// 					Line:  4,
-// 					Start: 0,
-// 					End:   len("Ne, will gar nicht mit ihm anlegen."),
-// 					Text:  "Ne, will gar nicht mit ihm anlegen.",
-// 				},
-// 			},
-// 		},
-// 		{
-// 			Date: &DateSection{Text: "21/08/2025", Time: time.Date(2025, time.August, 20, 0, 0, 0, 0, time.Local), Start: 0, End: 10},
-// 			NewWords: []*WordsSection{
-// 				{
-// 					Language: Italiano,
-// 					Line:     5,
-// 					Words: []*Word{
-// 						{Text: "brillare", Start: 7, End: 14},
-// 					},
-// 				},
-// 			},
-// 			ReviewedWords: []*WordsSection{
-// 				{
-// 					Language: Italiano,
-// 					Line:     5,
-// 					Words: []*Word{
-// 						{Text: "maga", Start: 7, End: 14},
-// 					},
-// 				},
-// 			},
-// 			Utterance: []*UtteranceSection{
-// 				{
-// 					Line:  6,
-// 					Start: 0,
-// 					End:   len("C'era una volta un piccolo villaggio in Italia. In questo villaggio, viveva una giovane maga. La maga si chiamava Luna, e il suo potere era molto semplice: poteva far brillare le stelle nel cielo."),
-// 					Text:  "C'era una volta un piccolo villaggio in Italia. In questo villaggio, viveva una giovane maga. La maga si chiamava Luna, e il suo potere era molto semplice: poteva far brillare le stelle nel cielo. ",
-// 				},
-// 			},
-// 		},
-// 	}, []string{})
-// }
-
 // Incomplete sections don't necessarily emit diagnostics error as missing vocabulary is already covered by the compiler.
 func TestOnlyDateSection(t *testing.T) {
 	type Expectation struct {
@@ -229,5 +149,92 @@ func TestWordSectionWithoutDate(t *testing.T) {
 
 }
 
-// func TestMultipleWordSection(t *testing.T) {
+func TestMultipleWordSection(t *testing.T) {
+}
+
+func TestUtteranceSection(t *testing.T) {}
+
+func TestUtteranceSectionWithoutDate(t *testing.T) {}
+
+func TestUtteranceSectionWithoutVocab(t *testing.T) {}
+func TestUtteranceSectionAsStart(t *testing.T)      {}
+
+// func TestFullSectionParsing(t *testing.T) {
+// testParseExpectation(t,
+// 	`
+// 		20/08/2025
+// 		> (it) la magia, bene
+// 		> (de) anlegen
+// 		Ho una magia molto speciale. Non ti conviene metterti contro di me!
+// 		Ne, will gar nicht mit ihm anlegen.
+// 		21/08/2025
+// 		> (it) brillare
+// 		>> (it) la maga
+// 		C'era una volta un piccolo villaggio in Italia. In questo villaggio, viveva una giovane maga. La maga si chiamava Luna, e il suo potere era molto semplice: poteva far brillare le stelle nel cielo.
+// 	`, []*VocabularySection{
+// 		{
+// 			Date: &DateSection{Text: "20/08/2025", Time: time.Date(2025, time.August, 20, 0, 0, 0, 0, time.Local), Start: 0, End: 10},
+// 			NewWords: []*WordsSection{
+// 				{
+// 					Language: Italiano,
+// 					Line:     1,
+// 					Words: []*Word{
+// 						{Text: "la magia", Start: 7, End: 14},
+// 						{Text: "bene", Start: 17, End: 20},
+// 					},
+// 				},
+// 				{
+// 					Language: Deutsch,
+// 					Line:     2,
+// 					Words: []*Word{
+// 						{Text: "anlegen", Start: 7, End: 13},
+// 					},
+// 				},
+// 			},
+// 			ReviewedWords: []*WordsSection{},
+// 			Utterance: []*UtteranceSection{
+// 				{
+// 					Line:  3,
+// 					Start: 0,
+// 					End:   len("Ho una magia molto speciale. Non ti conviene metterti contro di me!"),
+// 					Text:  "Ho una magia molto speciale. Non ti conviene metterti contro di me!",
+// 				},
+// 				{
+// 					Line:  4,
+// 					Start: 0,
+// 					End:   len("Ne, will gar nicht mit ihm anlegen."),
+// 					Text:  "Ne, will gar nicht mit ihm anlegen.",
+// 				},
+// 			},
+// 		},
+// 		{
+// 			Date: &DateSection{Text: "21/08/2025", Time: time.Date(2025, time.August, 20, 0, 0, 0, 0, time.Local), Start: 0, End: 10},
+// 			NewWords: []*WordsSection{
+// 				{
+// 					Language: Italiano,
+// 					Line:     5,
+// 					Words: []*Word{
+// 						{Text: "brillare", Start: 7, End: 14},
+// 					},
+// 				},
+// 			},
+// 			ReviewedWords: []*WordsSection{
+// 				{
+// 					Language: Italiano,
+// 					Line:     5,
+// 					Words: []*Word{
+// 						{Text: "maga", Start: 7, End: 14},
+// 					},
+// 				},
+// 			},
+// 			Utterance: []*UtteranceSection{
+// 				{
+// 					Line:  6,
+// 					Start: 0,
+// 					End:   len("C'era una volta un piccolo villaggio in Italia. In questo villaggio, viveva una giovane maga. La maga si chiamava Luna, e il suo potere era molto semplice: poteva far brillare le stelle nel cielo."),
+// 					Text:  "C'era una volta un piccolo villaggio in Italia. In questo villaggio, viveva una giovane maga. La maga si chiamava Luna, e il suo potere era molto semplice: poteva far brillare le stelle nel cielo. ",
+// 				},
+// 			},
+// 		},
+// 	}, []string{})
 // }
