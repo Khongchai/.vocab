@@ -160,9 +160,10 @@ func (p *Parser) parseVocabSection() {
 	for {
 		switch p.token {
 		case TokenLineBreakTrivia, TokenEOF:
-			if parsing == "" {
-				return
+			if parsing != "" {
+				newWordFromText(parsing)
 			}
+			return
 		case TokenWordLiteral:
 			newWordFromText(parsing)
 			p.nextTokenNotWhitespace()
@@ -173,7 +174,6 @@ func (p *Parser) parseVocabSection() {
 
 			newWordFromText(parsing)
 			p.nextTokenNotWhitespace()
-
 			parsing = ""
 		default:
 			parsing += p.text

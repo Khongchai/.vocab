@@ -104,6 +104,7 @@ func TestSingleWordSection(t *testing.T) {
 	text := trimLines(`
 		20/08/2025
 		> (it) la magia, bene,scorprire
+		>> (de) was
 	`)
 
 	parser := NewParser(t.Context(), "xxx", NewScanner(text), func(a any) {})
@@ -132,6 +133,13 @@ func TestSingleWordSection(t *testing.T) {
 	test.Expect(t, false, words[1].Literally)
 	test.Expect(t, "scorprire", words[2].Text)
 	test.Expect(t, false, words[2].Literally)
+
+	reviewedWords := section.ReviewedWords
+	test.Expect(t, 1, len(reviewedWords))
+	test.Expect(t, Deutsch, reviewedWords[0].Language)
+	test.Expect(t, 2, newWords[0].Line)
+	test.Expect(t, "was", words[0].Text)
+	test.Expect(t, false, words[0].Literally)
 }
 
 func TestWordSectionWithoutDate(t *testing.T) {
@@ -204,13 +212,13 @@ func TestWordExpressionMissingClosingBacktickShouldAutoClose(t *testing.T) {
 func TestMultipleWordSection(t *testing.T) {
 	text := trimLines(`
 		> (it) la magia, bene,scorprire
-		> (de) was?
+		>> (de) was
 	`)
 
 	parser := NewParser(t.Context(), "xxx", NewScanner(text), func(any) {})
 	parser.Parse()
 
-	test.Expect(t, 1, len(parser.ast.Sections)) // upon error, create an empty vocab section even if there is none
+	test.Expect(t, 1, len(parser.ast.Sections))
 	diag := parser.currentVocabSection().Diagnostics[0]
 	test.Expect(t, ExpectDateSection, diag.Message)
 	test.Expect(t, 0, diag.Range.Start.Character)
@@ -221,96 +229,58 @@ func TestMultipleWordSection(t *testing.T) {
 
 }
 
-func TestUtteranceSection(t *testing.T) {}
+func TestUtteranceSection(t *testing.T) {
+	text := trimLines(`
+		01/08/1997
+		> (de) ablenken, ansprechen
+		Das lenkt mich wirklich ab!
+		Sag einfach Bescheid, was dir gerade am meisten anspricht!
+	`)
 
-func TestUtteranceSectionWithoutDate(t *testing.T) {}
+	parser := NewParser(t.Context(), "xxx", NewScanner(text), func(any) {})
+	parser.Parse()
 
-func TestUtteranceSectionWithoutVocab(t *testing.T) {}
-func TestUtteranceSectionAsStart(t *testing.T)      {}
+	utterance := parser.ast.Sections[0].Utterance
+	test.Expect(t, 2, len(utterance))
+	test.Expect(t, "Das lenkt mich wirklich ab!", utterance[0].Text)
+	test.Expect(t, 2, utterance[0].Line)
+	test.Expect(t, 0, utterance[0].Start)
+	test.Expect(t, len("Das lenkt mich wirklich ab!"), utterance[0].End)
 
-// func TestFullSectionParsing(t *testing.T) {
-// testParseExpectation(t,
-// 	`
-// 		20/08/2025
-// 		> (it) la magia, bene
-// 		> (de) anlegen
-// 		Ho una magia molto speciale. Non ti conviene metterti contro di me!
-// 		Ne, will gar nicht mit ihm anlegen.
-// 		21/08/2025
-// 		> (it) brillare
-// 		>> (it) la maga
-// 		C'era una volta un piccolo villaggio in Italia. In questo villaggio, viveva una giovane maga. La maga si chiamava Luna, e il suo potere era molto semplice: poteva far brillare le stelle nel cielo.
-// 	`, []*VocabularySection{
-// 		{
-// 			Date: &DateSection{Text: "20/08/2025", Time: time.Date(2025, time.August, 20, 0, 0, 0, 0, time.Local), Start: 0, End: 10},
-// 			NewWords: []*WordsSection{
-// 				{
-// 					Language: Italiano,
-// 					Line:     1,
-// 					Words: []*Word{
-// 						{Text: "la magia", Start: 7, End: 14},
-// 						{Text: "bene", Start: 17, End: 20},
-// 					},
-// 				},
-// 				{
-// 					Language: Deutsch,
-// 					Line:     2,
-// 					Words: []*Word{
-// 						{Text: "anlegen", Start: 7, End: 13},
-// 					},
-// 				},
-// 			},
-// 			ReviewedWords: []*WordsSection{},
-// 			Utterance: []*UtteranceSection{
-// 				{
-// 					Line:  3,
-// 					Start: 0,
-// 					End:   len("Ho una magia molto speciale. Non ti conviene metterti contro di me!"),
-// 					Text:  "Ho una magia molto speciale. Non ti conviene metterti contro di me!",
-// 				},
-// 				{
-// 					Line:  4,
-// 					Start: 0,
-// 					End:   len("Ne, will gar nicht mit ihm anlegen."),
-// 					Text:  "Ne, will gar nicht mit ihm anlegen.",
-// 				},
-// 			},
-// 		},
-// 		{
-// 			Date: &DateSection{Text: "21/08/2025", Time: time.Date(2025, time.August, 20, 0, 0, 0, 0, time.Local), Start: 0, End: 10},
-// 			NewWords: []*WordsSection{
-// 				{
-// 					Language: Italiano,
-// 					Line:     5,
-// 					Words: []*Word{
-// 						{Text: "brillare", Start: 7, End: 14},
-// 					},
-// 				},
-// 			},
-// 			ReviewedWords: []*WordsSection{
-// 				{
-// 					Language: Italiano,
-// 					Line:     5,
-// 					Words: []*Word{
-// 						{Text: "maga", Start: 7, End: 14},
-// 					},
-// 				},
-// 			},
-// 			Utterance: []*UtteranceSection{
-// 				{
-// 					Line:  6,
-// 					Start: 0,
-// 					End:   len("C'era una volta un piccolo villaggio in Italia. In questo villaggio, viveva una giovane maga. La maga si chiamava Luna, e il suo potere era molto semplice: poteva far brillare le stelle nel cielo."),
-// 					Text:  "C'era una volta un piccolo villaggio in Italia. In questo villaggio, viveva una giovane maga. La maga si chiamava Luna, e il suo potere era molto semplice: poteva far brillare le stelle nel cielo. ",
-// 				},
-// 			},
-// 		},
-// 	}, []string{})
-// }
+	test.Expect(t, "Sag einfach Bescheid, was dir gerade am meisten anspricht!", utterance[1].Text)
+	test.Expect(t, 2, utterance[1].Line)
+	test.Expect(t, 0, utterance[1].Start)
+	test.Expect(t, len("Sag einfach Bescheid, was dir gerade am meisten anspricht!"), utterance[1].End)
+}
 
-// TODO this should work too
-// #2025-10-04
-// > (it) parola1, parola2
-// oggi ho imparato parole nuove
-// >> (de) Hund, Katze
-// Ich habe neue Wörter gelernt
+func TestUtteranceSectionWithoutDate(t *testing.T) {
+	// text := trimLines(`
+	// 	Das lenkt mich wirklich ab!
+	// 	Sag einfach Bescheid, was dir gerade am meisten anspricht!
+	// `)
+}
+
+func TestFullSectionParsing(t *testing.T) {
+	// text := trimLines(`
+	// 	02/10/2025
+	// 	>> (it) la notizia, chiacchierare
+	// 	> (de) aufschlüsseln
+	// 	Guardando le notizie italiane. Che tipo di accento è questo?
+	// 	Oggi, passegiamo e chiacchieriamo in italiano.
+	// 	Stamattina ho un po'sonno.
+	// 	I didn't sleep much either
+	// 	Anch'io ho dormito poco.
+	// 	Anch'io sono un' po stanco, sono andato a letto tardi.
+	// 	A mezzanotte, ma che per me è tardissimo.
+	// 	Camminiamo un altro pocchino?
+	// 	Kannst du mir diesen Satz aufschlüsseln?
+	// 	03/10/2025
+	// 	> (de) ansprechen, schnappen, ausfragen
+	// 	>> (de) anlegen,
+	// 	Sag einfach was dir so im Kopf rumgehen, und wir plaudern ein bisschen.
+	// 	Ich werde nicht mit ihm anlegen, das ist mein Vorschlag für dich.
+	// 	Na klar, ich helfe dir gerne dabei. Wir können zum Beispiel über deinen Tag reden, über irgendwelche Hobbys oder einfach über etwas, das dich interessiert, wie Reisen, Bücher oder Technik. Sag einfach Bescheid, was dich gerade am meisten anspricht.
+	// 	Na gut, dann schnapp ich mir einfach mal ein paar technische Themen für dich. Wie wäre es, wenn ich dich ein bisschen dazu ausfrage, welche Technik dich im Moment so fasziniert?
+	// `)
+
+}
