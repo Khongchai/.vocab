@@ -1,7 +1,6 @@
 package vocabulary
 
 import (
-	"fmt"
 	"testing"
 )
 
@@ -27,7 +26,7 @@ func testScanExpectations(t *testing.T, testCases []ScanCase) {
 		scanner := NewScanner(currentCase.Text)
 
 		for j := range currentCase.Expectations {
-			fmt.Printf("Testing case %+v\n", currentCase)
+			// fmt.Printf("Testing case %+v\n", currentCase)
 
 			expectation := currentCase.Expectations[j]
 			actualToken, actualText := scanner.Scan()
@@ -48,7 +47,7 @@ func testScanExpectations(t *testing.T, testCases []ScanCase) {
 			}
 
 			if actualOffset != expectation.LineOffset {
-				t.Fatalf("Line offset does not match the length of expected token text. Expected %d, got %d", expectation.LineOffset, actualOffset)
+				t.Fatalf("Line offset does not match the offset of expected token text. Expected %d, got %d", expectation.LineOffset, actualOffset)
 			}
 
 			if actualPos != expectation.Pos {
@@ -71,7 +70,7 @@ func TestBasicTokenScan(t *testing.T) {
 		{Text: ",", Expectations: []ScanExpect{{TextValue: ",", TokenValue: TokenComma, LineOffset: 1, Pos: 1}}},
 		{Text: "`foo`", Expectations: []ScanExpect{{TextValue: "foo", TokenValue: TokenWordLiteral, LineOffset: 5, Pos: 5}}},
 		{Text: "`foo", Expectations: []ScanExpect{{TextValue: "foo", TokenValue: TokenWordLiteral, LineOffset: 4, Pos: 4}}},
-		{Text: "(it)", Expectations: []ScanExpect{{TextValue: "(it)", TokenValue: TokenLanguageExpression, LineOffset: 4, Pos: 4}}},
+		{Text: "(it)", Expectations: []ScanExpect{{TextValue: "it", TokenValue: TokenLanguageLiteral, LineOffset: 4, Pos: 4}}},
 		{Text: "(i)", Expectations: []ScanExpect{{TextValue: "(i)", TokenValue: TokenText, LineOffset: 3, Pos: 3}}},
 		{Text: "/", Expectations: []ScanExpect{{TextValue: "/", TokenValue: TokenSlash, LineOffset: 1, Pos: 1}}},
 		{Text: "<!--", Expectations: []ScanExpect{{TextValue: "<!--", TokenValue: TokenMarkdownCommentStart, LineOffset: 4, Pos: 4}}},
@@ -125,7 +124,7 @@ func TestNewVocabScan(t *testing.T) {
 			Expectations: []ScanExpect{
 				{TextValue: ">", TokenValue: TokenGreaterThan, Line: 0, LineOffset: 1, Pos: 1},
 				{TextValue: " ", TokenValue: TokenWhitespace, Line: 0, LineOffset: 2, Pos: 2},
-				{TextValue: "(it)", TokenValue: TokenLanguageExpression, Line: 0, LineOffset: 6, Pos: 6},
+				{TextValue: "it", TokenValue: TokenLanguageLiteral, Line: 0, LineOffset: 6, Pos: 6},
 				{TextValue: " ", TokenValue: TokenWhitespace, Line: 0, LineOffset: 7, Pos: 7},
 				{TextValue: "ciao", TokenValue: TokenWordLiteral, Line: 0, LineOffset: 13, Pos: 13},
 				{TextValue: ",", TokenValue: TokenComma, Line: 0, LineOffset: 14, Pos: 14},
@@ -165,7 +164,7 @@ func TestReviewedVocabScan(t *testing.T) {
 			Expectations: []ScanExpect{
 				{TextValue: ">>", TokenValue: TokenDoubleGreaterThan, Line: 0, LineOffset: 2, Pos: 2},
 				{TextValue: " ", TokenValue: TokenWhitespace, Line: 0, LineOffset: 3, Pos: 3},
-				{TextValue: "(de)", TokenValue: TokenLanguageExpression, Line: 0, LineOffset: 7, Pos: 7},
+				{TextValue: "de", TokenValue: TokenLanguageLiteral, Line: 0, LineOffset: 7, Pos: 7},
 				{TextValue: " ", TokenValue: TokenWhitespace, Line: 0, LineOffset: 8, Pos: 8},
 				{TextValue: "halo", TokenValue: TokenText, Line: 0, LineOffset: 12, Pos: 12},
 				{TextValue: ",", TokenValue: TokenComma, Line: 0, LineOffset: 13, Pos: 13},

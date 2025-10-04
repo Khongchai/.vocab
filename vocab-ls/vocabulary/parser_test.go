@@ -110,8 +110,8 @@ func TestSingleWordSection(t *testing.T) {
 	parser := NewParser(t.Context(), "xxx", NewScanner(text), func(a any) {})
 	parser.Parse()
 
-	test.Expect(t, 1, parser.line)
 	test.Expect(t, 1, len(parser.ast.Sections))
+	test.Expect(t, 2, parser.line)
 	test.Expect(t, 0, len(parser.currentVocabSection().Diagnostics))
 
 	section := parser.ast.Sections[0]
@@ -126,20 +126,21 @@ func TestSingleWordSection(t *testing.T) {
 	test.Expect(t, Italiano, newWords[0].Language)
 	test.Expect(t, 1, newWords[0].Line)
 
-	words := newWords[0].Words
-	test.Expect(t, "la magia", words[0].Text)
-	test.Expect(t, false, words[0].Literally)
-	test.Expect(t, "bene", words[1].Text)
-	test.Expect(t, false, words[1].Literally)
-	test.Expect(t, "scorprire", words[2].Text)
-	test.Expect(t, false, words[2].Literally)
+	n := newWords[0].Words
+	test.Expect(t, "la magia", n[0].Text)
+	test.Expect(t, false, n[0].Literally)
+	test.Expect(t, "bene", n[1].Text)
+	test.Expect(t, false, n[1].Literally)
+	test.Expect(t, "scorprire", n[2].Text)
+	test.Expect(t, false, n[2].Literally)
 
 	reviewedWords := section.ReviewedWords
+	r := reviewedWords[0].Words
 	test.Expect(t, 1, len(reviewedWords))
 	test.Expect(t, Deutsch, reviewedWords[0].Language)
-	test.Expect(t, 2, newWords[0].Line)
-	test.Expect(t, "was", words[0].Text)
-	test.Expect(t, false, words[0].Literally)
+	test.Expect(t, 2, reviewedWords[0].Line)
+	test.Expect(t, "was", r[0].Text)
+	test.Expect(t, false, r[0].Literally)
 }
 
 func TestWordSectionWithoutDate(t *testing.T) {

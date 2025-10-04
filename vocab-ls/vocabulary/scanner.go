@@ -121,7 +121,13 @@ func (s *Scanner) Scan() (Token, string) {
 		for {
 			next, nextLength := s.charAt(1)
 
-			if next == lib.Backtick || next == -1 || lib.IsLineBreak(next) {
+			if next == lib.Backtick {
+				// if it's a backtick we need to also chomp it too, so forward by 2, the
+				// last character in the literal and the backtick itself
+				s.forwardPos(2)
+				return TokenWordLiteral, collected
+			}
+			if next == -1 || lib.IsLineBreak(next) {
 				s.forwardPos(1)
 				return TokenWordLiteral, collected
 			}
@@ -133,9 +139,9 @@ func (s *Scanner) Scan() (Token, string) {
 	case lib.LeftParen:
 		possibleClosing, _ := s.charAt(3)
 		if possibleClosing == lib.RightParen {
-			expr := s.text[s.pos : 4+s.pos]
+			ident := s.text[s.pos+1 : 3+s.pos]
 			s.forwardPos(4)
-			return TokenLanguageExpression, expr
+			return TokenLanguageLiteral, ident
 		}
 
 		// To keep things consistent, we consume some number of text up until len("(xx)") before continuing.

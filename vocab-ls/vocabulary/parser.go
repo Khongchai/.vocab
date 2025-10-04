@@ -120,19 +120,19 @@ func (p *Parser) parseVocabSection() {
 	if p.token == TokenGreaterThan {
 		currentSection.NewWords = append(currentSection.NewWords, words)
 	} else {
-		currentSection.ReviewedWords = append(currentSection.NewWords, words)
+		currentSection.ReviewedWords = append(currentSection.ReviewedWords, words)
 	}
 
 	p.nextTokenNotWhitespace()
 
-	if p.token != TokenLanguageExpression {
+	if p.token != TokenLanguageLiteral {
 		p.errorHere(nil, ExpectLanguageExpression)
 		return
 	}
 	switch p.text {
-	case "(it)":
+	case "it":
 		words.Language = Italiano
-	case "(de)":
+	case "de":
 		words.Language = Deutsch
 	default:
 		p.errorHere(nil, UnrecognizedLanguage)
