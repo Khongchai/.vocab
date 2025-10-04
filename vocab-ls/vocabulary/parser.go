@@ -54,6 +54,10 @@ func (p *Parser) Parse() {
 
 	var lastSection *VocabularySection = nil
 
+	startNewSection := func() {
+		p.ast.Sections = append(p.ast.Sections, &VocabularySection{})
+	}
+
 	for {
 		p.nextToken()
 
@@ -69,21 +73,22 @@ func (p *Parser) Parse() {
 		case TokenLineBreakTrivia, TokenWhitespace:
 			continue
 		case TokenDateExpression:
-			p.ast.Sections = append(p.ast.Sections, &VocabularySection{})
+			startNewSection()
 			p.parseDateExpression()
 		case TokenGreaterThan, TokenDoubleGreaterThan:
-			if lastSection.Date == nil {
+			if lastSection == nil || lastSection.Date == nil {
+				startNewSection()
 				p.errorHere(nil, ExpectDateSection)
 			}
 			p.parseVocabSection()
 		default:
 			if lastSection == nil {
-				p.ast.Sections = append(p.ast.Sections, &VocabularySection{})
+				startNewSection()
 				p.errorHere(nil, ExpectDateSection)
 				continue
 			}
 			if len(lastSection.NewWords) == 0 && len(lastSection.ReviewedWords) == 0 {
-				p.ast.Sections = append(p.ast.Sections, &VocabularySection{})
+				startNewSection()
 				p.errorHere(nil, ExpectVocabSection)
 				continue
 			}
