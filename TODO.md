@@ -15,7 +15,7 @@
     - [x] Write small cases
     - [x] Fix utterance parsing
     - [x] Stop including parens in language identifier!
-    - [ ] Make TestFullSectionParsing then 
+    - [x] Make TestFullSectionParsing then 
     - [ ] Then compiler!
         - [ ] The compiler should be incremental in that 
             - [ ] it accepts ast and turn it into an IR tree -- a hashmap of words to the date section and location / file they appear in. 

@@ -254,34 +254,87 @@ func TestUtteranceSection(t *testing.T) {
 	test.Expect(t, len("Sag einfach Bescheid, was dir gerade am meisten anspricht!"), utterance[1].End)
 }
 
-func TestUtteranceSectionWithoutDate(t *testing.T) {
-	// text := trimLines(`
-	// 	Das lenkt mich wirklich ab!
-	// 	Sag einfach Bescheid, was dir gerade am meisten anspricht!
-	// `)
-}
-
 func TestFullSectionParsing(t *testing.T) {
-	// text := trimLines(`
-	// 	02/10/2025
-	// 	>> (it) la notizia, chiacchierare
-	// 	> (de) aufschlüsseln
-	// 	Guardando le notizie italiane. Che tipo di accento è questo?
-	// 	Oggi, passegiamo e chiacchieriamo in italiano.
-	// 	Stamattina ho un po'sonno.
-	// 	I didn't sleep much either
-	// 	Anch'io ho dormito poco.
-	// 	Anch'io sono un' po stanco, sono andato a letto tardi.
-	// 	A mezzanotte, ma che per me è tardissimo.
-	// 	Camminiamo un altro pocchino?
-	// 	Kannst du mir diesen Satz aufschlüsseln?
-	// 	03/10/2025
-	// 	> (de) ansprechen, schnappen, ausfragen
-	// 	>> (de) anlegen,
-	// 	Sag einfach was dir so im Kopf rumgehen, und wir plaudern ein bisschen.
-	// 	Ich werde nicht mit ihm anlegen, das ist mein Vorschlag für dich.
-	// 	Na klar, ich helfe dir gerne dabei. Wir können zum Beispiel über deinen Tag reden, über irgendwelche Hobbys oder einfach über etwas, das dich interessiert, wie Reisen, Bücher oder Technik. Sag einfach Bescheid, was dich gerade am meisten anspricht.
-	// 	Na gut, dann schnapp ich mir einfach mal ein paar technische Themen für dich. Wie wäre es, wenn ich dich ein bisschen dazu ausfrage, welche Technik dich im Moment so fasziniert?
-	// `)
+	text := trimLines(`
+		02/10/2025
+		>> (it) la notizia, chiacchierare
+		> (de) aufschlüsseln
+		Guardando le notizie italiane. Che tipo di accento è questo?
+		Oggi, passegiamo e chiacchieriamo in italiano.
+		Stamattina ho un po'sonno.
+		I didn't sleep much either
+		Anch'io ho dormito poco.
+		Anch'io sono un' po stanco, sono andato a letto tardi.
+		A mezzanotte, ma che per me è tardissimo.
+		Camminiamo un altro pocchino?
+		Kannst du mir diesen Satz aufschlüsseln?
+		03/10/2025
+		> (de) ansprechen, schnappen, ausfragen
+		>> (de) anlegen,
+		Sag einfach was dir so im Kopf rumgehen, und wir plaudern ein bisschen.
+		Ich werde nicht mit ihm anlegen, das ist mein Vorschlag für dich.
+		Na klar, ich helfe dir gerne dabei. Wir können zum Beispiel über deinen Tag reden, über irgendwelche Hobbys oder einfach über etwas, das dich interessiert, wie Reisen, Bücher oder Technik. Sag einfach Bescheid, was dich gerade am meisten anspricht.
+		Na gut, dann schnapp ich mir einfach mal ein paar technische Themen für dich. Wie wäre es, wenn ich dich ein bisschen dazu ausfrage, welche Technik dich im Moment so fasziniert?
+	`)
 
+	parser := NewParser(t.Context(), "xxx", NewScanner(text), func(any) {})
+	parser.Parse()
+
+	test.Expect(t, 2, len(parser.ast.Sections))
+
+	// ======== SECTION 1: 02/10/2025 ========
+	section1 := parser.ast.Sections[0]
+	test.Expect(t, time.Date(2025, time.October, 2, 0, 0, 0, 0, time.Local), section1.Date.Time)
+
+	// Reviewed words (>>)
+	test.Expect(t, 1, len(section1.ReviewedWords))
+	reviewed := section1.ReviewedWords[0]
+	test.Expect(t, Italiano, reviewed.Language)
+	test.Expect(t, 1, reviewed.Line)
+	test.Expect(t, 2, len(reviewed.Words))
+	test.Expect(t, "la notizia", reviewed.Words[0].Text)
+	test.Expect(t, false, reviewed.Words[0].Literally)
+	test.Expect(t, "chiacchierare", reviewed.Words[1].Text)
+
+	// New words (>)
+	test.Expect(t, 1, len(section1.NewWords))
+	newWords := section1.NewWords[0]
+	test.Expect(t, Deutsch, newWords.Language)
+	test.Expect(t, 2, newWords.Line)
+	test.Expect(t, 1, len(newWords.Words))
+	test.Expect(t, "aufschlüsseln", newWords.Words[0].Text)
+
+	// Utterances
+	test.Expect(t, 9, len(section1.Utterance))
+	test.Expect(t, "Guardando le notizie italiane. Che tipo di accento è questo?", section1.Utterance[0].Text)
+	test.Expect(t, "Camminiamo un altro pocchino?", section1.Utterance[7].Text)
+	test.Expect(t, "Kannst du mir diesen Satz aufschlüsseln?", section1.Utterance[8].Text)
+
+	// ======== SECTION 2: 03/10/2025 ========
+	section2 := parser.ast.Sections[1]
+	test.Expect(t, time.Date(2025, time.October, 3, 0, 0, 0, 0, time.Local), section2.Date.Time)
+	test.Expect(t, 12, section2.Date.Line)
+
+	// New words (>)
+	test.Expect(t, 1, len(section2.NewWords))
+	words := section2.NewWords[0]
+	test.Expect(t, Deutsch, words.Language)
+	test.Expect(t, 13, words.Line)
+	test.Expect(t, 3, len(words.Words))
+	test.Expect(t, "ansprechen", words.Words[0].Text)
+	test.Expect(t, "schnappen", words.Words[1].Text)
+	test.Expect(t, "ausfragen", words.Words[2].Text)
+
+	// Reviewed words (>>)
+	test.Expect(t, 1, len(section2.ReviewedWords))
+	rw := section2.ReviewedWords[0]
+	test.Expect(t, Deutsch, rw.Language)
+	test.Expect(t, 14, rw.Line)
+	test.Expect(t, 1, len(rw.Words))
+	test.Expect(t, "anlegen", rw.Words[0].Text)
+
+	// Utterances (German + mixed)
+	test.Expect(t, 4, len(section2.Utterance))
+	test.Expect(t, "Ich werde nicht mit ihm anlegen, das ist mein Vorschlag für dich.", section2.Utterance[1].Text)
+	test.Expect(t, "Na gut, dann schnapp ich mir einfach mal ein paar technische Themen für dich. Wie wäre es, wenn ich dich ein bisschen dazu ausfrage, welche Technik dich im Moment so fasziniert?", section2.Utterance[3].Text)
 }
