@@ -96,9 +96,6 @@ Markiert es wenn ein neues Wort nicht in seiner Infinitivform ist:
 > entrambe // wurde rot markiert weil die Infinitivform "Entrambi" ist.
 Devi fare entrambe le cose.
 ```
-# Improvements
-- [ ] Remove space from parser and skip in tokenizer instead
-
 # Side quests
 - [ ] Hover to show definition in English
 - [ ] Parallelize parsing of multiple vocab files with goroutine (see ts-go).
