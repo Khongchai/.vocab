@@ -1,5 +1,10 @@
 <!-- skip -->
-
+# Main Requirement 0
+- [x] Make extension plugin start server up
+- [x] Make go server return all red text upon first key.
+- [x] Refactor into an engine
+- [x] Basic data structure for
+- [x] Use go structs for request and responses
 - [x] Update scanner test case and implementation now that vocab is its own language.
     - [x] Make scanner recognize date expression.
     - [x] Remove all markdown reference
@@ -7,23 +12,14 @@
     - [x] Finish implementing first parser version
     - [x] Write test for all the tiny cases
 # 04/10/2025
+    - [x] Write small cases
     - [x] Fix utterance parsing
-    - [ ] Stop including parens in language identifier!
+    - [x] Stop including parens in language identifier!
     - [ ] Make TestFullSectionParsing then 
-    - [ ] Write small cases
     - [ ] Then compiler!
-- [ ] Add a comment case.
-
-# Requirements Below
-
-- [x] Make extension plugin start server up
-- [x] Make go server return all red text upon first key.
-- [x] Refactor into an engine
-
-# Main Requirement 0
-
-- [x] Basic data structure for
-- [x] Use go structs for request and responses
+        - [ ] The compiler should be incremental in that 
+            - [ ] it accepts ast and turn it into an IR tree -- a hashmap of words to the date section and location / file they appear in. 
+            - [ ] The IR trees can be compiled and produce diagnostics independently and then merge. Every time they merge, new diagnostics should be produced based on newly available information. This means multicore-power!
 
 ```markdown
 # 04/09/2025
@@ -97,6 +93,7 @@ Markiert es wenn ein neues Wort nicht in seiner Infinitivform ist:
 Devi fare entrambe le cose.
 ```
 # Side quests
+- [ ] Add a comment case.
 - [ ] Hover to show definition in English
 - [ ] Parallelize parsing of multiple vocab files with goroutine (see ts-go).
 - [ ] Make pull mode work
