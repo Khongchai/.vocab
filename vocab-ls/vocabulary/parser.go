@@ -31,11 +31,10 @@ type Parser struct {
 	tokenEnd   int // end pos on line
 	line       int // line, 0-indexed
 
-	errorCallback func(any)
 	printCallback func(any)
 }
 
-func NewParser(ctx context.Context, uri string, scanner *Scanner, errorCallback func(any), printCallback func(any)) *Parser {
+func NewParser(ctx context.Context, uri string, scanner *Scanner, printCallback func(any)) *Parser {
 	return &Parser{
 		ctx:     ctx,
 		uri:     uri,
@@ -47,7 +46,6 @@ func NewParser(ctx context.Context, uri string, scanner *Scanner, errorCallback 
 		tokenStart: -1,
 		tokenEnd:   -1,
 
-		errorCallback: errorCallback,
 		printCallback: printCallback,
 	}
 }
@@ -180,7 +178,6 @@ func (p *Parser) errorHere(original *error, message string) {
 	if original != nil {
 		p.printCallback(&original)
 	}
-	p.errorCallback(message)
 	newError := &lsproto.Diagnostic{
 		Severity: lsproto.DiagnosticsSeverityError,
 		Message:  string(message),

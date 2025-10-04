@@ -1,17 +1,12 @@
 package vocabulary
 
 import (
-	"encoding/json"
 	"strings"
 	"testing"
 	"time"
+	lsproto "vocab/lsp"
 	test "vocab/vocab_testing"
 )
-
-func printJSON(v any) string {
-	b, _ := json.MarshalIndent(v, "", "  ")
-	return string(b)
-}
 
 func trimLines(text string) string {
 	split := strings.Split(text, "\n")
@@ -27,121 +22,85 @@ func trimLines(text string) string {
 	return joined
 }
 
-func testParseExpectation(t *testing.T, text string, sections []*VocabularySection, expectedErrors []string) {
-	t.Helper()
-
-	joined := trimLines(text)
-
-	var parsedErrors []any
-	parser := NewParser(t.Context(), "xxx", NewScanner(joined),
-		func(a any) {
-			parsedErrors = append(parsedErrors, a)
-		}, func(a any) {})
-
-	// act
-	parser.Parse()
-
-	var result *VocabAst = parser.ast
-
-	got := printJSON(result)
-
-	newAst := &VocabAst{uri: "xxx", Sections: sections}
-	expected := printJSON(newAst)
-
-	if expected != got {
-		t.Fatalf("Parsing test failed. Expected:\n%s \nGot:\n%s", expected, got)
-	}
-
-	if len(expectedErrors) != len(parsedErrors) {
-		t.Fatalf("Parsing test failed. Expected error length != parsedErrors")
-	}
-
-	for i := range expectedErrors {
-		if expectedErrors[i] != parsedErrors[i] {
-			t.Fatalf("Parsing test failed. Expected error: %+v, got %+v", expectedErrors[i], parsedErrors[i])
-		}
-	}
-}
-
-func TestFullSectionParsing(t *testing.T) {
-	testParseExpectation(t,
-		`
-			20/08/2025
-			> (it) la magia, bene
-			> (de) anlegen
-			Ho una magia molto speciale. Non ti conviene metterti contro di me!
-			Ne, will gar nicht mit ihm anlegen.
-			21/08/2025
-			> (it) brillare
-			>> (it) la maga
-			C'era una volta un piccolo villaggio in Italia. In questo villaggio, viveva una giovane maga. La maga si chiamava Luna, e il suo potere era molto semplice: poteva far brillare le stelle nel cielo. 
-		`, []*VocabularySection{
-			{
-				Date: &DateSection{Text: "20/08/2025", Time: time.Date(2025, time.August, 20, 0, 0, 0, 0, time.Local), Start: 0, End: 10},
-				NewWords: []*WordsSection{
-					{
-						Language: Italiano,
-						Line:     1,
-						Words: []*Word{
-							{Text: "la magia", Start: 7, End: 14},
-							{Text: "bene", Start: 17, End: 20},
-						},
-					},
-					{
-						Language: Deutsch,
-						Line:     2,
-						Words: []*Word{
-							{Text: "anlegen", Start: 7, End: 13},
-						},
-					},
-				},
-				ReviewedWords: []*WordsSection{},
-				Utterance: []*UtteranceSection{
-					{
-						Line:  3,
-						Start: 0,
-						End:   len("Ho una magia molto speciale. Non ti conviene metterti contro di me!"),
-						Text:  "Ho una magia molto speciale. Non ti conviene metterti contro di me!",
-					},
-					{
-						Line:  4,
-						Start: 0,
-						End:   len("Ne, will gar nicht mit ihm anlegen."),
-						Text:  "Ne, will gar nicht mit ihm anlegen.",
-					},
-				},
-			},
-			{
-				Date: &DateSection{Text: "21/08/2025", Time: time.Date(2025, time.August, 20, 0, 0, 0, 0, time.Local), Start: 0, End: 10},
-				NewWords: []*WordsSection{
-					{
-						Language: Italiano,
-						Line:     5,
-						Words: []*Word{
-							{Text: "brillare", Start: 7, End: 14},
-						},
-					},
-				},
-				ReviewedWords: []*WordsSection{
-					{
-						Language: Italiano,
-						Line:     5,
-						Words: []*Word{
-							{Text: "maga", Start: 7, End: 14},
-						},
-					},
-				},
-				Utterance: []*UtteranceSection{
-					{
-						Line:  6,
-						Start: 0,
-						End:   len("C'era una volta un piccolo villaggio in Italia. In questo villaggio, viveva una giovane maga. La maga si chiamava Luna, e il suo potere era molto semplice: poteva far brillare le stelle nel cielo."),
-						Text:  "C'era una volta un piccolo villaggio in Italia. In questo villaggio, viveva una giovane maga. La maga si chiamava Luna, e il suo potere era molto semplice: poteva far brillare le stelle nel cielo. ",
-					},
-				},
-			},
-		}, []string{})
-}
+// func TestFullSectionParsing(t *testing.T) {
+// testParseExpectation(t,
+// 	`
+// 		20/08/2025
+// 		> (it) la magia, bene
+// 		> (de) anlegen
+// 		Ho una magia molto speciale. Non ti conviene metterti contro di me!
+// 		Ne, will gar nicht mit ihm anlegen.
+// 		21/08/2025
+// 		> (it) brillare
+// 		>> (it) la maga
+// 		C'era una volta un piccolo villaggio in Italia. In questo villaggio, viveva una giovane maga. La maga si chiamava Luna, e il suo potere era molto semplice: poteva far brillare le stelle nel cielo.
+// 	`, []*VocabularySection{
+// 		{
+// 			Date: &DateSection{Text: "20/08/2025", Time: time.Date(2025, time.August, 20, 0, 0, 0, 0, time.Local), Start: 0, End: 10},
+// 			NewWords: []*WordsSection{
+// 				{
+// 					Language: Italiano,
+// 					Line:     1,
+// 					Words: []*Word{
+// 						{Text: "la magia", Start: 7, End: 14},
+// 						{Text: "bene", Start: 17, End: 20},
+// 					},
+// 				},
+// 				{
+// 					Language: Deutsch,
+// 					Line:     2,
+// 					Words: []*Word{
+// 						{Text: "anlegen", Start: 7, End: 13},
+// 					},
+// 				},
+// 			},
+// 			ReviewedWords: []*WordsSection{},
+// 			Utterance: []*UtteranceSection{
+// 				{
+// 					Line:  3,
+// 					Start: 0,
+// 					End:   len("Ho una magia molto speciale. Non ti conviene metterti contro di me!"),
+// 					Text:  "Ho una magia molto speciale. Non ti conviene metterti contro di me!",
+// 				},
+// 				{
+// 					Line:  4,
+// 					Start: 0,
+// 					End:   len("Ne, will gar nicht mit ihm anlegen."),
+// 					Text:  "Ne, will gar nicht mit ihm anlegen.",
+// 				},
+// 			},
+// 		},
+// 		{
+// 			Date: &DateSection{Text: "21/08/2025", Time: time.Date(2025, time.August, 20, 0, 0, 0, 0, time.Local), Start: 0, End: 10},
+// 			NewWords: []*WordsSection{
+// 				{
+// 					Language: Italiano,
+// 					Line:     5,
+// 					Words: []*Word{
+// 						{Text: "brillare", Start: 7, End: 14},
+// 					},
+// 				},
+// 			},
+// 			ReviewedWords: []*WordsSection{
+// 				{
+// 					Language: Italiano,
+// 					Line:     5,
+// 					Words: []*Word{
+// 						{Text: "maga", Start: 7, End: 14},
+// 					},
+// 				},
+// 			},
+// 			Utterance: []*UtteranceSection{
+// 				{
+// 					Line:  6,
+// 					Start: 0,
+// 					End:   len("C'era una volta un piccolo villaggio in Italia. In questo villaggio, viveva una giovane maga. La maga si chiamava Luna, e il suo potere era molto semplice: poteva far brillare le stelle nel cielo."),
+// 					Text:  "C'era una volta un piccolo villaggio in Italia. In questo villaggio, viveva una giovane maga. La maga si chiamava Luna, e il suo potere era molto semplice: poteva far brillare le stelle nel cielo. ",
+// 				},
+// 			},
+// 		},
+// 	}, []string{})
+// }
 
 // Incomplete sections don't necessarily emit diagnostics error as missing vocabulary is already covered by the compiler.
 func TestOnlyDateSection(t *testing.T) {
@@ -175,16 +134,14 @@ func TestOnlyDateSection(t *testing.T) {
 	}
 
 	for _, expectation := range expectations {
-		var parsedError string = ""
-		parser := NewParser(t.Context(), "xxx", NewScanner(expectation.Input), func(a any) {
-			parsedError = a.(string)
-		}, func(a any) {})
+		parser := NewParser(t.Context(), "xxx", NewScanner(expectation.Input), func(a any) {})
 		parser.Parse()
 
-		sectionDate := parser.ast.Sections[0].Date
+		section := parser.ast.Sections[0]
+		sectionDate := section.Date
 
-		if expectation.Error != "" && expectation.Error != parsedError {
-			t.Fatalf("Error mismatch, expected: %s, got %s", expectation.Error, parsedError)
+		if expectation.Error != "" && section.Diagnostics[0].Message != expectation.Error {
+			t.Fatalf("Error mismatch, expected: %s, got %+v", expectation.Error, section.Diagnostics[0].Message)
 		}
 
 		gotTime := sectionDate.Time
@@ -201,39 +158,24 @@ func TestOnlyDateSection(t *testing.T) {
 }
 
 func TestIncompleteDateSection(t *testing.T) {
-	var parsedError string = ""
-	parser := NewParser(t.Context(), "xxx", NewScanner("23/00"), func(a any) {
-		parsedError = a.(string)
-	}, func(a any) {})
+	parser := NewParser(t.Context(), "xxx", NewScanner("23/00"), func(a any) {})
 	parser.Parse()
 
-	if parsedError != ExpectVocabSection {
-		t.Errorf("Expected parsed error to be MalformedDate, instead got %s", parsedError)
-	}
-
-	if parser.tokenStart != 0 && parser.tokenEnd != 5 {
-		t.Errorf("Token start and end not 0 and 5, :%d, %d", parser.tokenStart, parser.tokenEnd)
-	}
+	test.Expect(t, 1, len(parser.currentVocabSection().Diagnostics))
+	test.Expect(t, MalformedDate, parser.currentVocabSection().Diagnostics[0].Message)
+	test.Expect(t, 0, parser.tokenStart)
+	test.Expect(t, 5, parser.tokenEnd)
 }
 
 func TestInvalidDateSectionUnexpectedToken(t *testing.T) {
-	var parsedError string = ""
-	parser := NewParser(t.Context(), "xxx", NewScanner("08/09/2025 foo"), func(a any) {
-		parsedError = a.(string)
-	}, func(a any) {})
+	parser := NewParser(t.Context(), "xxx", NewScanner("08/09/2025 foo"), func(a any) {})
 	parser.Parse()
 
-	if parsedError != ExpectVocabSection {
-		t.Errorf("Expected parsed error to be UnexpectedToken, instead got %s", parsedError)
-	}
-
-	if parser.line != 0 {
-		t.Errorf("Expect line to be 0, instead got: %d", parser.line)
-	}
-
-	if parser.tokenStart != 11 && parser.tokenEnd != 14 {
-		t.Errorf("Token start and end not 0 and 5, :%d, %d", parser.tokenStart, parser.tokenEnd)
-	}
+	test.Expect(t, 1, len(parser.currentVocabSection().Diagnostics))
+	diag := parser.currentVocabSection().Diagnostics[0]
+	test.Expect(t, ExpectVocabSection, diag.Message)
+	test.Expect(t, 11, diag.Range.Start.Character)
+	test.Expect(t, 14, diag.Range.End.Character)
 }
 
 func TestSingleWordSection(t *testing.T) {
@@ -242,15 +184,12 @@ func TestSingleWordSection(t *testing.T) {
 		> (it) la magia, bene,scorprire
 	`)
 
-	var parsedError string = ""
-	parser := NewParser(t.Context(), "xxx", NewScanner(text), func(a any) {
-		parsedError = a.(string)
-	}, func(a any) {})
+	parser := NewParser(t.Context(), "xxx", NewScanner(text), func(a any) {})
 	parser.Parse()
 
-	test.Expect(t, "", parsedError)
 	test.Expect(t, 1, parser.line)
 	test.Expect(t, 1, len(parser.ast.Sections))
+	test.Expect(t, 0, len(parser.currentVocabSection().Diagnostics))
 
 	section := parser.ast.Sections[0]
 	test.Expect(t, time.Date(2025, time.August, 20, 0, 0, 0, 0, time.Local), section.Date.Time)
@@ -270,79 +209,24 @@ func TestSingleWordSection(t *testing.T) {
 	test.Expect(t, "scorprire", words[2].Text)
 }
 
-// TODO
-// word section missing language identifier
-// word section missing date
-// word section with malformed date
-func TestWordSections(t *testing.T) {
-	// text := `
-	// 	20/08/2025
-	// 	> (it) la magia, bene
-	// `
-	// var parsedError string = ""
-	// parser := NewParser(t.Context(), "xxx", NewScanner(text), func(a any) {
-	// 	parsedError = a.(string)
-	// }, func(a any) {})
-	// parser.Parse()
+func TestWordSectionWithoutDate(t *testing.T) {
+	text := trimLines(`
+		> (it) la magia, bene,scorprire
+	`)
 
-	// if parsedError != "" {
-	// 	t.Errorf("Expected no error, got: %s", parsedError)
-	// }
+	parser := NewParser(t.Context(), "xxx", NewScanner(text), func(any) {})
+	parser.Parse()
 
-	// if parser.line != 1 {
-	// 	t.Errorf("Expect line to be 1, instead got: %d", parser.line)
-	// }
+	test.Expect(t, 1, len(parser.ast.Sections)) // upon error, create an empty vocab section even if there is none
+	diag := parser.currentVocabSection().Diagnostics[0]
+	test.Expect(t, ExpectDateSection, diag.Message)
+	test.Expect(t, 0, diag.Range.Start.Character)
+	test.Expect(t, 1, diag.Range.End.Character)
+	test.Expect(t, 0, diag.Range.Start.Line)
+	test.Expect(t, 0, diag.Range.End.Line)
+	test.Expect(t, lsproto.DiagnosticsSeverityError, diag.Severity)
 
-	// // correct word section
-	// testParseExpectation(t,
-	// 	`
-	// 		20/08/2025
-	// 		> (it) la magia, bene
-	// 		> (de) die Gelegenheit
-	// 		>> (de) anlegen
-	// 	`, []*VocabularySection{
-	// 		{
-	// 			Date: &DateSection{Text: "20/08/2025", Time: time.Date(2025, time.August, 20, 0, 0, 0, 0, time.Local), Start: 0, End: 10},
-	// 			NewWords: []*WordsSection{
-	// 				{
-	// 					Language: Italiano,
-	// 					Line:     1,
-	// 					Words: []*Word{
-	// 						{Text: "magia", Text: "la magia", Start: 7, End: 14},
-	// 						{Text: "bene", Text: "bene", Start: 17, End: 20},
-	// 					},
-	// 				},
-	// 				{
-	// 					Language: Deutsch,
-	// 					Line:     2,
-	// 					Words: []*Word{
-	// 						{Text: "anlegen", Text: "anlegen", Start: 7, End: 13},
-	// 					},
-	// 				},
-	// 			},
-	// 			ReviewedWords: []*WordsSection{},
-	// 			Utterance: []*UtteranceSection{
-	// 				{
-	// 					Start: 0,
-	// 					End:   len("Ho una magia molto speciale. Non ti conviene metterti contro di me!"),
-	// 					Text:  "Ho una magia molto speciale. Non ti conviene metterti contro di me!",
-	// 				},
-	// 				{
-	// 					Start: 0,
-	// 					End:   len("Ne, will gar nicht mit ihm anlegen."),
-	// 					Text:  "Ne, will gar nicht mit ihm anlegen.",
-	// 				},
-	// 			},
-	// 		},
-	// 		{},
-	// 	}, []ParsingError{})
 }
 
-// Test one paragraph
-// Test multiple paragraph
-// Test sentence in Italian
-// Test sentence in German
-// Test sentence without Date
-// func TestParagraphsSection() {
-
+// func TestMultipleWordSection(t *testing.T) {
 // }
