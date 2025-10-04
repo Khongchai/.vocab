@@ -4,11 +4,14 @@ import (
 	"testing"
 )
 
-func Expect[T comparable](t *testing.T, expectation T, got T) {
+func Expect[T comparable](t *testing.T, expectation T, gots ...T) {
 	t.Helper()
 
-	if expectation == got {
-		return
+	for i, got := range gots {
+		if expectation == got {
+			continue
+		}
+
+		t.Fatalf("Error: expected %+v, got %+v (index %d)", expectation, got, i)
 	}
-	t.Fatalf("Error: expected %+v, got %+v", expectation, got)
 }

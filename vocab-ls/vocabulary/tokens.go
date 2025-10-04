@@ -21,7 +21,7 @@ const (
 	TokenMarkdownCommentEnd   // -->
 
 	TokenDateExpression     // xx/xx/xxxx
-	TokenWordExpression     // `literally` `a` `word`
+	TokenWordLiteral        // |literally |a |word
 	TokenLanguageExpression // (de) or (it)
 
 	TokenText // all text that do not match anything above

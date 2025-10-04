@@ -1,3 +1,5 @@
+<!-- skip -->
+
 - [x] Update scanner test case and implementation now that vocab is its own language.
     - [x] Make scanner recognize date expression.
     - [x] Remove all markdown reference
@@ -9,6 +11,7 @@
     - [ ] Make TestFullSectionParsing then 
     - [ ] Write small cases
     - [ ] Then compiler!
+    - [ ] Stop including parens in language identifier!
 - [ ] Add a comment case.
 
 # Requirements Below

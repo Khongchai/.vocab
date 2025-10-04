@@ -1,6 +1,7 @@
 package vocabulary
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 	"time"
@@ -126,8 +127,11 @@ func TestSingleWordSection(t *testing.T) {
 
 	words := newWords[0].Words
 	test.Expect(t, "la magia", words[0].Text)
+	test.Expect(t, false, words[0].Literally)
 	test.Expect(t, "bene", words[1].Text)
+	test.Expect(t, false, words[1].Literally)
 	test.Expect(t, "scorprire", words[2].Text)
+	test.Expect(t, false, words[2].Literally)
 }
 
 func TestWordSectionWithoutDate(t *testing.T) {
@@ -149,7 +153,71 @@ func TestWordSectionWithoutDate(t *testing.T) {
 
 }
 
+func TestWordExpression(t *testing.T) {
+	text := trimLines(fmt.Sprintf(`
+		20/08/2025
+		> (it) %sla magia%s, bene
+	`, "`", "`"))
+
+	parser := NewParser(t.Context(), "xxx", NewScanner(text), func(any) {})
+	parser.Parse()
+
+	section := parser.currentVocabSection()
+	words := section.NewWords[0]
+	test.Expect(t, Italiano, words.Language)
+	test.Expect(t, 1, words.Line)
+	test.Expect(t, "la magia", words.Words[0].Text)
+	test.Expect(t, true, words.Words[0].Literally)
+}
+
+func TestWordExpressionMissingClosingBacktickShouldAutoClose(t *testing.T) {
+	text := trimLines(fmt.Sprintf(`
+		20/08/2025
+		> (it) %sla magia, bene
+		21/08/2025
+		> (de) %sder Inhalt
+	`, "`", "`"))
+
+	parser := NewParser(t.Context(), "xxx", NewScanner(text), func(any) {})
+	parser.Parse()
+
+	// (it)
+	section1 := parser.currentVocabSection()
+	words1 := section1.NewWords[0]
+	test.Expect(t, Italiano, words1.Language)
+	test.Expect(t, 1, words1.Line)
+	test.Expect(t, 1, len(words1.Words))
+	test.Expect(t, "la magia, bene", words1.Words[0].Text)
+	test.Expect(t, true, words1.Words[0].Literally)
+
+	// (de)
+	section2 := parser.currentVocabSection()
+	words2 := section2.NewWords[0]
+	test.Expect(t, Deutsch, words2.Language)
+	test.Expect(t, 3, words2.Line)
+	test.Expect(t, 3, len(words2.Words))
+	test.Expect(t, "der Inhalt", words2.Words[0].Text)
+	test.Expect(t, true, words2.Words[0].Literally)
+}
+
 func TestMultipleWordSection(t *testing.T) {
+	text := trimLines(`
+		> (it) la magia, bene,scorprire
+		> (de) was?
+	`)
+
+	parser := NewParser(t.Context(), "xxx", NewScanner(text), func(any) {})
+	parser.Parse()
+
+	test.Expect(t, 1, len(parser.ast.Sections)) // upon error, create an empty vocab section even if there is none
+	diag := parser.currentVocabSection().Diagnostics[0]
+	test.Expect(t, ExpectDateSection, diag.Message)
+	test.Expect(t, 0, diag.Range.Start.Character)
+	test.Expect(t, 1, diag.Range.End.Character)
+	test.Expect(t, 0, diag.Range.Start.Line)
+	test.Expect(t, 0, diag.Range.End.Line)
+	test.Expect(t, lsproto.DiagnosticsSeverityError, diag.Severity)
+
 }
 
 func TestUtteranceSection(t *testing.T) {}
@@ -238,3 +306,10 @@ func TestUtteranceSectionAsStart(t *testing.T)      {}
 // 		},
 // 	}, []string{})
 // }
+
+// TODO this should work too
+// #2025-10-04
+// > (it) parola1, parola2
+// oggi ho imparato parole nuove
+// >> (de) Hund, Katze
+// Ich habe neue Wörter gelernt

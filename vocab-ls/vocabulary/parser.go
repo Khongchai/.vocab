@@ -143,15 +143,22 @@ func (p *Parser) parseVocabSection() {
 
 	p.nextTokenNotWhitespace()
 
-outer:
 	for {
 		switch p.token {
-		case TokenEOF, TokenLineBreakTrivia, TokenComma:
-			newWord := &Word{Text: parsing, Start: p.tokenStart, End: p.tokenEnd}
+		case TokenWordLiteral, TokenEOF, TokenLineBreakTrivia, TokenComma:
+			isWordLiteral := p.token == TokenWordLiteral
+			text := func() string {
+				if isWordLiteral {
+					return p.text
+				}
+				return parsing
+			}()
+
+			newWord := &Word{Text: text, Start: p.tokenStart, End: p.tokenEnd, Literally: isWordLiteral}
 			words.Words = append(words.Words, newWord)
 
 			if p.token == TokenLineBreakTrivia || p.token == TokenEOF {
-				break outer
+				return
 			}
 
 			parsing = ""
@@ -204,6 +211,7 @@ func (p *Parser) errorHere(original *error, message string) {
 	diag := p.currentVocabSection().Diagnostics
 	p.currentVocabSection().Diagnostics = append(diag, newError)
 
+	// Only 1 error per line for simplicity.
 	for {
 		p.nextToken()
 

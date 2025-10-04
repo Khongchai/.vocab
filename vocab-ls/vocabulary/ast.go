@@ -16,6 +16,9 @@ const (
 type Word struct {
 	// Text represent the actual string value of a word with or without its article.
 	Text string
+	// Literally means the text was wrapped with backticks. The compiler may choose to do something
+	// differently with this information.
+	Literally bool
 	// the start of Text
 	// "hello" start = 0
 	Start int
