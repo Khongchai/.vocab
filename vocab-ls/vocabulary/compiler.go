@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	lsproto "vocab/lsp"
-	data "vocab/vocabulary/data"
+	entity "vocab/vocabulary/entity"
 )
 
 // The program design is to allow fast lookup of word: "Given a word, is it time to review this?"
@@ -12,14 +12,14 @@ import (
 // `Entries` is therefore a hash map of words to a an array of date sections they appear in.
 type Compiler struct {
 	ctx  context.Context
-	tree *data.WordTree
+	tree *entity.WordTree
 	log  func(any)
 }
 
 func NewCompiler(ctx context.Context, log func(any)) *Compiler {
 	return &Compiler{
 		ctx:  ctx,
-		tree: &data.WordTree{},
+		tree: &entity.WordTree{},
 		log:  log,
 	}
 }
@@ -41,8 +41,8 @@ func (c *Compiler) Compile() []lsproto.Diagnostic {
 	return c.tree.Harvest()
 }
 
-func (c *Compiler) astToWordTree(ast *data.VocabAst) *data.WordTree {
-	tree := data.NewWordTree()
+func (c *Compiler) astToWordTree(ast *entity.VocabAst) *entity.WordTree {
+	tree := entity.NewWordTree()
 
 	diagnosticsForWord := func(message string, line, start, end int) *lsproto.Diagnostic {
 		diag := &lsproto.Diagnostic{

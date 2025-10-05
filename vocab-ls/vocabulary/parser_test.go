@@ -7,7 +7,7 @@ import (
 	"time"
 	lsproto "vocab/lsp"
 	test "vocab/vocab_testing"
-	data "vocab/vocabulary/data"
+	entity "vocab/vocabulary/entity"
 )
 
 func trimLines(text string) string {
@@ -124,7 +124,7 @@ func TestSingleWordSection(t *testing.T) {
 
 	newWords := section.NewWords
 	test.Expect(t, 1, len(newWords))
-	test.Expect(t, data.Italiano, newWords[0].Language)
+	test.Expect(t, entity.Italiano, newWords[0].Language)
 	test.Expect(t, false, newWords[0].Reviewed)
 	test.Expect(t, 1, newWords[0].Line)
 
@@ -139,7 +139,7 @@ func TestSingleWordSection(t *testing.T) {
 	reviewedWords := section.ReviewedWords
 	r := reviewedWords[0].Words
 	test.Expect(t, 1, len(reviewedWords))
-	test.Expect(t, data.Deutsch, reviewedWords[0].Language)
+	test.Expect(t, entity.Deutsch, reviewedWords[0].Language)
 	test.Expect(t, 2, reviewedWords[0].Line)
 	test.Expect(t, true, reviewedWords[0].Reviewed)
 	test.Expect(t, "was", r[0].Text)
@@ -176,7 +176,7 @@ func TestWordExpression(t *testing.T) {
 
 	section := parser.currentVocabSection()
 	words := section.NewWords[0]
-	test.Expect(t, data.Italiano, words.Language)
+	test.Expect(t, entity.Italiano, words.Language)
 	test.Expect(t, 1, words.Line)
 	test.Expect(t, "la magia", words.Words[0].Text)
 	test.Expect(t, true, words.Words[0].Literally)
@@ -196,7 +196,7 @@ func TestWordExpressionMissingClosingBacktickShouldAutoClose(t *testing.T) {
 	// (de)
 	section2 := parser.currentVocabSection()
 	words2 := section2.NewWords[0]
-	test.Expect(t, data.Deutsch, words2.Language)
+	test.Expect(t, entity.Deutsch, words2.Language)
 	test.Expect(t, 3, words2.Line)
 	test.Expect(t, 1, len(words2.Words))
 	test.Expect(t, "der Inhalt", words2.Words[0].Text)
@@ -205,7 +205,7 @@ func TestWordExpressionMissingClosingBacktickShouldAutoClose(t *testing.T) {
 	// (it)
 	section1 := parser.ast.Sections[0]
 	words1 := section1.NewWords[0]
-	test.Expect(t, data.Italiano, words1.Language)
+	test.Expect(t, entity.Italiano, words1.Language)
 	test.Expect(t, 1, words1.Line)
 	test.Expect(t, 1, len(words1.Words))
 	test.Expect(t, "la magia, bene", words1.Words[0].Text)
@@ -292,7 +292,7 @@ func TestFullSectionParsing(t *testing.T) {
 	// Reviewed words (>>)
 	test.Expect(t, 1, len(section1.ReviewedWords))
 	reviewed := section1.ReviewedWords[0]
-	test.Expect(t, data.Italiano, reviewed.Language)
+	test.Expect(t, entity.Italiano, reviewed.Language)
 	test.Expect(t, 1, reviewed.Line)
 	test.Expect(t, 2, len(reviewed.Words))
 	test.Expect(t, "la notizia", reviewed.Words[0].Text)
@@ -302,7 +302,7 @@ func TestFullSectionParsing(t *testing.T) {
 	// New words (>)
 	test.Expect(t, 1, len(section1.NewWords))
 	newWords := section1.NewWords[0]
-	test.Expect(t, data.Deutsch, newWords.Language)
+	test.Expect(t, entity.Deutsch, newWords.Language)
 	test.Expect(t, 2, newWords.Line)
 	test.Expect(t, 1, len(newWords.Words))
 	test.Expect(t, "aufschlüsseln", newWords.Words[0].Text)
@@ -321,7 +321,7 @@ func TestFullSectionParsing(t *testing.T) {
 	// New words (>)
 	test.Expect(t, 1, len(section2.NewWords))
 	words := section2.NewWords[0]
-	test.Expect(t, data.Deutsch, words.Language)
+	test.Expect(t, entity.Deutsch, words.Language)
 	test.Expect(t, 13, words.Line)
 	test.Expect(t, 3, len(words.Words))
 	test.Expect(t, "ansprechen", words.Words[0].Text)
@@ -331,7 +331,7 @@ func TestFullSectionParsing(t *testing.T) {
 	// Reviewed words (>>)
 	test.Expect(t, 1, len(section2.ReviewedWords))
 	rw := section2.ReviewedWords[0]
-	test.Expect(t, data.Deutsch, rw.Language)
+	test.Expect(t, entity.Deutsch, rw.Language)
 	test.Expect(t, 14, rw.Line)
 	test.Expect(t, 1, len(rw.Words))
 	test.Expect(t, "anlegen", rw.Words[0].Text)

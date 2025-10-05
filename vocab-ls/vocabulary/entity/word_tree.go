@@ -71,6 +71,7 @@ func (wb *WordTwig) GetLocation() string {
 
 // Calling harvest produces diagnostics for each of the existing branches
 // This method is deterministic and depends on the current state of the tree
+// This is the spaced repetition brain!
 func (*WordTree) Harvest() []lsproto.Diagnostic {
 	panic("Not implemented!")
 }
