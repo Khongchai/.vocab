@@ -1,6 +1,7 @@
 package entity
 
 import (
+	"fmt"
 	"time"
 	lsproto "vocab/lsp"
 )
@@ -28,7 +29,7 @@ type Word struct {
 }
 
 type Section interface {
-	SectionName() string
+	Identity() string
 }
 
 type UtteranceSection struct {
@@ -38,7 +39,9 @@ type UtteranceSection struct {
 	End   int
 }
 
-func (d *UtteranceSection) SectionName() string { return "Utterance" }
+func (d *UtteranceSection) Identity() string {
+	return fmt.Sprintf("%s::%d", d.Text, d.Line)
+}
 
 type DateSection struct {
 	Line  int
@@ -48,7 +51,9 @@ type DateSection struct {
 	End   int
 }
 
-func (d *DateSection) SectionName() string { return "Date" }
+func (d *DateSection) Identity() string {
+	return fmt.Sprintf("%s::%d", d.Text, d.Line)
+}
 
 type WordsSection struct {
 	Words    []*Word
@@ -57,7 +62,9 @@ type WordsSection struct {
 	Line     int
 }
 
-func (w *WordsSection) SectionName() string { return "Words" }
+func (w *WordsSection) Identity() string {
+	return fmt.Sprintf("%s::%d", string(w.Language), w.Line)
+}
 
 type VocabularySection struct {
 	Date          *DateSection
@@ -65,9 +72,16 @@ type VocabularySection struct {
 	ReviewedWords []*WordsSection
 	Utterance     []*UtteranceSection
 	Diagnostics   []*lsproto.Diagnostic
+	Uri           string
 }
 
-func (v *VocabularySection) SectionName() string { return "Vocabulary" }
+func NewVocabularySection(uri string) *VocabularySection {
+	return &VocabularySection{Uri: uri}
+}
+
+func (v *VocabularySection) Identity() string {
+	return fmt.Sprintf("%s::%s", v.Uri, v.Date.Identity())
+}
 
 type VocabAst struct {
 	// Might make this an array later, we'll see

@@ -1,6 +1,10 @@
 package entity
 
-import lsproto "vocab/lsp"
+import (
+	"maps"
+	"slices"
+	lsproto "vocab/lsp"
+)
 
 // A WordTree is a map of the word, or exact literal string to
 // a branch of languages, which is a map of the language literal name to an
@@ -55,6 +59,18 @@ type LanguageBranch struct {
 func (wb *LanguageBranch) Graft(other *LanguageBranch) {
 	for lang, twigs := range other.twigs {
 		wb.twigs[lang] = append(wb.twigs[lang], twigs...)
+	}
+
+	// If grafting is called more than once
+	// this makes sure no section is repeated twice...
+	for lang := range wb.twigs {
+		uniques := make(map[string]*WordTwig)
+		for _, section := range wb.twigs[lang] {
+			ident := section.section.Identity()
+			uniques[ident] = section
+		}
+
+		wb.twigs[lang] = slices.Collect(maps.Values(uniques))
 	}
 }
 

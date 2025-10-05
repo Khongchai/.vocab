@@ -56,7 +56,7 @@ func (p *Parser) Parse() {
 	var lastSection *entity.VocabularySection = nil
 
 	startNewSection := func() {
-		p.ast.Sections = append(p.ast.Sections, &entity.VocabularySection{})
+		p.ast.Sections = append(p.ast.Sections, entity.NewVocabularySection(p.uri))
 	}
 
 	for {
