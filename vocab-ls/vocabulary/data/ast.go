@@ -1,4 +1,4 @@
-package vocabulary
+package data
 
 import (
 	"time"
@@ -71,5 +71,5 @@ func (v *VocabularySection) SectionName() string { return "Vocabulary" }
 type VocabAst struct {
 	// Might make this an array later, we'll see
 	Sections []*VocabularySection
-	uri      string
+	Uri      string
 }

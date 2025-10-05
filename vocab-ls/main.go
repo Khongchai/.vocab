@@ -26,7 +26,7 @@ func main() {
 	inputReader := lib.NewInputReader(os.Stdin)
 	outputWriter := lib.NewOutputWriter(os.Stdout)
 	logger := lib.NewLogger(os.Stderr)
-	program := vocabulary.NewCompiler(ctx)
+	program := vocabulary.NewCompiler(ctx, logger.Log)
 	engine := engine.NewEngine(ctx, inputReader.Read, outputWriter.Write, logger, map[string]func(lsproto.Notification) any{
 		"textDocument/didChange": func(rm lsproto.Notification) any {
 			// TODO optimize later.

@@ -6,6 +6,7 @@ import (
 	"time"
 	lsproto "vocab/lsp"
 	"vocab/syntax"
+	"vocab/vocabulary/data"
 )
 
 const (
@@ -22,7 +23,7 @@ type Parser struct {
 	ctx     context.Context
 	uri     string
 	scanner *Scanner
-	ast     *VocabAst
+	ast     *data.VocabAst
 
 	token      Token
 	text       string
@@ -38,7 +39,7 @@ func NewParser(ctx context.Context, uri string, scanner *Scanner, printCallback 
 		ctx:     ctx,
 		uri:     uri,
 		scanner: scanner,
-		ast:     &VocabAst{},
+		ast:     &data.VocabAst{},
 
 		token:      TokenUnknown,
 		text:       "",
@@ -50,12 +51,12 @@ func NewParser(ctx context.Context, uri string, scanner *Scanner, printCallback 
 }
 
 func (p *Parser) Parse() {
-	p.ast.Sections = []*VocabularySection{}
+	p.ast.Sections = []*data.VocabularySection{}
 
-	var lastSection *VocabularySection = nil
+	var lastSection *data.VocabularySection = nil
 
 	startNewSection := func() {
-		p.ast.Sections = append(p.ast.Sections, &VocabularySection{})
+		p.ast.Sections = append(p.ast.Sections, &data.VocabularySection{})
 	}
 
 	for {
@@ -100,7 +101,7 @@ func (p *Parser) Parse() {
 func (p *Parser) parseDateExpression() {
 	parsed, err := time.Parse(syntax.DateLayout, p.text)
 	parsedAsLocalTime := time.Date(parsed.Year(), parsed.Month(), parsed.Day(), 0, 0, 0, 0, time.Local)
-	date := &DateSection{Text: p.text, Time: parsedAsLocalTime, Start: p.tokenStart, End: p.tokenEnd, Line: p.line}
+	date := &data.DateSection{Text: p.text, Time: parsedAsLocalTime, Start: p.tokenStart, End: p.tokenEnd, Line: p.line}
 	p.currentVocabSection().Date = date
 
 	if err != nil {
@@ -114,7 +115,7 @@ func (p *Parser) parseDateExpression() {
 
 func (p *Parser) parseVocabSection() {
 	currentSection := p.currentVocabSection()
-	words := &WordsSection{
+	words := &data.WordsSection{
 		Line: p.line,
 	}
 	if p.token == TokenGreaterThan {
@@ -131,12 +132,12 @@ func (p *Parser) parseVocabSection() {
 	}
 	switch p.text {
 	case "it":
-		words.Language = Italiano
+		words.Language = data.Italiano
 	case "de":
-		words.Language = Deutsch
+		words.Language = data.Deutsch
 	default:
 		p.errorHere(nil, UnrecognizedLanguage)
-		words.Language = Unrecognized
+		words.Language = data.Unrecognized
 	}
 
 	parsing := ""
@@ -152,7 +153,7 @@ func (p *Parser) parseVocabSection() {
 			return t
 		}()
 
-		newWord := &Word{Text: text, Start: p.tokenStart, End: p.tokenEnd, Literally: isWordLiteral}
+		newWord := &data.Word{Text: text, Start: p.tokenStart, End: p.tokenEnd, Literally: isWordLiteral}
 		words.Words = append(words.Words, newWord)
 
 	}
@@ -192,7 +193,7 @@ func (p *Parser) parseUtteranceSection() {
 		switch p.token {
 		case TokenLineBreak, TokenEOF:
 			text := sb.String()
-			newUtterance := &UtteranceSection{
+			newUtterance := &data.UtteranceSection{
 				Line:  p.line,
 				Start: start,
 				End:   start + len(text),
@@ -249,7 +250,7 @@ func (p *Parser) nextTokenNotWhitespace() {
 	}
 }
 
-func (p *Parser) currentVocabSection() *VocabularySection {
+func (p *Parser) currentVocabSection() *data.VocabularySection {
 	sectionCount := len(p.ast.Sections)
 	if sectionCount == 0 {
 		return nil

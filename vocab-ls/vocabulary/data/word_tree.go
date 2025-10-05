@@ -1,0 +1,76 @@
+package data
+
+import lsproto "vocab/lsp"
+
+// A WordTree is a map of the word, or exact literal string to
+// a branch of languages, which is a map of the language literal name to an
+// array of `twigs` of sections they are in
+type WordTree struct {
+	branches map[string]*LanguageBranch
+}
+
+func NewWordTree() *WordTree {
+	tree := &WordTree{branches: map[string]*LanguageBranch{}}
+	return tree
+}
+
+func (wt *WordTree) GetTwigs(language Language, word string) []*WordTwig {
+	found := wt.branches[string(language)].twigs[word]
+	return found
+}
+
+// Add a new word to the tree. If language branch does not exists, one is created.
+func (wt *WordTree) AddTwig(language Language, word string, uri string, section *VocabularySection, startingDiagnostics []*lsproto.Diagnostic) {
+	lang := string(language)
+	branch := wt.branches[lang]
+
+	if branch == nil {
+		branch = &LanguageBranch{twigs: map[string][]*WordTwig{}}
+		wt.branches[lang] = branch
+	}
+
+	twig := &WordTwig{
+		section:             section,
+		startingDiagnostics: startingDiagnostics,
+	}
+
+	branch.twigs[word] = append(branch.twigs[word], twig)
+}
+
+func (wt *WordTree) Graft(other *WordTree) {
+	for key, value := range other.branches {
+		if wt.branches[key] == nil {
+			wt.branches[key] = value
+			continue
+		}
+
+		wt.branches[key].Graft(value)
+	}
+}
+
+type LanguageBranch struct {
+	twigs map[string][]*WordTwig
+}
+
+func (wb *LanguageBranch) Graft(other *LanguageBranch) {
+	for lang, twigs := range other.twigs {
+		wb.twigs[lang] = append(wb.twigs[lang], twigs...)
+	}
+}
+
+type WordTwig struct {
+	section             *VocabularySection
+	startingDiagnostics []*lsproto.Diagnostic
+	// Document location (file name)
+	location string
+}
+
+func (wb *WordTwig) GetLocation() string {
+	return wb.location
+}
+
+// Calling harvest produces diagnostics for each of the existing branches
+// This method is deterministic and depends on the current state of the tree
+func (*WordTree) Harvest() []lsproto.Diagnostic {
+	panic("Not implemented!")
+}

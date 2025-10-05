@@ -2,39 +2,108 @@ package vocabulary
 
 import (
 	"context"
+	"fmt"
 	lsproto "vocab/lsp"
+	data "vocab/vocabulary/data"
 )
-
-type WordBranch struct {
-	Branch              *VocabularySection
-	CompiledDiagnostics *lsproto.Diagnostic
-}
-
-type WordTree struct {
-	Branches map[string]*[]WordBranch
-}
 
 // The program design is to allow fast lookup of word: "Given a word, is it time to review this?"
 //
-// `Entries` is therefore a hash map of words to a linked list of sorted dates.
+// `Entries` is therefore a hash map of words to a an array of date sections they appear in.
 type Compiler struct {
 	ctx  context.Context
-	tree *WordTree
+	tree *data.WordTree
+	log  func(any)
 }
 
-func NewCompiler(ctx context.Context) *Compiler {
+func NewCompiler(ctx context.Context, log func(any)) *Compiler {
 	return &Compiler{
 		ctx:  ctx,
-		tree: &WordTree{},
+		tree: &data.WordTree{},
+		log:  log,
 	}
 }
 
-// Accept new document uri, turn it into a branch, put into word tree for quick lookup LATER and compile it NOW.
-func (p *Compiler) Accept(documentUri string, text string, changeRange *lsproto.Range) {
-	ast := NewAst(p.ctx, documentUri, text, changeRange)
-	p.Asts = append(p.Asts, ast)
+func (c *Compiler) Accept(documentUri string, text string, changeRange *lsproto.Range) {
+	scanner := NewScanner(text)
+	parser := NewParser(c.ctx, documentUri, scanner, c.log)
+	parser.Parse()
+
+	newWordTree := c.astToWordTree(parser.ast)
+	if c.tree == nil {
+		c.tree = newWordTree
+	} else {
+		c.tree.Graft(newWordTree)
+	}
 }
 
-func (p *Compiler) compile() {
-	p.compile()
+func (c *Compiler) Compile() []lsproto.Diagnostic {
+	return c.tree.Harvest()
+}
+
+func (c *Compiler) astToWordTree(ast *data.VocabAst) *data.WordTree {
+	tree := data.NewWordTree()
+	for _, section := range ast.Sections {
+
+		// add new words
+		for _, newWordSection := range section.NewWords {
+			lang := newWordSection.Language
+			for _, word := range newWordSection.Words {
+				diag := []*lsproto.Diagnostic{}
+				text := word.Text
+				existingTwigs := tree.GetTwigs(lang, text)
+
+				if len(existingTwigs) != 0 {
+					message := fmt.Sprintf("This has been seen before. First occurence in %s", existingTwigs[0].GetLocation())
+					diag = append(diag, &lsproto.Diagnostic{
+						Message:  message,
+						Severity: lsproto.DiagnosticsSeverityWarning,
+						Range: lsproto.Range{
+							Start: lsproto.Position{
+								Line:      newWordSection.Line,
+								Character: word.Start,
+							},
+							End: lsproto.Position{
+								Line:      newWordSection.Line,
+								Character: word.End,
+							},
+						},
+					})
+				}
+
+				tree.AddTwig(lang, text, ast.Uri, section, diag)
+			}
+		}
+
+		// add reviewed words
+		for _, reviewedWordSection := range section.ReviewedWords {
+			lang := reviewedWordSection.Language
+			for _, word := range reviewedWordSection.Words {
+				diag := []*lsproto.Diagnostic{}
+				text := word.Text
+				existingTwigs := tree.GetTwigs(lang, text)
+				if len(existingTwigs) == 0 {
+					message := "This has never been seen before."
+					diag = append(diag, &lsproto.Diagnostic{
+						Message:  message,
+						Severity: lsproto.DiagnosticsSeverityWarning,
+						Range: lsproto.Range{
+							Start: lsproto.Position{
+								Line:      reviewedWordSection.Line,
+								Character: word.Start,
+							},
+							End: lsproto.Position{
+								Line:      reviewedWordSection.Line,
+								Character: word.End,
+							},
+						},
+					})
+				}
+
+				tree.AddTwig(lang, text, ast.Uri, section, diag)
+			}
+		}
+	}
+
+	return tree
 }
