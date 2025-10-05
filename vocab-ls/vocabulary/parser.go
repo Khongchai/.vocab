@@ -119,8 +119,10 @@ func (p *Parser) parseVocabSection() {
 		Line: p.line,
 	}
 	if p.token == TokenGreaterThan {
+		words.Reviewed = false
 		currentSection.NewWords = append(currentSection.NewWords, words)
 	} else {
+		words.Reviewed = true
 		currentSection.ReviewedWords = append(currentSection.ReviewedWords, words)
 	}
 

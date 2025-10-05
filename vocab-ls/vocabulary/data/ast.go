@@ -52,6 +52,7 @@ func (d *DateSection) SectionName() string { return "Date" }
 
 type WordsSection struct {
 	Words    []*Word
+	Reviewed bool
 	Language Language
 	Line     int
 }

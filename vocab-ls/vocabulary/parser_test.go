@@ -125,6 +125,7 @@ func TestSingleWordSection(t *testing.T) {
 	newWords := section.NewWords
 	test.Expect(t, 1, len(newWords))
 	test.Expect(t, data.Italiano, newWords[0].Language)
+	test.Expect(t, false, newWords[0].Reviewed)
 	test.Expect(t, 1, newWords[0].Line)
 
 	n := newWords[0].Words
@@ -140,6 +141,7 @@ func TestSingleWordSection(t *testing.T) {
 	test.Expect(t, 1, len(reviewedWords))
 	test.Expect(t, data.Deutsch, reviewedWords[0].Language)
 	test.Expect(t, 2, reviewedWords[0].Line)
+	test.Expect(t, true, reviewedWords[0].Reviewed)
 	test.Expect(t, "was", r[0].Text)
 	test.Expect(t, false, r[0].Literally)
 }
