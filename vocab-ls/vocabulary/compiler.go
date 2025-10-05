@@ -63,17 +63,27 @@ func (c *Compiler) astToWordTree(ast *data.VocabAst) *data.WordTree {
 	}
 
 	for _, section := range ast.Sections {
-		// add new words
-		for _, newWordSection := range section.NewWords {
-			lang := newWordSection.Language
-			for _, word := range newWordSection.Words {
+		allWordSections := append(section.NewWords, section.ReviewedWords...)
+		for _, wordSection := range allWordSections {
+			lang := wordSection.Language
+			reviewed := wordSection.Reviewed
+			for _, word := range wordSection.Words {
 				var diag []*lsproto.Diagnostic
 				existingTwigs := tree.GetTwigs(lang, word.Text)
 
-				if len(existingTwigs) != 0 {
+				warnText := func() string {
+					if !reviewed && len(existingTwigs) != 0 {
+						return fmt.Sprintf("This has been seen before. First occurence in %s", existingTwigs[0].GetLocation())
+					} else if reviewed && len(existingTwigs) == 0 {
+						return "This has never been seen before"
+					}
+					return ""
+				}()
+
+				if warnText != "" {
 					warn := diagnosticsForWord(
-						fmt.Sprintf("This has been seen before. First occurence in %s", existingTwigs[0].GetLocation()),
-						newWordSection.Line,
+						warnText,
+						wordSection.Line,
 						word.Start,
 						word.End,
 					)
@@ -82,27 +92,9 @@ func (c *Compiler) astToWordTree(ast *data.VocabAst) *data.WordTree {
 
 				tree.AddTwig(lang, word.Text, ast.Uri, section, diag)
 			}
+
 		}
 
-		for _, reviewedWordSection := range section.ReviewedWords {
-			lang := reviewedWordSection.Language
-			for _, word := range reviewedWordSection.Words {
-				var diag []*lsproto.Diagnostic
-				existingTwigs := tree.GetTwigs(lang, word.Text)
-
-				if len(existingTwigs) == 0 {
-					warn := diagnosticsForWord(
-						"This has never been seen before",
-						reviewedWordSection.Line,
-						word.Start,
-						word.End,
-					)
-					diag = append(diag, warn)
-				}
-
-				tree.AddTwig(lang, word.Text, ast.Uri, section, diag)
-			}
-		}
 	}
 
 	return tree
