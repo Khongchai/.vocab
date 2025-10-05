@@ -16,10 +16,12 @@
     - [x] Fix utterance parsing
     - [x] Stop including parens in language identifier!
     - [x] Make TestFullSectionParsing then 
-    - [ ] Then compiler!
-        - [ ] The compiler should be incremental in that 
-            - [ ] it accepts ast and turn it into an IR tree -- a hashmap of words to the date section and location / file they appear in. 
-            - [ ] The IR trees can be compiled and produce diagnostics independently and then merge. Every time they merge, new diagnostics should be produced based on newly available information. This means multicore-power!
+    - [x] Then compiler!
+        - [x] The compiler should be incremental in that 
+            - [x] it accepts ast and turn it into an IR tree -- a hashmap of words to the date section and location / file they appear in. 
+            - [x] The IR trees can be compiled and produce diagnostics independently and then merge. Every time they merge, new diagnostics should be produced based on newly available information. This means multicore-power!
+    - [ ] Words need to be graded 
+
 
 ```markdown
 # 04/09/2025
@@ -93,6 +95,7 @@ Markiert es wenn ein neues Wort nicht in seiner Infinitivform ist:
 Devi fare entrambe le cose.
 ```
 # Side quests
+- [ ] Command click for word occurences.
 - [ ] Add a comment case.
 - [ ] Hover to show definition in English
 - [ ] Parallelize parsing of multiple vocab files with goroutine (see ts-go).

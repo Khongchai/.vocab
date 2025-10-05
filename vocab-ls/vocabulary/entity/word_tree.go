@@ -70,7 +70,19 @@ func (wb *LanguageBranch) Graft(other *LanguageBranch) {
 			uniques[ident] = section
 		}
 
-		wb.twigs[lang] = slices.Collect(maps.Values(uniques))
+		unsorted := maps.Values(uniques)
+		sorted := slices.SortedFunc(unsorted, func(a, b *WordTwig) int {
+			if a.section.Date.Time.Before(b.section.Date.Time) {
+				return -1
+			}
+
+			if a.section.Date.Time.After(b.section.Date.Time) {
+				return 1
+			}
+
+			return 0
+		})
+		wb.twigs[lang] = sorted
 	}
 }
 
@@ -85,9 +97,7 @@ func (wb *WordTwig) GetLocation() string {
 	return wb.location
 }
 
-// Produce diagnostics based on the current tree state.
-//
-// This method is idempotent -- does not modify the inner tree state.
+// Use a fixed-grade array as input to super memo2
 func (*WordTree) Harvest() []lsproto.Diagnostic {
-	panic("Not implemented!")
+
 }
