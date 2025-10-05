@@ -1,4 +1,4 @@
-package data
+package entity
 
 import lsproto "vocab/lsp"
 
@@ -69,9 +69,9 @@ func (wb *WordTwig) GetLocation() string {
 	return wb.location
 }
 
-// Calling harvest produces diagnostics for each of the existing branches
-// This method is deterministic and depends on the current state of the tree
-// This is the spaced repetition brain!
+// Produce diagnostics based on the current tree state.
+//
+// This method is idempotent -- does not modify the inner tree state.
 func (*WordTree) Harvest() []lsproto.Diagnostic {
 	panic("Not implemented!")
 }
