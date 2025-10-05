@@ -7,9 +7,6 @@ import (
 	entity "vocab/vocabulary/entity"
 )
 
-// The program design is to allow fast lookup of word: "Given a word, is it time to review this?"
-//
-// `Entries` is therefore a hash map of words to a an array of date sections they appear in.
 type Compiler struct {
 	ctx  context.Context
 	tree *entity.WordTree
