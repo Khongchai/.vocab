@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 	lsproto "vocab/lsp"
+	memo "vocab/super_memo"
 	test "vocab/vocab_testing"
 	entity "vocab/vocabulary/entity"
 )
@@ -340,4 +341,64 @@ func TestFullSectionParsing(t *testing.T) {
 	test.Expect(t, 4, len(section2.Utterance))
 	test.Expect(t, "Ich werde nicht mit ihm anlegen, das ist mein Vorschlag für dich.", section2.Utterance[1].Text)
 	test.Expect(t, "Na gut, dann schnapp ich mir einfach mal ein paar technische Themen für dich. Wie wäre es, wenn ich dich ein bisschen dazu ausfrage, welche Technik dich im Moment so fasziniert?", section2.Utterance[3].Text)
+}
+
+func TestGrading(t *testing.T) {
+	text := trimLines(fmt.Sprintf(`
+		20/08/2025
+		> (it) %sla magia%s(1), chiacchierare, caminare(0), cosa(5)
+	`, "`", "`"))
+
+	parser := NewParser(t.Context(), "xxx", NewScanner(text), func(any) {})
+	parser.Parse()
+
+	words := parser.ast.Sections[0].NewWords[0].Words
+	test.Expect(t, 5, len(words))
+	test.Expect(t, memo.MemoCorrectHard, words[0].Grade)
+	test.Expect(t, memo.MemoBlackout, words[1].Grade) // default, no score = 0
+	test.Expect(t, memo.MemoBlackout, words[2].Grade)
+	test.Expect(t, memo.MemoPerfect, words[3].Grade)
+}
+
+func TestInvalidGradeShouldIgnoreWordCompletely(t *testing.T) {
+	text := trimLines(fmt.Sprintf(`
+		20/08/2025
+		> (it) %sla magia%s(-1), these, should, not, count
+		20/08/2025
+		> (it) chiacchierare(10)
+		20/08/2025
+		> (it) chiacchierare(xxx)
+	`, "`", "`"))
+
+	parser := NewParser(t.Context(), "xxx", NewScanner(text), func(any) {})
+	parser.Parse()
+
+	words1 := parser.ast.Sections[0].NewWords[0].Words
+	test.Expect(t, 0, len(words1))
+	diag1 := parser.ast.Sections[0].Diagnostics[0]
+	test.Expect(t, InvalidScore, diag1.Message)
+	test.Expect(t, 17, diag1.Range.Start.Character)
+	test.Expect(t, 20, diag1.Range.End.Character)
+	test.Expect(t, 1, diag1.Range.Start.Line, diag1.Range.End.Line)
+
+	words2 := parser.ast.Sections[1].NewWords[0].Words
+	test.Expect(t, 0, len(words2))
+	diag2 := parser.ast.Sections[1].Diagnostics[0]
+	test.Expect(t, InvalidScore, diag2.Message)
+	test.Expect(t, 20, diag2.Range.Start.Character)
+	test.Expect(t, 23, diag2.Range.End.Character)
+	test.Expect(t, 3, diag2.Range.Start.Line, diag2.Range.End.Line)
+
+	words3 := parser.ast.Sections[2].NewWords[0].Words
+	test.Expect(t, 0, len(words3))
+	diag3 := parser.ast.Sections[2].Diagnostics[0]
+	test.Expect(t, InvalidScore, diag3.Message)
+	test.Expect(t, 20, diag3.Range.Start.Character)
+	test.Expect(t, 24, diag3.Range.End.Character)
+	test.Expect(t, 5, diag3.Range.Start.Line, diag3.Range.End.Line)
+}
+
+func TestMultipleDiagnostics(t *testing.T) {
+	// TODO
+	test.Expect(t, true, true)
 }

@@ -2,6 +2,17 @@ package super_memo
 
 import "math"
 
+type MemoGrade int
+
+const (
+	MemoBlackout            MemoGrade = 0 // 0 - complete blackout
+	MemoIncorrectRemembered MemoGrade = 1 // 1 - incorrect response; the correct one remembered
+	MemoIncorrectEasy       MemoGrade = 2 // 2 - incorrect response; the correct one seemed easy to recall
+	MemoCorrectHard         MemoGrade = 3 // 3 - correct response recalled with serious difficulty
+	MemoCorrectHesitation   MemoGrade = 4 // 4 - correct response after a hesitation
+	MemoPerfect             MemoGrade = 5 // 5 - perfect response
+)
+
 // https://en.wikipedia.org/wiki/SuperMemo
 func Sm2(grade int, repetitionNumber int, interval int, easinessFactor float64) (int, int, float64) {
 	if grade >= 3 {

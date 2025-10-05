@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 	lsproto "vocab/lsp"
+	memo "vocab/super_memo"
 )
 
 type Language string
@@ -26,6 +27,8 @@ type Word struct {
 	// the end of Text
 	// "hello" end = 4
 	End int
+	// The grade as specified by the super memo2 algorithm
+	Grade memo.MemoGrade
 }
 
 type Section interface {

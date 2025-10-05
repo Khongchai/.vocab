@@ -20,7 +20,8 @@
         - [x] The compiler should be incremental in that 
             - [x] it accepts ast and turn it into an IR tree -- a hashmap of words to the date section and location / file they appear in. 
             - [x] The IR trees can be compiled and produce diagnostics independently and then merge. Every time they merge, new diagnostics should be produced based on newly available information. This means multicore-power!
-    - [ ] Words need to be graded 
+    - [ ] Words need to be graded  (writing parser test)
+        - [ ] Then go back to implementing the harvest function!
 
 
 ```markdown

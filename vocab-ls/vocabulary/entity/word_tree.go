@@ -99,5 +99,5 @@ func (wb *WordTwig) GetLocation() string {
 
 // Use a fixed-grade array as input to super memo2
 func (*WordTree) Harvest() []lsproto.Diagnostic {
-
+	panic("Not implemented")
 }

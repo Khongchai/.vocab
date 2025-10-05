@@ -17,6 +17,7 @@ const (
 	UnrecognizedLanguage     string = "Unrecognized language identifier. Specify either (it) or (de)"
 	ExpectVocabSection       string = "Expect Vocab Section"
 	UnexpectedToken          string = "Unexpected Token"
+	InvalidScore             string = "Score must be a number between 0 - 5"
 )
 
 type Parser struct {
