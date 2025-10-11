@@ -18,7 +18,7 @@ func Sm2(grade int, repetitionNumber int, interval int, easinessFactor float64) 
 	if grade >= 3 {
 		switch repetitionNumber {
 		case 0:
-			interval = 0
+			interval = 1
 		case 1:
 			interval = 6
 		default:
