@@ -363,9 +363,9 @@ func TestInvalidGradeShouldIgnoreWordsAfterCompletely(t *testing.T) {
 	text := trimLines(fmt.Sprintf(`
 		20/08/2025
 		> (it) %sla magia%s(xxx), these, should, not, count
-		20/08/2025
+		21/08/2025
 		> (it) chiacchierare(4j2)
-		20/08/2025
+		22/08/2025
 		> (it) chiacchierare()
 	`, "`", "`"))
 
@@ -385,7 +385,7 @@ func TestInvalidGradeShouldIgnoreWordsAfterCompletely(t *testing.T) {
 	diag2 := parser.ast.Sections[1].Diagnostics[0]
 	test.Expect(t, InvalidScore, diag2.Message)
 	test.Expect(t, 20, diag2.Range.Start.Character)
-	test.Expect(t, 23, diag2.Range.End.Character)
+	test.Expect(t, 25, diag2.Range.End.Character)
 	test.Expect(t, 3, diag2.Range.Start.Line, diag2.Range.End.Line)
 
 	words3 := parser.ast.Sections[2].NewWords[0].Words
@@ -393,11 +393,6 @@ func TestInvalidGradeShouldIgnoreWordsAfterCompletely(t *testing.T) {
 	diag3 := parser.ast.Sections[2].Diagnostics[0]
 	test.Expect(t, InvalidScore, diag3.Message)
 	test.Expect(t, 20, diag3.Range.Start.Character)
-	test.Expect(t, 24, diag3.Range.End.Character)
+	test.Expect(t, 22, diag3.Range.End.Character)
 	test.Expect(t, 5, diag3.Range.Start.Line, diag3.Range.End.Line)
-}
-
-func TestMultipleDiagnostics(t *testing.T) {
-	// TODO
-	test.Expect(t, true, true)
 }

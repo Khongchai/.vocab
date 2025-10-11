@@ -183,10 +183,10 @@ func (p *Parser) parseVocabSection() {
 			if err != nil {
 				p.errorHere(nil, InvalidScore)
 				for {
-					p.nextToken()
 					if p.token == TokenLineBreak || p.token == TokenEOF {
 						return
 					}
+					p.nextToken()
 				}
 			}
 			currentGrade = number
