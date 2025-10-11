@@ -20,9 +20,9 @@ const (
 	TokenMarkdownCommentStart // <!--
 	TokenMarkdownCommentEnd   // -->
 
-	TokenDateExpression  // xx/xx/xxxx
-	TokenWordLiteral     // `literally` `a` `word`
-	TokenLanguageLiteral // (de) or (it)
+	TokenDateExpression           // xx/xx/xxxx
+	TokenWordLiteral              // `literally` `a` `word`
+	TokenSemanticSpecifierLiteral // (de), (it), (4), (5)
 
 	TokenText // all text that do not match anything above
 	// We need to emit whitespace here. We can't be 100% sure yet in the scanner whether we're in the

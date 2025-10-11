@@ -137,19 +137,23 @@ func (s *Scanner) Scan() (Token, string) {
 		}
 
 	case lib.LeftParen:
-		possibleClosing, _ := s.charAt(3)
-		if possibleClosing == lib.RightParen {
-			ident := s.text[s.pos+1 : 3+s.pos]
-			s.forwardPos(4)
-			return TokenLanguageLiteral, ident
-		}
+		collected := "("
+		s.forwardPos(1)
 
-		// To keep things consistent, we consume some number of text up until len("(xx)") before continuing.
-		remainingSize := len(s.text[s.pos:])
-		consumableSize := min(4, remainingSize)
-		consumed := s.text[s.pos:consumableSize]
-		s.forwardPos(len(consumed))
-		return TokenText, consumed
+		for {
+			thisChar, thisCharLen := s.charAt(0)
+			switch thisChar {
+			case lib.RightParen:
+				s.forwardPos(1)
+				return TokenSemanticSpecifierLiteral, collected[1:]
+			default:
+				if s.atEnd() || lib.IsLineBreak(thisChar) {
+					return TokenText, collected
+				}
+				collected += string(thisChar)
+				s.forwardPos(thisCharLen)
+			}
+		}
 
 	default:
 		s.forwardPos(scannedSize)
