@@ -6,7 +6,6 @@ import (
 	"testing"
 	"time"
 	lsproto "vocab/lsp"
-	memo "vocab/super_memo"
 	test "vocab/vocab_testing"
 	entity "vocab/vocabulary/entity"
 )
@@ -346,39 +345,39 @@ func TestFullSectionParsing(t *testing.T) {
 func TestGrading(t *testing.T) {
 	text := trimLines(fmt.Sprintf(`
 		20/08/2025
-		> (it) %sla magia%s(1), chiacchierare, caminare(0), cosa(5)
+		> (it) %sla magia%s(1), chiacchierare, caminare(0), cosa(10)
 	`, "`", "`"))
 
 	parser := NewParser(t.Context(), "xxx", NewScanner(text), func(any) {})
 	parser.Parse()
 
 	words := parser.ast.Sections[0].NewWords[0].Words
-	test.Expect(t, 5, len(words))
-	test.Expect(t, memo.MemoCorrectHard, words[0].Grade)
-	test.Expect(t, memo.MemoBlackout, words[1].Grade) // default, no score = 0
-	test.Expect(t, memo.MemoBlackout, words[2].Grade)
-	test.Expect(t, memo.MemoPerfect, words[3].Grade)
+	test.Expect(t, 4, len(words))
+	test.Expect(t, 1, words[0].Grade)
+	test.Expect(t, 0, words[1].Grade) // default, no score = 0
+	test.Expect(t, 0, words[2].Grade)
+	test.Expect(t, 10, words[3].Grade)
 }
 
-func TestInvalidGradeShouldIgnoreWordCompletely(t *testing.T) {
+func TestInvalidGradeShouldIgnoreWordsAfterCompletely(t *testing.T) {
 	text := trimLines(fmt.Sprintf(`
 		20/08/2025
-		> (it) %sla magia%s(-1), these, should, not, count
+		> (it) %sla magia%s(xxx), these, should, not, count
 		20/08/2025
-		> (it) chiacchierare(10)
+		> (it) chiacchierare(4j2)
 		20/08/2025
-		> (it) chiacchierare(xxx)
+		> (it) chiacchierare()
 	`, "`", "`"))
 
 	parser := NewParser(t.Context(), "xxx", NewScanner(text), func(any) {})
 	parser.Parse()
 
 	words1 := parser.ast.Sections[0].NewWords[0].Words
-	test.Expect(t, 0, len(words1))
+	test.Expect(t, 1, len(words1))
 	diag1 := parser.ast.Sections[0].Diagnostics[0]
 	test.Expect(t, InvalidScore, diag1.Message)
 	test.Expect(t, 17, diag1.Range.Start.Character)
-	test.Expect(t, 20, diag1.Range.End.Character)
+	test.Expect(t, 22, diag1.Range.End.Character) // remember, it's [start, ...end)
 	test.Expect(t, 1, diag1.Range.Start.Line, diag1.Range.End.Line)
 
 	words2 := parser.ast.Sections[1].NewWords[0].Words

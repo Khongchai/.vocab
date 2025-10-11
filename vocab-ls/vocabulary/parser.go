@@ -2,6 +2,7 @@ package vocabulary
 
 import (
 	"context"
+	"strconv"
 	"strings"
 	"time"
 	lsproto "vocab/lsp"
@@ -17,7 +18,7 @@ const (
 	UnrecognizedLanguage     string = "Unrecognized language identifier. Specify either (it) or (de)"
 	ExpectVocabSection       string = "Expect Vocab Section"
 	UnexpectedToken          string = "Unexpected Token"
-	InvalidScore             string = "Score must be a number between 0 - 5"
+	InvalidScore             string = "Score must be a number"
 )
 
 type Parser struct {
@@ -129,7 +130,7 @@ func (p *Parser) parseVocabSection() {
 
 	p.nextTokenNotWhitespace()
 
-	if p.token != TokenLanguageLiteral {
+	if p.token != TokenSemanticSpecifierLiteral {
 		p.errorHere(nil, ExpectLanguageExpression)
 		return
 	}
@@ -147,8 +148,16 @@ func (p *Parser) parseVocabSection() {
 
 	p.nextTokenNotWhitespace()
 
+	currentGrade := 0
+
+	assignGradeAndClear := func() {
+		words.Words[len(words.Words)-1].Grade = currentGrade
+		currentGrade = 0
+	}
+
 	newWordFromText := func(t string) {
 		isWordLiteral := p.token == TokenWordLiteral
+
 		text := func() string {
 			if isWordLiteral {
 				return p.text
@@ -158,26 +167,42 @@ func (p *Parser) parseVocabSection() {
 
 		newWord := &entity.Word{Text: text, Start: p.tokenStart, End: p.tokenEnd, Literally: isWordLiteral}
 		words.Words = append(words.Words, newWord)
-
 	}
 
 	for {
 		switch p.token {
+
 		case TokenLineBreak, TokenEOF:
 			if parsing != "" {
 				newWordFromText(parsing)
+				assignGradeAndClear()
 			}
 			return
+		case TokenSemanticSpecifierLiteral:
+			number, err := strconv.Atoi(p.text)
+			if err != nil {
+				p.errorHere(nil, InvalidScore)
+				for {
+					p.nextToken()
+					if p.token == TokenLineBreak || p.token == TokenEOF {
+						return
+					}
+				}
+			}
+			currentGrade = number
+			p.nextTokenNotWhitespace()
 		case TokenWordLiteral:
 			newWordFromText(parsing)
 			p.nextTokenNotWhitespace()
 		case TokenComma:
 			if parsing == "" {
+				assignGradeAndClear()
 				p.nextTokenNotWhitespace()
 				continue
 			}
 
 			newWordFromText(parsing)
+			assignGradeAndClear()
 			p.nextTokenNotWhitespace()
 			parsing = ""
 		default:
@@ -267,6 +292,6 @@ func (p *Parser) nextToken() {
 	token, text := p.scanner.Scan()
 	p.text = text
 	p.token = token
-	p.tokenEnd = p.scanner.lineOffset
-	p.tokenStart = max(p.tokenEnd-len(text), 0)
+	p.tokenEnd = p.scanner.tokenLineOffsetEnd
+	p.tokenStart = p.scanner.tokenLineOffsetStart
 }

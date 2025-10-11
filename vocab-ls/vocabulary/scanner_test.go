@@ -31,7 +31,7 @@ func testScanExpectations(t *testing.T, testCases []ScanCase) {
 			expectation := currentCase.Expectations[j]
 			actualToken, actualText := scanner.Scan()
 			actualLine := scanner.line
-			actualOffset := scanner.lineOffset
+			actualOffset := scanner.tokenLineOffsetEnd
 			actualPos := scanner.pos
 
 			if actualLine != expectation.Line {

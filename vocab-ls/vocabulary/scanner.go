@@ -11,22 +11,28 @@ import (
 type Scanner struct {
 	text string
 	// This always report the next position to be read from.
-	pos        int
-	lineOffset int
-	line       int
+	pos int
+	// `pos` at which the current token ends
+	tokenLineOffsetEnd int
+	// `pos` at which the current token begins
+	tokenLineOffsetStart int
+	line                 int
 }
 
 func NewScanner(text string) *Scanner {
 	return &Scanner{
-		text:       text,
-		pos:        0,
-		lineOffset: 0,
-		line:       0,
+		text:                 text,
+		pos:                  0,
+		tokenLineOffsetEnd:   0,
+		tokenLineOffsetStart: 0,
+		line:                 0,
 	}
 }
 
 func (s *Scanner) Scan() (Token, string) {
 	scanned, scannedSize := s.charAt(0)
+
+	s.tokenLineOffsetStart = s.tokenLineOffsetEnd
 
 	if lib.IsWhiteSpaceSingleLine(scanned) {
 		s.forwardPos(scannedSize)
@@ -171,13 +177,13 @@ func (s *Scanner) PeekNext() (rune, int) {
 
 func (s *Scanner) forwardPos(by int) {
 	s.pos += by
-	s.lineOffset += by
+	s.tokenLineOffsetEnd += by
 }
 
 func (s *Scanner) forwardLine() {
 	s.pos++
 	s.line++
-	s.lineOffset = 0
+	s.tokenLineOffsetEnd = 0
 }
 
 // Does not throw error and return -1 if index out of range
