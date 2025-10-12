@@ -22,6 +22,7 @@ const (
 	DiagnosticsSeverityWarning
 	DiagnosticsSeverityInformation
 	DiagnosticsSeverityHint
+	DiagnosticsSeverityNone
 )
 
 type DocumentDiagnosticReportKind string
@@ -110,6 +111,23 @@ type Diagnostic struct {
 	Range    Range               `json:"range"`
 	Message  string              `json:"message,omitempty"`
 	Severity DiagnosticsSeverity `json:"severity"`
+}
+
+func MakeDiagnostics(message string, line int, startPos int, endPos int, level DiagnosticsSeverity) *Diagnostic {
+	return &Diagnostic{
+		Message:  message,
+		Severity: level,
+		Range: Range{
+			Start: Position{
+				Line:      line,
+				Character: startPos,
+			},
+			End: Position{
+				Line:      line,
+				Character: endPos,
+			},
+		},
+	}
 }
 
 type Range struct {

@@ -35,29 +35,46 @@ func (c *Compiler) Accept(documentUri string, text string, changeRange *lsproto.
 }
 
 func (c *Compiler) Compile() []lsproto.Diagnostic {
-	return c.tree.Harvest()
+	details := c.tree.Harvest()
+	diags := []lsproto.Diagnostic{}
+
+	addDiagToWords := func(timeRemaining float64, severitiy lsproto.DiagnosticsSeverity, words []*entity.Word) {
+		for _, word := range words {
+			err := lsproto.MakeDiagnostics(
+				fmt.Sprintf("Needs review within: %f day(s)", timeRemaining),
+				word.Line,
+				word.Start,
+				word.End,
+				severitiy,
+			)
+
+			diags = append(diags, *err)
+		}
+	}
+
+	for _, detail := range details {
+		for _, starting := range detail.StartingDiagnostics {
+			diags = append(diags, *starting)
+		}
+
+		severity := func() lsproto.DiagnosticsSeverity {
+			if detail.TimeRemaining <= 1 {
+				return lsproto.DiagnosticsSeverityError
+			} else if detail.TimeRemaining < 3 {
+				return lsproto.DiagnosticsSeverityHint
+			}
+
+			return lsproto.DiagnosticsSeverityInformation
+		}()
+
+		addDiagToWords(detail.TimeRemaining, severity, detail.Words)
+	}
+
+	return diags
 }
 
 func (c *Compiler) astToWordTree(ast *entity.VocabAst) *entity.WordTree {
 	tree := entity.NewWordTree()
-
-	diagnosticsForWord := func(message string, line, start, end int) *lsproto.Diagnostic {
-		diag := &lsproto.Diagnostic{
-			Message:  message,
-			Severity: lsproto.DiagnosticsSeverityWarning,
-			Range: lsproto.Range{
-				Start: lsproto.Position{
-					Line:      line,
-					Character: start,
-				},
-				End: lsproto.Position{
-					Line:      line,
-					Character: end,
-				},
-			},
-		}
-		return diag
-	}
 
 	for _, section := range ast.Sections {
 		allWordSections := append(section.NewWords, section.ReviewedWords...)
@@ -78,21 +95,19 @@ func (c *Compiler) astToWordTree(ast *entity.VocabAst) *entity.WordTree {
 				}()
 
 				if warnText != "" {
-					warn := diagnosticsForWord(
+					warn := lsproto.MakeDiagnostics(
 						warnText,
 						wordSection.Line,
 						word.Start,
 						word.End,
+						lsproto.DiagnosticsSeverityWarning,
 					)
 					diag = append(diag, warn)
 				}
 
-				tree.AddTwig(lang, word.Text, ast.Uri, section, diag)
+				tree.AddTwig(lang, word, ast.Uri, section, diag)
 			}
-
 		}
-
 	}
-
 	return tree
 }

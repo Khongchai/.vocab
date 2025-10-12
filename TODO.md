@@ -20,7 +20,9 @@
         - [x] The compiler should be incremental in that 
             - [x] it accepts ast and turn it into an IR tree -- a hashmap of words to the date section and location / file they appear in. 
             - [x] The IR trees can be compiled and produce diagnostics independently and then merge. Every time they merge, new diagnostics should be produced based on newly available information. This means multicore-power!
-    - [ ] Words need to be graded  (writing parser test)
+    - [x] Words need to be graded  (writing parser test)
+        You're implementing harvest
+        Also consider making the word tree's inner nodes able to reference their parent
         - [ ] Then go back to implementing the harvest function!
 
 
@@ -51,7 +53,9 @@ Inoltre, questo plugin sarà fantastico. Sono sicuro.
 # Main Requirement 2
 
 - [ ] Handle multiple opened files in parallel (great opportunity to try out go's parallel power)
-Notes: in typescript-go, ast building is a parallelization task, but type checking isn't. For us though, we can parallelize both the ast-building phase (emits only syntax-related errors) and the spaced-repetition phase (basically the compile phase) because with spaced-repetition, we can look up words and find out where on which dates less than today they appear, if found, mark as red.
+We can build the ast trees -> word tree in parallel
+aggregate to final single word tree
+Then fork again and apply in parallel sm2 
 
 # Main Requirement 3 
 
@@ -101,3 +105,4 @@ Devi fare entrambe le cose.
 - [ ] Hover to show definition in English
 - [ ] Parallelize parsing of multiple vocab files with goroutine (see ts-go).
 - [ ] Make pull mode work
+- [ ] Show how much time remaining for each individual word.

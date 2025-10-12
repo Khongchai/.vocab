@@ -3,7 +3,9 @@ package entity
 import (
 	"maps"
 	"slices"
+	"time"
 	lsproto "vocab/lsp"
+	"vocab/super_memo"
 )
 
 // A WordTree is a map of the word, or exact literal string to
@@ -24,7 +26,7 @@ func (wt *WordTree) GetTwigs(language Language, word string) []*WordTwig {
 }
 
 // Add a new word to the tree. If language branch does not exists, one is created.
-func (wt *WordTree) AddTwig(language Language, word string, uri string, section *VocabularySection, startingDiagnostics []*lsproto.Diagnostic) {
+func (wt *WordTree) AddTwig(language Language, word *Word, uri string, section *VocabularySection, startingDiagnostics []*lsproto.Diagnostic) {
 	lang := string(language)
 	branch := wt.branches[lang]
 
@@ -33,12 +35,30 @@ func (wt *WordTree) AddTwig(language Language, word string, uri string, section 
 		wt.branches[lang] = branch
 	}
 
+	clamped_grade := max(super_memo.MemoBlackout, min(word.Grade, super_memo.MemoPerfect))
+	if clamped_grade != word.Grade {
+		startingDiagnostics = append(startingDiagnostics, &lsproto.Diagnostic{
+			Severity: lsproto.DiagnosticsSeverityError,
+			Message:  "Expect grade to be from 0 to 5. Can also leave empty for the default 0",
+			Range: lsproto.Range{
+				Start: lsproto.Position{
+					Line:      word.Line,
+					Character: word.Start,
+				},
+				End: lsproto.Position{
+					Line:      word.Line,
+					Character: word.End,
+				},
+			},
+		})
+	}
 	twig := &WordTwig{
+		grade:               clamped_grade,
 		section:             section,
 		startingDiagnostics: startingDiagnostics,
 	}
 
-	branch.twigs[word] = append(branch.twigs[word], twig)
+	branch.twigs[word.Text] = append(branch.twigs[word.Text], twig)
 }
 
 func (wt *WordTree) Graft(other *WordTree) {
@@ -50,6 +70,55 @@ func (wt *WordTree) Graft(other *WordTree) {
 
 		wt.branches[key].Graft(value)
 	}
+}
+
+func (wt *WordTree) Harvest() []*WordFruit {
+	details := []*WordFruit{}
+	// für jede LanguageBranch
+	// für jede WordTwig auf LanguageBranch (Wir gehen davon aus, dass die Twigs schon sortiert sind.)
+	for lang, langBranch := range wt.branches {
+		for word, twigs := range langBranch.twigs {
+			detail := &WordFruit{
+				Words:               []*Word{},
+				TimeRemaining:       0,
+				StartingDiagnostics: []*lsproto.Diagnostic{},
+				Lang:                Language(lang),
+				Text:                word,
+			}
+
+			repetitionNumber := 0
+			easinessFactor := super_memo.InitialEasinessFactor
+
+			// interval is the final output we want
+			var interval float64
+			var lastSeenDate *time.Time
+			for _, twig := range twigs {
+				detail.StartingDiagnostics = append(detail.StartingDiagnostics, twig.startingDiagnostics...)
+				currentInterval := func() float64 {
+					if lastSeenDate == nil {
+						return 0
+					}
+					diff := twig.section.Date.Time.Sub(*lastSeenDate)
+					diffDays := diff.Hours() / 24
+					return diffDays
+				}()
+				repetitionNumber, interval, easinessFactor = super_memo.Sm2(twig.grade, repetitionNumber, currentInterval, easinessFactor)
+
+				lastSeenDate = &twig.section.Date.Time
+			}
+
+			// In the future, this can be moved to a different layer.
+			// If max(0, today - last reviewed date) is more than interval, produce diagnostics
+			diffHours := time.Since(*lastSeenDate).Hours()
+			diffDays := diffHours / 24
+			remaining := diffDays - interval
+			detail.TimeRemaining = remaining
+
+			details = append(details, detail)
+		}
+	}
+
+	return details
 }
 
 type LanguageBranch struct {
@@ -87,17 +156,23 @@ func (wb *LanguageBranch) Graft(other *LanguageBranch) {
 }
 
 type WordTwig struct {
+	grade               int
 	section             *VocabularySection
 	startingDiagnostics []*lsproto.Diagnostic
-	// Document location (file name)
+	// Document location file name)
 	location string
+}
+
+// The final review detail of a word
+type WordFruit struct {
+	Lang  Language
+	Words []*Word
+	Text  string
+	// Remaining time as the number of days
+	TimeRemaining       float64
+	StartingDiagnostics []*lsproto.Diagnostic
 }
 
 func (wb *WordTwig) GetLocation() string {
 	return wb.location
-}
-
-// Use a fixed-grade array as input to super memo2
-func (*WordTree) Harvest() []lsproto.Diagnostic {
-	panic("Not implemented")
 }

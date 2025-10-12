@@ -2,19 +2,19 @@ package super_memo
 
 import "math"
 
-type MemoGrade int
-
 const (
-	MemoBlackout            MemoGrade = 0 // 0 - complete blackout
-	MemoIncorrectRemembered MemoGrade = 1 // 1 - incorrect response; the correct one remembered
-	MemoIncorrectEasy       MemoGrade = 2 // 2 - incorrect response; the correct one seemed easy to recall
-	MemoCorrectHard         MemoGrade = 3 // 3 - correct response recalled with serious difficulty
-	MemoCorrectHesitation   MemoGrade = 4 // 4 - correct response after a hesitation
-	MemoPerfect             MemoGrade = 5 // 5 - perfect response
+	MemoBlackout            int = 0 // 0 - complete blackout
+	MemoIncorrectRemembered int = 1 // 1 - incorrect response; the correct one remembered
+	MemoIncorrectEasy       int = 2 // 2 - incorrect response; the correct one seemed easy to recall
+	MemoCorrectHard         int = 3 // 3 - correct response recalled with serious difficulty
+	MemoCorrectHesitation   int = 4 // 4 - correct response after a hesitation
+	MemoPerfect             int = 5 // 5 - perfect response
 )
 
+const InitialEasinessFactor = 2.5
+
 // https://en.wikipedia.org/wiki/SuperMemo
-func Sm2(grade int, repetitionNumber int, interval int, easinessFactor float64) (int, int, float64) {
+func Sm2(grade int, repetitionNumber int, interval float64, easinessFactor float64) (int, float64, float64) {
 	if grade >= 3 {
 		switch repetitionNumber {
 		case 0:
@@ -22,7 +22,7 @@ func Sm2(grade int, repetitionNumber int, interval int, easinessFactor float64) 
 		case 1:
 			interval = 6
 		default:
-			interval = int(math.Round(float64(interval) * easinessFactor))
+			interval = math.Round(interval * easinessFactor)
 		}
 		repetitionNumber++
 	} else {

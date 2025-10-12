@@ -15,6 +15,7 @@ const (
 )
 
 type Word struct {
+	Line int
 	// Text represent the actual string value of a word with or without its article.
 	Text string
 	// Literally means the text was wrapped with backticks. The compiler may choose to do something
@@ -27,7 +28,8 @@ type Word struct {
 	// "hello" end = 4
 	End int
 	// grade parsed after word -> word(5)
-	Grade int
+	Grade  int
+	Parent *WordsSection
 }
 
 type Section interface {
@@ -35,10 +37,11 @@ type Section interface {
 }
 
 type UtteranceSection struct {
-	Line  int
-	Text  string
-	Start int
-	End   int
+	Line   int
+	Text   string
+	Start  int
+	End    int
+	Parent *VocabularySection
 }
 
 func (d *UtteranceSection) Identity() string {
@@ -46,11 +49,12 @@ func (d *UtteranceSection) Identity() string {
 }
 
 type DateSection struct {
-	Line  int
-	Text  string
-	Time  time.Time
-	Start int
-	End   int
+	Line   int
+	Text   string
+	Time   time.Time
+	Start  int
+	End    int
+	Parent *VocabularySection
 }
 
 func (d *DateSection) Identity() string {
@@ -62,6 +66,7 @@ type WordsSection struct {
 	Reviewed bool
 	Language Language
 	Line     int
+	Parent   *VocabularySection
 }
 
 func (w *WordsSection) Identity() string {

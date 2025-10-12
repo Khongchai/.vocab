@@ -103,8 +103,15 @@ func (p *Parser) Parse() {
 func (p *Parser) parseDateExpression() {
 	parsed, err := time.Parse(syntax.DateLayout, p.text)
 	parsedAsLocalTime := time.Date(parsed.Year(), parsed.Month(), parsed.Day(), 0, 0, 0, 0, time.Local)
-	date := &entity.DateSection{Text: p.text, Time: parsedAsLocalTime, Start: p.tokenStart, End: p.tokenEnd, Line: p.line}
-	p.currentVocabSection().Date = date
+	section := p.currentVocabSection()
+	date := &entity.DateSection{
+		Parent: section,
+		Text:   p.text,
+		Time:   parsedAsLocalTime,
+		Start:  p.tokenStart,
+		End:    p.tokenEnd, Line: p.line,
+	}
+	section.Date = date
 
 	if err != nil {
 		p.errorHere(&err, MalformedDate)
@@ -118,7 +125,8 @@ func (p *Parser) parseDateExpression() {
 func (p *Parser) parseVocabSection() {
 	currentSection := p.currentVocabSection()
 	words := &entity.WordsSection{
-		Line: p.line,
+		Line:   p.line,
+		Parent: currentSection,
 	}
 	if p.token == TokenGreaterThan {
 		words.Reviewed = false
@@ -165,7 +173,7 @@ func (p *Parser) parseVocabSection() {
 			return t
 		}()
 
-		newWord := &entity.Word{Text: text, Start: p.tokenStart, End: p.tokenEnd, Literally: isWordLiteral}
+		newWord := &entity.Word{Parent: words, Text: text, Start: p.tokenStart, End: p.tokenEnd, Literally: isWordLiteral, Line: p.line}
 		words.Words = append(words.Words, newWord)
 	}
 
@@ -222,10 +230,11 @@ func (p *Parser) parseUtteranceSection() {
 		case TokenLineBreak, TokenEOF:
 			text := sb.String()
 			newUtterance := &entity.UtteranceSection{
-				Line:  p.line,
-				Start: start,
-				End:   start + len(text),
-				Text:  sb.String(),
+				Parent: p.currentVocabSection(),
+				Line:   p.line,
+				Start:  start,
+				End:    start + len(text),
+				Text:   sb.String(),
 			}
 			p.currentVocabSection().Utterance = append(p.currentVocabSection().Utterance, newUtterance)
 			return
