@@ -37,20 +37,14 @@ func (wt *WordTree) AddTwig(language Language, word *Word, uri string, section *
 
 	clamped_grade := max(super_memo.MemoBlackout, min(word.Grade, super_memo.MemoPerfect))
 	if clamped_grade != word.Grade {
-		startingDiagnostics = append(startingDiagnostics, &lsproto.Diagnostic{
-			Severity: lsproto.DiagnosticsSeverityError,
-			Message:  "Expect grade to be from 0 to 5. Can also leave empty for the default 0",
-			Range: lsproto.Range{
-				Start: lsproto.Position{
-					Line:      word.Line,
-					Character: word.Start,
-				},
-				End: lsproto.Position{
-					Line:      word.Line,
-					Character: word.End,
-				},
-			},
-		})
+		newDiag := lsproto.MakeDiagnostics(
+			"Expect grade to be from 0 to 5. Can also leave empty for the default 0",
+			word.Line,
+			word.Start,
+			word.End,
+			lsproto.DiagnosticsSeverityError,
+		)
+		startingDiagnostics = append(startingDiagnostics, newDiag)
 	}
 	twig := &WordTwig{
 		grade:               clamped_grade,
