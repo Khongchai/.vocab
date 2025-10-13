@@ -287,7 +287,48 @@ func TestGraftingTrees_ShouldCombineCorrectLanguageBranch_AndSortTwigs(t *testin
 }
 
 func TestGraftingTrees_ShouldNotRecombineTreesWithSameIdentity(t *testing.T) {
+	makeTree := func(zeit time.Time, dateLine int, word1 string, word2 string, word3 string) *WordTree {
+		tree := NewWordTree()
+		section := NewVocabularySection("xxx")
+		section.Date = &DateSection{Time: zeit, Line: dateLine}
+		newWordsSection1 := &WordsSection{
+			Parent:   section,
+			Reviewed: false,
+			Language: Deutsch,
+		}
+		tree.AddTwig(Deutsch, fakeWord(word1, 5, newWordsSection1), "xxx", section, []*lsproto.Diagnostic{})
+		section.NewWords = append(section.NewWords, newWordsSection1)
 
+		newWordsSection2 := &WordsSection{
+			Parent:   section,
+			Reviewed: false,
+			Language: Italiano,
+		}
+		tree.AddTwig(Italiano, fakeWord(word2, 5, newWordsSection2), "xxx", section, []*lsproto.Diagnostic{})
+		section.NewWords = append(section.NewWords, newWordsSection2)
+
+		reviewedWordsSection1 := &WordsSection{
+			Parent:   section,
+			Reviewed: true,
+			Language: Deutsch,
+		}
+		tree.AddTwig(Deutsch, fakeWord(word3, 5, reviewedWordsSection1), "xxx", section, []*lsproto.Diagnostic{})
+		section.ReviewedWords = append(section.ReviewedWords, reviewedWordsSection1)
+		return tree
+	}
+	now := time.Now()
+
+	tree1 := makeTree(now, 0, "ein", "due", "drei")
+	tree2 := makeTree(now, 0, "ein", "due", "drei")
+
+	//act
+	mergedTree := NewWordTree().Graft(tree1).Graft(tree2)
+
+	test.Expect(t, true, mergedTree != nil)
+
+	test.Expect(t, 1, len(mergedTree.branches[string(Deutsch)].twigs["ein"]))
+	test.Expect(t, 1, len(mergedTree.branches[string(Italiano)].twigs["due"]))
+	test.Expect(t, 1, len(mergedTree.branches[string(Deutsch)].twigs["drei"]))
 }
 
 func TestHarvest(t *testing.T) {
