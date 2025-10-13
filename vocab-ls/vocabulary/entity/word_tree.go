@@ -54,6 +54,7 @@ func (wt *WordTree) AddTwig(language Language, word *Word, uri string, section *
 
 	norm := word.GetNormalizedText()
 	branch.twigs[norm] = append(branch.twigs[norm], twig)
+	branch.sortTwigs(norm)
 }
 
 func (wt *WordTree) Graft(other *WordTree) {
@@ -117,37 +118,44 @@ func (wt *WordTree) Harvest() []*WordFruit {
 }
 
 type LanguageBranch struct {
+	// Map of word to places they appear in.
 	twigs map[string][]*WordTwig
 }
 
-func (wb *LanguageBranch) Graft(other *LanguageBranch) {
-	for lang, twigs := range other.twigs {
-		wb.twigs[lang] = append(wb.twigs[lang], twigs...)
+func (lb *LanguageBranch) Graft(other *LanguageBranch) {
+	for word, twigs := range other.twigs {
+		lb.twigs[word] = append(lb.twigs[word], twigs...)
 	}
 
 	// If grafting is called more than once
 	// this makes sure no section is repeated twice...
-	for lang := range wb.twigs {
+	for word := range lb.twigs {
 		uniques := make(map[string]*WordTwig)
-		for _, section := range wb.twigs[lang] {
+		for _, section := range lb.twigs[word] {
 			ident := section.section.Identity()
 			uniques[ident] = section
 		}
 
-		unsorted := maps.Values(uniques)
-		sorted := slices.SortedFunc(unsorted, func(a, b *WordTwig) int {
-			if a.section.Date.Time.Before(b.section.Date.Time) {
-				return -1
-			}
-
-			if a.section.Date.Time.After(b.section.Date.Time) {
-				return 1
-			}
-
-			return 0
-		})
-		wb.twigs[lang] = sorted
+		uniqued := slices.Collect(maps.Values(uniques))
+		lb.twigs[word] = uniqued
+		lb.sortTwigs(word)
 	}
+}
+
+func (lb *LanguageBranch) sortTwigs(word string) {
+	unsorted := slices.Values(lb.twigs[word])
+	sorted := slices.SortedFunc(unsorted, func(a, b *WordTwig) int {
+		if a.section.Date.Time.Before(b.section.Date.Time) {
+			return -1
+		}
+
+		if a.section.Date.Time.After(b.section.Date.Time) {
+			return 1
+		}
+
+		return 0
+	})
+	lb.twigs[word] = sorted
 }
 
 type WordTwig struct {

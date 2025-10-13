@@ -5,9 +5,22 @@ import (
 	"slices"
 	"strings"
 	"testing"
+	"time"
 	lsproto "vocab/lsp"
 	test "vocab/vocab_testing"
 )
+
+func fakeWord(text string, grade int, parent *WordsSection) *Word {
+	return &Word{
+		Line:      0,
+		Text:      text,
+		Literally: true,
+		Start:     0,
+		End:       len(text),
+		Grade:     grade,
+		Parent:    parent,
+	}
+}
 
 func TestCreatingANewTreeShouldNotThrowError(t *testing.T) {
 	NewWordTree()
@@ -15,20 +28,13 @@ func TestCreatingANewTreeShouldNotThrowError(t *testing.T) {
 
 func TestAddTwigToEmptyTree(t *testing.T) {
 	tree := NewWordTree()
-	vocabSection := &VocabularySection{}
+	vocabSection := NewVocabularySection("xxx")
+	vocabSection.Date = &DateSection{Time: time.Now()}
 	wordSection := &WordsSection{
 		Parent: vocabSection,
 	}
 	vocabSection.NewWords = append(vocabSection.NewWords, wordSection)
-	word := &Word{
-		Line:      0,
-		Text:      "Testen",
-		Literally: true,
-		Start:     0,
-		End:       len("Testen"),
-		Grade:     5,
-		Parent:    wordSection,
-	}
+	word := fakeWord("Testen", 5, wordSection)
 	startingDiags := []*lsproto.Diagnostic{
 		lsproto.MakeDiagnostics("test diagnostics", 1, 2, 3, lsproto.DiagnosticsSeverityError),
 	}
@@ -51,14 +57,16 @@ func TestAddTwigToEmptyTree(t *testing.T) {
 
 func TestAddTwigToNonEmptyTree_WithMultipleSections(t *testing.T) {
 	tree := NewWordTree()
-	section1 := &VocabularySection{}
+	section1 := NewVocabularySection("xxx")
+	section1.Date = &DateSection{Time: time.Now()}
 	newWordSection := &WordsSection{
 		Parent:   section1,
 		Reviewed: false,
 		Language: Deutsch,
 	}
 	section1.NewWords = append(section1.NewWords, newWordSection)
-	section2 := &VocabularySection{}
+	section2 := NewVocabularySection("xxx")
+	section2.Date = &DateSection{Time: time.Now()}
 	reviewedWordSection := &WordsSection{
 		Parent:   section1,
 		Reviewed: true,
@@ -67,33 +75,9 @@ func TestAddTwigToNonEmptyTree_WithMultipleSections(t *testing.T) {
 	section2.ReviewedWords = append(section2.ReviewedWords, reviewedWordSection)
 
 	//act
-	tree.AddTwig(Deutsch, &Word{
-		Line:      0,
-		Text:      "Testen",
-		Literally: true,
-		Start:     0,
-		End:       len("Testen"),
-		Grade:     5,
-		Parent:    newWordSection,
-	}, "xxx", section1, []*lsproto.Diagnostic{})
-	tree.AddTwig(Italiano, &Word{
-		Line:      0,
-		Text:      "Test",
-		Literally: true,
-		Start:     0,
-		End:       len("Test"),
-		Grade:     3,
-		Parent:    newWordSection,
-	}, "xxx", section1, []*lsproto.Diagnostic{})
-	tree.AddTwig(Deutsch, &Word{
-		Line:      0,
-		Text:      "testen",
-		Literally: true,
-		Start:     0,
-		End:       len("testen"),
-		Grade:     4,
-		Parent:    reviewedWordSection,
-	}, "xxx", section2, []*lsproto.Diagnostic{})
+	tree.AddTwig(Deutsch, fakeWord("Testen", 5, newWordSection), "xxx", section1, []*lsproto.Diagnostic{})
+	tree.AddTwig(Italiano, fakeWord("Test", 3, newWordSection), "xxx", section1, []*lsproto.Diagnostic{})
+	tree.AddTwig(Deutsch, fakeWord("testen", 4, reviewedWordSection), "xxx", section2, []*lsproto.Diagnostic{})
 
 	test.Expect(t, true, tree.branches[string(Deutsch)] != nil)
 	test.Expect(t, true, tree.branches[string(Italiano)] != nil)
@@ -116,6 +100,52 @@ func TestAddTwigToNonEmptyTree_WithMultipleSections(t *testing.T) {
 }
 
 func TestAddedTwigsShouldBeSorted(t *testing.T) {
+	tree := NewWordTree()
+	sectionFromTime := func(time time.Time) *VocabularySection {
+		dateText := time.Format("2006-01-02")
+		section := &VocabularySection{
+			Date: &DateSection{Time: time, Text: dateText},
+			Uri:  "xxx",
+		}
+		wordsSection := &WordsSection{
+			Parent:   section,
+			Reviewed: false,
+			Language: Deutsch,
+		}
+		section.NewWords = append(section.NewWords, wordsSection)
+		return section
+	}
+	now := time.Now()
+	nowSection := sectionFromTime(now)
+	yesterdaySection := sectionFromTime(now.AddDate(0, 0, -1))
+	tomorrowSection := sectionFromTime(now.AddDate(0, 0, 1))
+
+	//act
+	tree.AddTwig(Deutsch,
+		fakeWord("poopy", 5, nowSection.NewWords[0]),
+		"xxx",
+		nowSection,
+		[]*lsproto.Diagnostic{},
+	)
+	tree.AddTwig(Deutsch,
+		fakeWord("poopy", 5, tomorrowSection.NewWords[0]),
+		"xxx",
+		tomorrowSection,
+		[]*lsproto.Diagnostic{},
+	)
+	tree.AddTwig(Deutsch,
+		fakeWord("poopy", 5, yesterdaySection.NewWords[0]),
+		"xxx",
+		yesterdaySection,
+		[]*lsproto.Diagnostic{},
+	)
+
+	äste := tree.branches[string(Deutsch)]
+	test.Expect(t, 1, len(äste.twigs))
+	zweige := äste.twigs["poopy"]
+	test.Expect(t, yesterdaySection, zweige[0].section)
+	test.Expect(t, nowSection, zweige[1].section)
+	test.Expect(t, tomorrowSection, zweige[2].section)
 
 }
 

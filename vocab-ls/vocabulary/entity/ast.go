@@ -50,8 +50,12 @@ type UtteranceSection struct {
 	Parent *VocabularySection
 }
 
-func (d *UtteranceSection) Identity() string {
-	return fmt.Sprintf("%s::%d", d.Text, d.Line)
+func (u *UtteranceSection) String() string {
+	return u.Identity()
+}
+
+func (u *UtteranceSection) Identity() string {
+	return fmt.Sprintf("%s::%d", u.Text, u.Line)
 }
 
 type DateSection struct {
@@ -63,8 +67,12 @@ type DateSection struct {
 	Parent *VocabularySection
 }
 
+func (d *DateSection) String() string {
+	return d.Identity()
+}
+
 func (d *DateSection) Identity() string {
-	return fmt.Sprintf("%s::%d", d.Text, d.Line)
+	return fmt.Sprintf("text:%s-line:%d", d.Text, d.Line)
 }
 
 type WordsSection struct {
@@ -76,7 +84,7 @@ type WordsSection struct {
 }
 
 func (w *WordsSection) Identity() string {
-	return fmt.Sprintf("%s::%d", string(w.Language), w.Line)
+	return fmt.Sprintf("lang:%s-line:%d", string(w.Language), w.Line)
 }
 
 type VocabularySection struct {
@@ -94,6 +102,10 @@ func NewVocabularySection(uri string) *VocabularySection {
 
 func (v *VocabularySection) Identity() string {
 	return fmt.Sprintf("%s::%s", v.Uri, v.Date.Identity())
+}
+
+func (v *VocabularySection) String() string {
+	return v.Identity()
 }
 
 type VocabAst struct {
