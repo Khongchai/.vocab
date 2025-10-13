@@ -171,9 +171,11 @@ type WordTwig struct {
 
 // The final review detail of a word
 type WordFruit struct {
-	Lang  Language
+	Lang Language
+	// All word object tied to normalized `text`
 	Words []*Word
-	Text  string
+	// The normalized text.
+	Text string
 	// Remaining time as the number of days
 	TimeRemaining       float64
 	StartingDiagnostics []*lsproto.Diagnostic
