@@ -57,7 +57,7 @@ func (wt *WordTree) AddTwig(language Language, word *Word, uri string, section *
 	branch.sortTwigs(norm)
 }
 
-func (wt *WordTree) Graft(other *WordTree) {
+func (wt *WordTree) Graft(other *WordTree) *WordTree {
 	for key, value := range other.branches {
 		if wt.branches[key] == nil {
 			wt.branches[key] = value
@@ -66,6 +66,7 @@ func (wt *WordTree) Graft(other *WordTree) {
 
 		wt.branches[key].Graft(value)
 	}
+	return wt
 }
 
 func (wt *WordTree) Harvest() []*WordFruit {
@@ -122,7 +123,7 @@ type LanguageBranch struct {
 	twigs map[string][]*WordTwig
 }
 
-func (lb *LanguageBranch) Graft(other *LanguageBranch) {
+func (lb *LanguageBranch) Graft(other *LanguageBranch) *LanguageBranch {
 	for word, twigs := range other.twigs {
 		lb.twigs[word] = append(lb.twigs[word], twigs...)
 	}
@@ -140,6 +141,8 @@ func (lb *LanguageBranch) Graft(other *LanguageBranch) {
 		lb.twigs[word] = uniqued
 		lb.sortTwigs(word)
 	}
+
+	return lb
 }
 
 func (lb *LanguageBranch) sortTwigs(word string) {

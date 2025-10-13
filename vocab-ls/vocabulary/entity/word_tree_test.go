@@ -184,6 +184,112 @@ func TestAddTwigsWithInvalidGrade_ShouldProduceExtraDiagnosticsError(t *testing.
 	test.Expect(t, 2, len(äste.twigs["cosa"][0].startingDiagnostics))
 }
 
-func TestGraftingTrees(t *testing.T) {
+func TestGraftingTrees_ShouldCombineCorrectLanguageBranch_AndSortTwigs(t *testing.T) {
+	makeTree := func(zeit time.Time, dateLine int, word1 string, word2 string, word3 string) *WordTree {
+		tree := NewWordTree()
+		section := NewVocabularySection("xxx")
+		section.Date = &DateSection{Time: zeit, Line: dateLine}
+		newWordsSection1 := &WordsSection{
+			Parent:   section,
+			Reviewed: false,
+			Language: Deutsch,
+		}
+		tree.AddTwig(Deutsch, fakeWord(word1, 5, newWordsSection1), "xxx", section, []*lsproto.Diagnostic{})
+		section.NewWords = append(section.NewWords, newWordsSection1)
+
+		newWordsSection2 := &WordsSection{
+			Parent:   section,
+			Reviewed: false,
+			Language: Italiano,
+		}
+		tree.AddTwig(Italiano, fakeWord(word2, 5, newWordsSection2), "xxx", section, []*lsproto.Diagnostic{})
+		section.NewWords = append(section.NewWords, newWordsSection2)
+
+		reviewedWordsSection1 := &WordsSection{
+			Parent:   section,
+			Reviewed: true,
+			Language: Deutsch,
+		}
+		tree.AddTwig(Deutsch, fakeWord(word3, 5, reviewedWordsSection1), "xxx", section, []*lsproto.Diagnostic{})
+		section.ReviewedWords = append(section.ReviewedWords, reviewedWordsSection1)
+		return tree
+	}
+	now := time.Now()
+	tomorrow := now.AddDate(0, 0, 1)
+
+	// Resulting tree:
+	// date:now
+	// > (de) ein, gestern
+	// > (it) due, oggi
+	// >> (de) drei, morgen
+	// date:tomorrow
+	// > (de) links
+	// > (it) dritto
+	// >> (de) ein
+	tree1 := makeTree(now, 0, "ein", "due", "drei")
+	tree2 := makeTree(tomorrow, 10, "links", "dritto", "ein")
+	tree3 := makeTree(now, 5, "gestern", "oggi", "morgen")
+
+	//act
+	mergedTree := NewWordTree().Graft(tree1).Graft(tree2).Graft(tree3)
+
+	test.Expect(t, true, mergedTree != nil)
+
+	germanBranch := mergedTree.branches[string(Deutsch)]
+
+	einTwigs := germanBranch.twigs["ein"]
+	test.Expect(t, 2, len(einTwigs))
+
+	test.Expect(t, now.YearDay(), einTwigs[0].section.Date.Time.YearDay())
+	test.Expect(t, 0, einTwigs[0].section.Date.Line)
+	test.Expect(t, tomorrow.YearDay(), einTwigs[1].section.Date.Time.YearDay())
+	test.Expect(t, 10, einTwigs[1].section.Date.Line)
+
+	dreiTwigs := germanBranch.twigs["drei"]
+	test.Expect(t, 1, len(dreiTwigs))
+	test.Expect(t, now.YearDay(), dreiTwigs[0].section.Date.Time.YearDay())
+	test.Expect(t, 0, dreiTwigs[0].section.Date.Line)
+
+	gesternTwigs := germanBranch.twigs["gestern"]
+	test.Expect(t, 1, len(gesternTwigs))
+	test.Expect(t, now.YearDay(), gesternTwigs[0].section.Date.Time.YearDay())
+	test.Expect(t, 5, gesternTwigs[0].section.Date.Line)
+
+	morgenTwigs := germanBranch.twigs["morgen"]
+	test.Expect(t, 1, len(morgenTwigs))
+	test.Expect(t, now.YearDay(), morgenTwigs[0].section.Date.Time.YearDay())
+	test.Expect(t, 5, morgenTwigs[0].section.Date.Line)
+
+	linksTwigs := germanBranch.twigs["links"]
+	test.Expect(t, 1, len(linksTwigs))
+	test.Expect(t, tomorrow.YearDay(), linksTwigs[0].section.Date.Time.YearDay())
+	test.Expect(t, 10, linksTwigs[0].section.Date.Line)
+
+	italianBranch := mergedTree.branches[string(Italiano)]
+	if italianBranch == nil {
+		t.Fatalf("Expected Italian branch to exist")
+	}
+
+	dueTwigs := italianBranch.twigs["due"]
+	test.Expect(t, 1, len(dueTwigs))
+	test.Expect(t, now.YearDay(), dueTwigs[0].section.Date.Time.YearDay())
+	test.Expect(t, 0, dueTwigs[0].section.Date.Line)
+
+	oggiTwigs := italianBranch.twigs["oggi"]
+	test.Expect(t, 1, len(oggiTwigs))
+	test.Expect(t, now.YearDay(), oggiTwigs[0].section.Date.Time.YearDay())
+	test.Expect(t, 5, oggiTwigs[0].section.Date.Line)
+
+	drittoTwigs := italianBranch.twigs["dritto"]
+	test.Expect(t, 1, len(drittoTwigs))
+	test.Expect(t, tomorrow.YearDay(), drittoTwigs[0].section.Date.Time.YearDay())
+	test.Expect(t, 10, drittoTwigs[0].section.Date.Line)
+}
+
+func TestGraftingTrees_ShouldNotRecombineTreesWithSameIdentity(t *testing.T) {
+
+}
+
+func TestHarvest(t *testing.T) {
 
 }
