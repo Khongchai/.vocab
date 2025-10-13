@@ -2,6 +2,12 @@ package entity
 
 import "testing"
 
-func TestTODO(t *testing.T) {
-	panic("Not implemented")
+func TestCreatingANewTreeShouldNotThrowError(t *testing.T) {
+}
+
+func TestAddingTwigs(t *testing.T) {
+}
+
+func TestGraftingTrees(t *testing.T) {
+
 }
