@@ -1,7 +1,8 @@
 package vocabulary
 
-import "testing"
+import (
+	"testing"
+)
 
-func TestTODO(t *testing.T) {
-	panic("Not implemented")
+func TestSomething(t *testing.T) {
 }

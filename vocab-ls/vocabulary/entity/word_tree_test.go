@@ -146,11 +146,42 @@ func TestAddedTwigsShouldBeSorted(t *testing.T) {
 	test.Expect(t, yesterdaySection, zweige[0].section)
 	test.Expect(t, nowSection, zweige[1].section)
 	test.Expect(t, tomorrowSection, zweige[2].section)
-
 }
 
 func TestAddTwigsWithInvalidGrade_ShouldProduceExtraDiagnosticsError(t *testing.T) {
+	tree := NewWordTree()
+	section := NewVocabularySection("xxx")
+	section.Date = &DateSection{Time: time.Now()}
+	newWordSection := &WordsSection{
+		Parent:   section,
+		Reviewed: false,
+		Language: Italiano,
+	}
+	section.NewWords = append(section.NewWords, newWordSection)
 
+	//act
+	tree.AddTwig(Deutsch,
+		fakeWord("ding", -1, section.NewWords[0]),
+		"xxx",
+		section,
+		[]*lsproto.Diagnostic{},
+	)
+	tree.AddTwig(Deutsch,
+		fakeWord("cosa", 6, section.NewWords[0]),
+		"xxx",
+		section,
+		[]*lsproto.Diagnostic{
+			lsproto.MakeDiagnostics("test diagnostics", 1, 2, 3, lsproto.DiagnosticsSeverityError),
+		},
+	)
+
+	äste := tree.branches[string(Deutsch)]
+	test.Expect(t, 2, len(äste.twigs))
+	// expect clamping
+	test.Expect(t, 0, äste.twigs["ding"][0].grade)
+	test.Expect(t, 1, len(äste.twigs["ding"][0].startingDiagnostics))
+	test.Expect(t, 5, äste.twigs["cosa"][0].grade)
+	test.Expect(t, 2, len(äste.twigs["cosa"][0].startingDiagnostics))
 }
 
 func TestGraftingTrees(t *testing.T) {
