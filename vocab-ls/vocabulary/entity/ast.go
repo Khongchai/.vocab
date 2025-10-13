@@ -2,6 +2,7 @@ package entity
 
 import (
 	"fmt"
+	"strings"
 	"time"
 	lsproto "vocab/lsp"
 )
@@ -30,6 +31,11 @@ type Word struct {
 	// grade parsed after word -> word(5)
 	Grade  int
 	Parent *WordsSection
+}
+
+// TODO: we can add lemmatization logic here later.
+func (w *Word) GetNormalizedText() string {
+	return strings.ToLower(w.Text)
 }
 
 type Section interface {

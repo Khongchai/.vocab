@@ -52,7 +52,8 @@ func (wt *WordTree) AddTwig(language Language, word *Word, uri string, section *
 		startingDiagnostics: startingDiagnostics,
 	}
 
-	branch.twigs[word.Text] = append(branch.twigs[word.Text], twig)
+	norm := word.GetNormalizedText()
+	branch.twigs[norm] = append(branch.twigs[norm], twig)
 }
 
 func (wt *WordTree) Graft(other *WordTree) {
