@@ -22,7 +22,6 @@
             - [x] The IR trees can be compiled and produce diagnostics independently and then merge. Every time they merge, new diagnostics should be produced based on newly available information. This means multicore-power!
     - [x] Words need to be graded  (writing parser test)
         You're implementing harvest
-        Also consider making the word tree's inner nodes able to reference their parent
         - [ ] Then go back to implementing the harvest function!
 
 

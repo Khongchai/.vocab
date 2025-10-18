@@ -1,28 +1,12 @@
-package vocabulary
+package parser
 
 import (
 	"fmt"
-	"strings"
 	"testing"
 	"time"
 	lsproto "vocab/lsp"
 	test "vocab/vocab_testing"
-	entity "vocab/vocabulary/entity"
 )
-
-func trimLines(text string) string {
-	split := strings.Split(text, "\n")
-	filtered := []string{}
-	for i := range split {
-		trimmed := strings.TrimSpace(split[i])
-		if trimmed == "" {
-			continue
-		}
-		filtered = append(filtered, trimmed)
-	}
-	joined := strings.Join(filtered, "\n")
-	return joined
-}
 
 // Incomplete sections don't necessarily emit diagnostics error as missing vocabulary is already covered by the compiler.
 func TestOnlyDateSection(t *testing.T) {
@@ -59,7 +43,7 @@ func TestOnlyDateSection(t *testing.T) {
 		parser := NewParser(t.Context(), "xxx", NewScanner(expectation.Input), func(a any) {})
 		parser.Parse()
 
-		section := parser.ast.Sections[0]
+		section := parser.Ast.Sections[0]
 		sectionDate := section.Date
 
 		if expectation.Error != "" && section.Diagnostics[0].Message != expectation.Error {
@@ -102,7 +86,7 @@ func TestInvalidDateSectionUnexpectedToken(t *testing.T) {
 }
 
 func TestSingleWordSection(t *testing.T) {
-	text := trimLines(`
+	text := test.TrimLines(`
 		20/08/2025
 		> (it) la magia, bene,scorprire
 		>> (de) was
@@ -111,11 +95,11 @@ func TestSingleWordSection(t *testing.T) {
 	parser := NewParser(t.Context(), "xxx", NewScanner(text), func(a any) {})
 	parser.Parse()
 
-	test.Expect(t, 1, len(parser.ast.Sections))
+	test.Expect(t, 1, len(parser.Ast.Sections))
 	test.Expect(t, 2, parser.line)
 	test.Expect(t, 0, len(parser.currentVocabSection().Diagnostics))
 
-	section := parser.ast.Sections[0]
+	section := parser.Ast.Sections[0]
 	test.Expect(t, time.Date(2025, time.August, 20, 0, 0, 0, 0, time.Local), section.Date.Time)
 	test.Expect(t, 0, section.Date.Line)
 	test.Expect(t, 0, section.Date.Start)
@@ -124,7 +108,7 @@ func TestSingleWordSection(t *testing.T) {
 
 	newWords := section.NewWords
 	test.Expect(t, 1, len(newWords))
-	test.Expect(t, entity.Italiano, newWords[0].Language)
+	test.Expect(t, Italiano, newWords[0].Language)
 	test.Expect(t, false, newWords[0].Reviewed)
 	test.Expect(t, 1, newWords[0].Line)
 
@@ -139,7 +123,7 @@ func TestSingleWordSection(t *testing.T) {
 	reviewedWords := section.ReviewedWords
 	r := reviewedWords[0].Words
 	test.Expect(t, 1, len(reviewedWords))
-	test.Expect(t, entity.Deutsch, reviewedWords[0].Language)
+	test.Expect(t, Deutsch, reviewedWords[0].Language)
 	test.Expect(t, 2, reviewedWords[0].Line)
 	test.Expect(t, true, reviewedWords[0].Reviewed)
 	test.Expect(t, "was", r[0].Text)
@@ -147,14 +131,14 @@ func TestSingleWordSection(t *testing.T) {
 }
 
 func TestWordSectionWithoutDate(t *testing.T) {
-	text := trimLines(`
+	text := test.TrimLines(`
 		> (it) la magia, bene,scorprire
 	`)
 
 	parser := NewParser(t.Context(), "xxx", NewScanner(text), func(any) {})
 	parser.Parse()
 
-	test.Expect(t, 1, len(parser.ast.Sections)) // upon error, create an empty vocab section even if there is none
+	test.Expect(t, 1, len(parser.Ast.Sections)) // upon error, create an empty vocab section even if there is none
 	diag := parser.currentVocabSection().Diagnostics[0]
 	test.Expect(t, ExpectDateSection, diag.Message)
 	test.Expect(t, 0, diag.Range.Start.Character)
@@ -166,7 +150,7 @@ func TestWordSectionWithoutDate(t *testing.T) {
 }
 
 func TestWordExpression(t *testing.T) {
-	text := trimLines(fmt.Sprintf(`
+	text := test.TrimLines(fmt.Sprintf(`
 		20/08/2025
 		> (it) %sla magia%s, bene
 	`, "`", "`"))
@@ -176,14 +160,14 @@ func TestWordExpression(t *testing.T) {
 
 	section := parser.currentVocabSection()
 	words := section.NewWords[0]
-	test.Expect(t, entity.Italiano, words.Language)
+	test.Expect(t, Italiano, words.Language)
 	test.Expect(t, 1, words.Line)
 	test.Expect(t, "la magia", words.Words[0].Text)
 	test.Expect(t, true, words.Words[0].Literally)
 }
 
 func TestWordExpressionMissingClosingBacktickShouldAutoClose(t *testing.T) {
-	text := trimLines(fmt.Sprintf(`
+	text := test.TrimLines(fmt.Sprintf(`
 		20/08/2025
 		> (it) %sla magia, bene
 		21/08/2025
@@ -196,16 +180,16 @@ func TestWordExpressionMissingClosingBacktickShouldAutoClose(t *testing.T) {
 	// (de)
 	section2 := parser.currentVocabSection()
 	words2 := section2.NewWords[0]
-	test.Expect(t, entity.Deutsch, words2.Language)
+	test.Expect(t, Deutsch, words2.Language)
 	test.Expect(t, 3, words2.Line)
 	test.Expect(t, 1, len(words2.Words))
 	test.Expect(t, "der Inhalt", words2.Words[0].Text)
 	test.Expect(t, true, words2.Words[0].Literally)
 
 	// (it)
-	section1 := parser.ast.Sections[0]
+	section1 := parser.Ast.Sections[0]
 	words1 := section1.NewWords[0]
-	test.Expect(t, entity.Italiano, words1.Language)
+	test.Expect(t, Italiano, words1.Language)
 	test.Expect(t, 1, words1.Line)
 	test.Expect(t, 1, len(words1.Words))
 	test.Expect(t, "la magia, bene", words1.Words[0].Text)
@@ -214,7 +198,7 @@ func TestWordExpressionMissingClosingBacktickShouldAutoClose(t *testing.T) {
 }
 
 func TestMultipleWordSection(t *testing.T) {
-	text := trimLines(`
+	text := test.TrimLines(`
 		> (it) la magia, bene,scorprire
 		>> (de) was
 	`)
@@ -222,7 +206,7 @@ func TestMultipleWordSection(t *testing.T) {
 	parser := NewParser(t.Context(), "xxx", NewScanner(text), func(any) {})
 	parser.Parse()
 
-	test.Expect(t, 1, len(parser.ast.Sections))
+	test.Expect(t, 1, len(parser.Ast.Sections))
 	diag := parser.currentVocabSection().Diagnostics[0]
 	test.Expect(t, ExpectDateSection, diag.Message)
 	test.Expect(t, 0, diag.Range.Start.Character)
@@ -234,7 +218,7 @@ func TestMultipleWordSection(t *testing.T) {
 }
 
 func TestUtteranceSection(t *testing.T) {
-	text := trimLines(`
+	text := test.TrimLines(`
 		01/08/1997
 		> (de) ablenken, ansprechen
 		Das lenkt mich wirklich ab!
@@ -244,7 +228,7 @@ func TestUtteranceSection(t *testing.T) {
 	parser := NewParser(t.Context(), "xxx", NewScanner(text), func(any) {})
 	parser.Parse()
 
-	utterance := parser.ast.Sections[0].Utterance
+	utterance := parser.Ast.Sections[0].Utterance
 	test.Expect(t, 2, len(utterance))
 	test.Expect(t, "Das lenkt mich wirklich ab!", utterance[0].Text)
 	test.Expect(t, 2, utterance[0].Line)
@@ -258,7 +242,7 @@ func TestUtteranceSection(t *testing.T) {
 }
 
 func TestFullSectionParsing(t *testing.T) {
-	text := trimLines(`
+	text := test.TrimLines(`
 		02/10/2025
 		>> (it) la notizia, chiacchierare
 		> (de) aufschlüsseln
@@ -283,16 +267,16 @@ func TestFullSectionParsing(t *testing.T) {
 	parser := NewParser(t.Context(), "xxx", NewScanner(text), func(any) {})
 	parser.Parse()
 
-	test.Expect(t, 2, len(parser.ast.Sections))
+	test.Expect(t, 2, len(parser.Ast.Sections))
 
 	// ======== SECTION 1: 02/10/2025 ========
-	section1 := parser.ast.Sections[0]
+	section1 := parser.Ast.Sections[0]
 	test.Expect(t, time.Date(2025, time.October, 2, 0, 0, 0, 0, time.Local), section1.Date.Time)
 
 	// Reviewed words (>>)
 	test.Expect(t, 1, len(section1.ReviewedWords))
 	reviewed := section1.ReviewedWords[0]
-	test.Expect(t, entity.Italiano, reviewed.Language)
+	test.Expect(t, Italiano, reviewed.Language)
 	test.Expect(t, 1, reviewed.Line)
 	test.Expect(t, 2, len(reviewed.Words))
 	test.Expect(t, "la notizia", reviewed.Words[0].Text)
@@ -302,7 +286,7 @@ func TestFullSectionParsing(t *testing.T) {
 	// New words (>)
 	test.Expect(t, 1, len(section1.NewWords))
 	newWords := section1.NewWords[0]
-	test.Expect(t, entity.Deutsch, newWords.Language)
+	test.Expect(t, Deutsch, newWords.Language)
 	test.Expect(t, 2, newWords.Line)
 	test.Expect(t, 1, len(newWords.Words))
 	test.Expect(t, "aufschlüsseln", newWords.Words[0].Text)
@@ -314,14 +298,14 @@ func TestFullSectionParsing(t *testing.T) {
 	test.Expect(t, "Kannst du mir diesen Satz aufschlüsseln?", section1.Utterance[8].Text)
 
 	// ======== SECTION 2: 03/10/2025 ========
-	section2 := parser.ast.Sections[1]
+	section2 := parser.Ast.Sections[1]
 	test.Expect(t, time.Date(2025, time.October, 3, 0, 0, 0, 0, time.Local), section2.Date.Time)
 	test.Expect(t, 12, section2.Date.Line)
 
 	// New words (>)
 	test.Expect(t, 1, len(section2.NewWords))
 	words := section2.NewWords[0]
-	test.Expect(t, entity.Deutsch, words.Language)
+	test.Expect(t, Deutsch, words.Language)
 	test.Expect(t, 13, words.Line)
 	test.Expect(t, 3, len(words.Words))
 	test.Expect(t, "ansprechen", words.Words[0].Text)
@@ -331,7 +315,7 @@ func TestFullSectionParsing(t *testing.T) {
 	// Reviewed words (>>)
 	test.Expect(t, 1, len(section2.ReviewedWords))
 	rw := section2.ReviewedWords[0]
-	test.Expect(t, entity.Deutsch, rw.Language)
+	test.Expect(t, Deutsch, rw.Language)
 	test.Expect(t, 14, rw.Line)
 	test.Expect(t, 1, len(rw.Words))
 	test.Expect(t, "anlegen", rw.Words[0].Text)
@@ -343,7 +327,7 @@ func TestFullSectionParsing(t *testing.T) {
 }
 
 func TestGrading(t *testing.T) {
-	text := trimLines(fmt.Sprintf(`
+	text := test.TrimLines(fmt.Sprintf(`
 		20/08/2025
 		> (it) %sla magia%s(1), chiacchierare, caminare(0), cosa(10)
 	`, "`", "`"))
@@ -351,7 +335,7 @@ func TestGrading(t *testing.T) {
 	parser := NewParser(t.Context(), "xxx", NewScanner(text), func(any) {})
 	parser.Parse()
 
-	words := parser.ast.Sections[0].NewWords[0].Words
+	words := parser.Ast.Sections[0].NewWords[0].Words
 	test.Expect(t, 4, len(words))
 	test.Expect(t, 1, words[0].Grade)
 	test.Expect(t, 0, words[1].Grade) // default, no score = 0
@@ -360,7 +344,7 @@ func TestGrading(t *testing.T) {
 }
 
 func TestInvalidGradeShouldIgnoreWordsAfterCompletely(t *testing.T) {
-	text := trimLines(fmt.Sprintf(`
+	text := test.TrimLines(fmt.Sprintf(`
 		20/08/2025
 		> (it) %sla magia%s(xxx), these, should, not, count
 		21/08/2025
@@ -372,25 +356,25 @@ func TestInvalidGradeShouldIgnoreWordsAfterCompletely(t *testing.T) {
 	parser := NewParser(t.Context(), "xxx", NewScanner(text), func(any) {})
 	parser.Parse()
 
-	words1 := parser.ast.Sections[0].NewWords[0].Words
+	words1 := parser.Ast.Sections[0].NewWords[0].Words
 	test.Expect(t, 1, len(words1))
-	diag1 := parser.ast.Sections[0].Diagnostics[0]
+	diag1 := parser.Ast.Sections[0].Diagnostics[0]
 	test.Expect(t, InvalidScore, diag1.Message)
 	test.Expect(t, 17, diag1.Range.Start.Character)
 	test.Expect(t, 22, diag1.Range.End.Character) // remember, it's [start, ...end)
 	test.Expect(t, 1, diag1.Range.Start.Line, diag1.Range.End.Line)
 
-	words2 := parser.ast.Sections[1].NewWords[0].Words
+	words2 := parser.Ast.Sections[1].NewWords[0].Words
 	test.Expect(t, 0, len(words2))
-	diag2 := parser.ast.Sections[1].Diagnostics[0]
+	diag2 := parser.Ast.Sections[1].Diagnostics[0]
 	test.Expect(t, InvalidScore, diag2.Message)
 	test.Expect(t, 20, diag2.Range.Start.Character)
 	test.Expect(t, 25, diag2.Range.End.Character)
 	test.Expect(t, 3, diag2.Range.Start.Line, diag2.Range.End.Line)
 
-	words3 := parser.ast.Sections[2].NewWords[0].Words
+	words3 := parser.Ast.Sections[2].NewWords[0].Words
 	test.Expect(t, 0, len(words3))
-	diag3 := parser.ast.Sections[2].Diagnostics[0]
+	diag3 := parser.Ast.Sections[2].Diagnostics[0]
 	test.Expect(t, InvalidScore, diag3.Message)
 	test.Expect(t, 20, diag3.Range.Start.Character)
 	test.Expect(t, 22, diag3.Range.End.Character)

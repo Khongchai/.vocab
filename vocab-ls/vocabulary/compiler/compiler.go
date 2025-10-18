@@ -1,32 +1,32 @@
-package vocabulary
+package compiler
 
 import (
 	"context"
 	"fmt"
 	lsproto "vocab/lsp"
-	entity "vocab/vocabulary/entity"
+	"vocab/vocabulary/parser"
 )
 
 type Compiler struct {
 	ctx  context.Context
-	tree *entity.WordTree
+	tree *WordTree
 	log  func(any)
 }
 
 func NewCompiler(ctx context.Context, log func(any)) *Compiler {
 	return &Compiler{
 		ctx:  ctx,
-		tree: &entity.WordTree{},
+		tree: &WordTree{},
 		log:  log,
 	}
 }
 
 func (c *Compiler) Accept(documentUri string, text string, changeRange *lsproto.Range) {
-	scanner := NewScanner(text)
-	parser := NewParser(c.ctx, documentUri, scanner, c.log)
+	scanner := parser.NewScanner(text)
+	parser := parser.NewParser(c.ctx, documentUri, scanner, c.log)
 	parser.Parse()
 
-	newWordTree := c.astToWordTree(parser.ast)
+	newWordTree := c.astToWordTree(parser.Ast)
 	if c.tree == nil {
 		c.tree = newWordTree
 	} else {
@@ -38,7 +38,7 @@ func (c *Compiler) Compile() []lsproto.Diagnostic {
 	details := c.tree.Harvest()
 	diags := []lsproto.Diagnostic{}
 
-	addDiagToWords := func(timeRemaining float64, severitiy lsproto.DiagnosticsSeverity, words []*entity.Word) {
+	addDiagToWords := func(timeRemaining float64, severitiy lsproto.DiagnosticsSeverity, words []*parser.Word) {
 		for _, word := range words {
 			err := lsproto.MakeDiagnostics(
 				fmt.Sprintf("Needs review within: %f day(s)", timeRemaining),
@@ -73,8 +73,8 @@ func (c *Compiler) Compile() []lsproto.Diagnostic {
 	return diags
 }
 
-func (c *Compiler) astToWordTree(ast *entity.VocabAst) *entity.WordTree {
-	tree := entity.NewWordTree()
+func (c *Compiler) astToWordTree(ast *parser.VocabAst) *WordTree {
+	tree := NewWordTree()
 
 	for _, section := range ast.Sections {
 		allWordSections := append(section.NewWords, section.ReviewedWords...)

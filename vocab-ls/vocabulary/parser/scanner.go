@@ -1,4 +1,4 @@
-package vocabulary
+package parser
 
 import (
 	"unicode/utf8"

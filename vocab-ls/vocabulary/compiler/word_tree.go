@@ -1,4 +1,4 @@
-package entity
+package compiler
 
 import (
 	"maps"
@@ -6,6 +6,7 @@ import (
 	"time"
 	lsproto "vocab/lsp"
 	"vocab/super_memo"
+	"vocab/vocabulary/parser"
 )
 
 // A WordTree is a map of the word, or exact literal string to
@@ -20,13 +21,13 @@ func NewWordTree() *WordTree {
 	return tree
 }
 
-func (wt *WordTree) GetTwigs(language Language, word string) []*WordTwig {
+func (wt *WordTree) GetTwigs(language parser.Language, word string) []*WordTwig {
 	found := wt.branches[string(language)].twigs[word]
 	return found
 }
 
 // Add a new word to the tree. If language branch does not exists, one is created.
-func (wt *WordTree) AddTwig(language Language, word *Word, uri string, section *VocabularySection, startingDiagnostics []*lsproto.Diagnostic) {
+func (wt *WordTree) AddTwig(language parser.Language, word *parser.Word, uri string, section *parser.VocabularySection, startingDiagnostics []*lsproto.Diagnostic) {
 	lang := string(language)
 	branch := wt.branches[lang]
 
@@ -76,10 +77,10 @@ func (wt *WordTree) Harvest() []*WordFruit {
 	for lang, langBranch := range wt.branches {
 		for word, twigs := range langBranch.twigs {
 			detail := &WordFruit{
-				Words:               []*Word{},
+				Words:               []*parser.Word{},
 				TimeRemaining:       0,
 				StartingDiagnostics: []*lsproto.Diagnostic{},
-				Lang:                Language(lang),
+				Lang:                parser.Language(lang),
 				Text:                word,
 			}
 
@@ -163,7 +164,7 @@ func (lb *LanguageBranch) sortTwigs(word string) {
 
 type WordTwig struct {
 	grade               int
-	section             *VocabularySection
+	section             *parser.VocabularySection
 	startingDiagnostics []*lsproto.Diagnostic
 	// Document location file name)
 	location string
@@ -171,9 +172,9 @@ type WordTwig struct {
 
 // The final review detail of a word
 type WordFruit struct {
-	Lang Language
+	Lang parser.Language
 	// All word object tied to normalized `text`
-	Words []*Word
+	Words []*parser.Word
 	// The normalized text.
 	Text string
 	// Remaining time as the number of days

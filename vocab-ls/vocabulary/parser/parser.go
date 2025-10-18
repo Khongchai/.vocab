@@ -1,4 +1,4 @@
-package vocabulary
+package parser
 
 import (
 	"context"
@@ -7,7 +7,6 @@ import (
 	"time"
 	lsproto "vocab/lsp"
 	"vocab/syntax"
-	entity "vocab/vocabulary/entity"
 )
 
 const (
@@ -25,7 +24,7 @@ type Parser struct {
 	ctx     context.Context
 	uri     string
 	scanner *Scanner
-	ast     *entity.VocabAst
+	Ast     *VocabAst
 
 	token      Token
 	text       string
@@ -41,7 +40,7 @@ func NewParser(ctx context.Context, uri string, scanner *Scanner, printCallback 
 		ctx:     ctx,
 		uri:     uri,
 		scanner: scanner,
-		ast:     &entity.VocabAst{},
+		Ast:     &VocabAst{},
 
 		token:      TokenUnknown,
 		text:       "",
@@ -53,12 +52,12 @@ func NewParser(ctx context.Context, uri string, scanner *Scanner, printCallback 
 }
 
 func (p *Parser) Parse() {
-	p.ast.Sections = []*entity.VocabularySection{}
+	p.Ast.Sections = []*VocabularySection{}
 
-	var lastSection *entity.VocabularySection = nil
+	var lastSection *VocabularySection = nil
 
 	startNewSection := func() {
-		p.ast.Sections = append(p.ast.Sections, entity.NewVocabularySection(p.uri))
+		p.Ast.Sections = append(p.Ast.Sections, NewVocabularySection(p.uri))
 	}
 
 	for {
@@ -68,8 +67,8 @@ func (p *Parser) Parse() {
 			return
 		}
 
-		if len(p.ast.Sections) > 0 {
-			lastSection = p.ast.Sections[len(p.ast.Sections)-1]
+		if len(p.Ast.Sections) > 0 {
+			lastSection = p.Ast.Sections[len(p.Ast.Sections)-1]
 		}
 
 		switch p.token {
@@ -104,7 +103,7 @@ func (p *Parser) parseDateExpression() {
 	parsed, err := time.Parse(syntax.DateLayout, p.text)
 	parsedAsLocalTime := time.Date(parsed.Year(), parsed.Month(), parsed.Day(), 0, 0, 0, 0, time.Local)
 	section := p.currentVocabSection()
-	date := &entity.DateSection{
+	date := &DateSection{
 		Parent: section,
 		Text:   p.text,
 		Time:   parsedAsLocalTime,
@@ -124,7 +123,7 @@ func (p *Parser) parseDateExpression() {
 
 func (p *Parser) parseVocabSection() {
 	currentSection := p.currentVocabSection()
-	words := &entity.WordsSection{
+	words := &WordsSection{
 		Line:   p.line,
 		Parent: currentSection,
 	}
@@ -144,12 +143,12 @@ func (p *Parser) parseVocabSection() {
 	}
 	switch p.text {
 	case "it":
-		words.Language = entity.Italiano
+		words.Language = Italiano
 	case "de":
-		words.Language = entity.Deutsch
+		words.Language = Deutsch
 	default:
 		p.errorHere(nil, UnrecognizedLanguage)
-		words.Language = entity.Unrecognized
+		words.Language = Unrecognized
 	}
 
 	parsing := ""
@@ -173,7 +172,7 @@ func (p *Parser) parseVocabSection() {
 			return t
 		}()
 
-		newWord := &entity.Word{Parent: words, Text: text, Start: p.tokenStart, End: p.tokenEnd, Literally: isWordLiteral, Line: p.line}
+		newWord := &Word{Parent: words, Text: text, Start: p.tokenStart, End: p.tokenEnd, Literally: isWordLiteral, Line: p.line}
 		words.Words = append(words.Words, newWord)
 	}
 
@@ -229,7 +228,7 @@ func (p *Parser) parseUtteranceSection() {
 		switch p.token {
 		case TokenLineBreak, TokenEOF:
 			text := sb.String()
-			newUtterance := &entity.UtteranceSection{
+			newUtterance := &UtteranceSection{
 				Parent: p.currentVocabSection(),
 				Line:   p.line,
 				Start:  start,
@@ -287,12 +286,12 @@ func (p *Parser) nextTokenNotWhitespace() {
 	}
 }
 
-func (p *Parser) currentVocabSection() *entity.VocabularySection {
-	sectionCount := len(p.ast.Sections)
+func (p *Parser) currentVocabSection() *VocabularySection {
+	sectionCount := len(p.Ast.Sections)
 	if sectionCount == 0 {
 		return nil
 	}
-	last := p.ast.Sections[sectionCount-1]
+	last := p.Ast.Sections[sectionCount-1]
 	return last
 }
 
