@@ -21,8 +21,11 @@
             - [x] it accepts ast and turn it into an IR tree -- a hashmap of words to the date section and location / file they appear in. 
             - [x] The IR trees can be compiled and produce diagnostics independently and then merge. Every time they merge, new diagnostics should be produced based on newly available information. This means multicore-power!
     - [x] Words need to be graded  (writing parser test)
-        You're implementing harvest
-        - [ ] Then go back to implementing the harvest function!
+        You're testing harvest
+        - [ ] Assert that: given known inputs/outputs map (from sm2), word tree produces the correct remaining time that matches the inputs/outputs map
+        - [ ] The compiler
+        - [ ] Then make lsp work
+        - [ ] Then it's multi threadin time!
 
 
 ```markdown
