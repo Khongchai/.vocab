@@ -100,6 +100,7 @@ func (wt *WordTree) Harvest() []*WordFruit {
 			var interval float64
 			var lastSeenDate *time.Time
 			for _, twig := range twigs {
+				detail.Words = append(detail.Words, twig.word)
 				detail.StartingDiagnostics = append(detail.StartingDiagnostics, twig.startingDiagnostics...)
 				currentInterval := func() float64 {
 					if lastSeenDate == nil {
@@ -169,7 +170,8 @@ func (lb *LanguageBranch) sortTwigs(word string) {
 
 type WordTwig struct {
 	grade               int
-	section             *parser.VocabularySection
+	word                *parser.Word
+	section             *parser.VocabularySection // word.Parent.Parent
 	startingDiagnostics []*lsproto.Diagnostic
 	// Document location file name)
 	location string

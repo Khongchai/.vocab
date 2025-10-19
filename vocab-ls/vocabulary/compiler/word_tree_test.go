@@ -399,3 +399,17 @@ func TestHarvest_GivenSeveralAppearancesOfWord_ShouldBeEquivalentToCallingSuperM
 	test.Expect(t, 1, len(fruits))
 	test.Expect(t, interval, fruits[0].Interval)
 }
+
+func TestHarvest_ShouldAssociateWordWithTheParserSection(t *testing.T) {
+	text := test.TrimLines(`
+		20/05/2025
+		> (it) it_word1(1)
+	`)
+
+	ast := parser.NewParser(t.Context(), "xxx", parser.NewScanner(text), func(any) {}).Parse().Ast
+	tree := AstToWordTree(ast)
+	fruits := tree.Harvest()
+
+	test.Expect(t, 1, len(fruits))
+	test.Expect(t, 1, len(fruits[0].Words))
+}
