@@ -87,15 +87,15 @@ type FullDocumentDiagnosticReport struct {
 	Items []Diagnostic                 `json:"items"`
 }
 
-func NewPublishDiagnosticsNotfication(params PublishDiagnosticsParams) *publishDiagnosticsNotification {
-	return &publishDiagnosticsNotification{
+func NewPublishDiagnosticsNotfication(params PublishDiagnosticsParams) *PublishDiagnosticsNotification {
+	return &PublishDiagnosticsNotification{
 		Jsonrpc: JsonRPCVersion,
 		Method:  "textDocument/publishDiagnostics",
 		Params:  params,
 	}
 }
 
-type publishDiagnosticsNotification struct {
+type PublishDiagnosticsNotification struct {
 	Jsonrpc string                   `json:"jsonrpc"`
 	Method  string                   `json:"method"`
 	Params  PublishDiagnosticsParams `json:"params"`
