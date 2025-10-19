@@ -86,7 +86,8 @@ func (wt *WordTree) Harvest() []*WordFruit {
 		for word, twigs := range langBranch.twigs {
 			detail := &WordFruit{
 				Words:               []*parser.Word{},
-				TimeRemaining:       0,
+				Interval:            0,
+				LastSeenDate:        time.Time{},
 				StartingDiagnostics: []*lsproto.Diagnostic{},
 				Lang:                parser.Language(lang),
 				Text:                word,
@@ -113,12 +114,8 @@ func (wt *WordTree) Harvest() []*WordFruit {
 				lastSeenDate = &twig.section.Date.Time
 			}
 
-			// In the future, this can be moved to a different layer.
-			// If max(0, today - last reviewed date) is more than interval, produce diagnostics
-			diffHours := time.Since(*lastSeenDate).Hours()
-			diffDays := diffHours / 24
-			remaining := diffDays - interval
-			detail.TimeRemaining = remaining
+			detail.Interval = interval
+			detail.LastSeenDate = *lastSeenDate
 
 			details = append(details, detail)
 		}
@@ -184,9 +181,9 @@ type WordFruit struct {
 	// All word object tied to normalized `text`
 	Words []*parser.Word
 	// The normalized text.
-	Text string
-	// Remaining time as the number of days
-	TimeRemaining       float64
+	Text                string
+	Interval            float64
+	LastSeenDate        time.Time
 	StartingDiagnostics []*lsproto.Diagnostic
 }
 

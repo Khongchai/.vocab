@@ -3,6 +3,8 @@ package compiler
 import (
 	"context"
 	"fmt"
+	"math"
+	"time"
 	lsproto "vocab/lsp"
 	"vocab/vocabulary/parser"
 )
@@ -57,17 +59,22 @@ func (c *Compiler) Compile() []lsproto.Diagnostic {
 			diags = append(diags, *starting)
 		}
 
-		severity := func() lsproto.DiagnosticsSeverity {
-			if detail.TimeRemaining <= 1 {
-				return lsproto.DiagnosticsSeverityError
-			} else if detail.TimeRemaining < 3 {
-				return lsproto.DiagnosticsSeverityHint
+		severity, remainingDays := func() (lsproto.DiagnosticsSeverity, float64) {
+			interval := math.Ceil(detail.Interval)
+			deadline := detail.LastSeenDate.AddDate(0, 0, int(interval))
+			remainingHours := time.Until(deadline).Hours()
+			var remainingDays float64 = remainingHours / 24
+
+			if remainingDays <= 1 {
+				return lsproto.DiagnosticsSeverityError, remainingDays
+			} else if remainingDays < 3 {
+				return lsproto.DiagnosticsSeverityHint, remainingDays
 			}
 
-			return lsproto.DiagnosticsSeverityInformation
+			return lsproto.DiagnosticsSeverityInformation, remainingDays
 		}()
 
-		addDiagToWords(detail.TimeRemaining, severity, detail.Words)
+		addDiagToWords(remainingDays, severity, detail.Words)
 	}
 
 	return diags
