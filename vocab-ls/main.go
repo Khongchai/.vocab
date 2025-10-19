@@ -25,7 +25,6 @@ func main() {
 	inputReader := lib.NewInputReader(os.Stdin)
 	outputWriter := lib.NewOutputWriter(os.Stdout)
 	logger := lib.NewLogger(os.Stderr)
-	compiler := compiler.NewCompiler(ctx, func(any) {})
 	engine := engine.NewEngine(ctx, inputReader.Read, outputWriter.Write, logger, map[string]func(lsproto.Notification) any{
 		"textDocument/didChange": func(rm lsproto.Notification) any {
 			var params lsproto.DidChangeTextDocumentParams
@@ -35,6 +34,8 @@ func main() {
 				return nil
 			}
 			json.Unmarshal(marshalled, &params)
+
+			compiler := compiler.NewCompiler(ctx, func(any) {})
 
 			for i := range params.ContentChanges {
 				change := params.ContentChanges[i]

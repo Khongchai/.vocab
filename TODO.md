@@ -24,8 +24,10 @@
         You're testing harvest
         - [x] Assert that: given known inputs/outputs map (from sm2), word tree produces the correct remaining time that matches the inputs/outputs map
         - [ ] Then make lsp work
-            - [ ] Get go debugger to work on windows with vscode
-            - [ ] Fix the error
+            - [x] Get go debugger to work on windows with vscode
+            - [x] Fix the error
+            - [ ] If the same line already has an error, don't emit another.
+            - [ ] Just one error per line is enough
         - [ ] Then it's multi threadin time!
 
 
