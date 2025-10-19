@@ -115,3 +115,10 @@ Devi fare entrambe le cose.
 - [ ] Parallelize parsing of multiple vocab files with goroutine (see ts-go).
 - [ ] Make pull mode work
 - [ ] Show how much time remaining for each individual word.
+- [ ] Audio Pronunciation Integration: Add a command or CodeLens link next to words that, when clicked, fetches and plays the pronunciation (using an online API like Forvo or browser speech synthesis).
+- [ ] Statistics Dashboard: Create a custom webview panel within VS Code that shows learning statistics:
+Number of words learned per language.
+Number of words due today/this week.
+A graph showing learning progress over time.
+Words causing the most difficulty (lowest average grades).
+Audio Pronunciation Integration: Add a command or CodeLens link next to words that, when clicked, fetches and plays the pronunciation (using an online API like Forvo or browser speech synthesis).
