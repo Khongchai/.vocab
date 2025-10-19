@@ -1,12 +1,14 @@
 package compiler
 
 import (
+	"fmt"
 	"maps"
 	"slices"
 	"strings"
 	"testing"
 	"time"
 	lsproto "vocab/lsp"
+	"vocab/syntax"
 	test "vocab/vocab_testing"
 	parser "vocab/vocabulary/parser"
 )
@@ -300,33 +302,71 @@ func TestGraftingTrees_ShouldNotRecombineTreesWithSameIdentity(t *testing.T) {
 	test.Expect(t, 1, len(mergedTree.branches[string(parser.Deutsch)].twigs["drei"]))
 }
 
-func TestHarvest_ShouldOutputWordFruitsWithCorrectInterval(t *testing.T) {
-	// // Given today = 20/06/2025 and
-	// // 20/05/2025
-	// // > (it) it_word1, it_word2
-	// // lorem ipsum...
-	// // 23/05/2025
-	// // > (de) de_word1, de_word2
-	// // >> (it) it_word1
-	// // lorem ipsum...
-	// // 20/06/2025
-	// // > (de) de_word1
-	// now := time.Now()
-	// lastWeek := now.AddDate(0, 0, -7)
-	// tomorrow := now.AddDate(0, 0, 1)
+func TestHarvest_ShouldOutputCorrectLastSeenDate(t *testing.T) {
+	text := test.TrimLines(`
+		21/06/2025 | 21/06/2025 is up here because date order should not matter
+		>> (it) it_word1(0)
+		20/05/2025
+		> (it) it_word1(0), it_word2(0)
+		lorem ipsum...
+		23/05/2025
+		> (de) de_word1(0), de_word2(0)
+		>> (it) it_word1(0)
+		lorem ipsum...
+		20/06/2025
+		>> (de) de_word1(0)
+	`)
 
-	// tree := NewWordTree()
-	// section := parser.NewVocabularySection("xxx")
-	// section.Date = &parser.DateSection{Time: zeit, Line: dateLine}
-	// newWordsSection1 := &parser.WordsSection{
-	// 	Parent:   section,
-	// 	Reviewed: false,
-	// 	Language: parser.Deutsch,
-	// }
-	// tree.AddTwig(parser.Deutsch, fakeWord(newWordDeutschSection1, 5, newWordsSection1), "xxx", section, []*lsproto.Diagnostic{})
-	// section.NewWords = append(section.NewWords, newWordsSection1)
+	ast := parser.NewParser(t.Context(), "xxx", parser.NewScanner(text), func(any) {}).Parse().Ast
+	tree := AstToWordTree(ast)
+	fruits := tree.Harvest()
 
-	// harvested := merged.Harvest()
-	// test.Expect(t, 6, len(harvested))
-	// print(harvested)
+	test.Expect(t, 4, len(fruits))
+
+	expectDateEqual := func(actual string, expect time.Time) {
+		t.Helper()
+		acualDate, _ := time.Parse(syntax.DateLayout, actual)
+		test.Expect(t, acualDate.Day(), expect.Day())
+		test.Expect(t, acualDate.Month(), expect.Month())
+		test.Expect(t, acualDate.Year(), expect.Year())
+	}
+
+	for _, fruit := range fruits {
+		switch fruit.Text {
+		case "it_word1":
+			expectDateEqual("21/06/2025", fruit.LastSeenDate)
+		case "it_word2":
+			expectDateEqual("20/05/2025", fruit.LastSeenDate)
+		case "de_word1":
+			expectDateEqual("20/06/2025", fruit.LastSeenDate)
+		case "de_word2":
+			expectDateEqual("23/05/2025", fruit.LastSeenDate)
+		default:
+			panic(fmt.Sprintf("Wtf, got %s", fruit.Text))
+		}
+	}
+}
+
+func TestHarvest_GivenAllZeroScores_ShouldOutputWordFruitsWithIntervalOne(t *testing.T) {
+	text := test.TrimLines(`
+		20/05/2025
+		> (it) it_word1(0), it_word2(0)
+		lorem ipsum...
+		23/05/2025
+		> (de) de_word1(0), de_word2(0)
+		>> (it) it_word1(0)
+		lorem ipsum...
+		20/06/2025
+		>> (de) de_word1(0)
+		21/06/2025
+		>> (it) it_word1(0)
+	`)
+
+	ast := parser.NewParser(t.Context(), "xxx", parser.NewScanner(text), func(any) {}).Parse().Ast
+	tree := AstToWordTree(ast)
+	fruits := tree.Harvest()
+
+	for _, fruit := range fruits {
+		test.Expect(t, 1, fruit.Interval)
+	}
 }
