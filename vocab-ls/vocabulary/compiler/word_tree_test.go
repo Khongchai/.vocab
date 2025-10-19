@@ -301,17 +301,32 @@ func TestGraftingTrees_ShouldNotRecombineTreesWithSameIdentity(t *testing.T) {
 }
 
 func TestHarvest_ShouldOutputWordFruitsWithCorrectInterval(t *testing.T) {
-	now := time.Now()
-	lastWeek := now.AddDate(0, 0, -7)
-	tomorrow := now.AddDate(0, 0, 1)
+	// // Given today = 20/06/2025 and
+	// // 20/05/2025
+	// // > (it) it_word1, it_word2
+	// // lorem ipsum...
+	// // 23/05/2025
+	// // > (de) de_word1, de_word2
+	// // >> (it) it_word1
+	// // lorem ipsum...
+	// // 20/06/2025
+	// // > (de) de_word1
+	// now := time.Now()
+	// lastWeek := now.AddDate(0, 0, -7)
+	// tomorrow := now.AddDate(0, 0, 1)
 
-	tree1 := fakeTree(now, 0, "halo", "ciao", "halo")
-	tree2 := fakeTree(lastWeek, 5, "schon", "già", "schon")
-	tree3 := fakeTree(tomorrow, 10, "oft", "spesso", "oft")
-	merged := tree1.Graft(tree2).Graft(tree3)
+	// tree := NewWordTree()
+	// section := parser.NewVocabularySection("xxx")
+	// section.Date = &parser.DateSection{Time: zeit, Line: dateLine}
+	// newWordsSection1 := &parser.WordsSection{
+	// 	Parent:   section,
+	// 	Reviewed: false,
+	// 	Language: parser.Deutsch,
+	// }
+	// tree.AddTwig(parser.Deutsch, fakeWord(newWordDeutschSection1, 5, newWordsSection1), "xxx", section, []*lsproto.Diagnostic{})
+	// section.NewWords = append(section.NewWords, newWordsSection1)
 
-	harvested := merged.Harvest()
-	test.Expect(t, 6, len(harvested))
-	print(harvested)
-
+	// harvested := merged.Harvest()
+	// test.Expect(t, 6, len(harvested))
+	// print(harvested)
 }

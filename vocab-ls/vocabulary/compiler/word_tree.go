@@ -22,8 +22,16 @@ func NewWordTree() *WordTree {
 }
 
 func (wt *WordTree) GetTwigs(language parser.Language, word string) []*WordTwig {
-	found := wt.branches[string(language)].twigs[word]
-	return found
+	existingBranch := wt.branches[string(language)]
+	if existingBranch == nil {
+		return []*WordTwig{}
+	}
+	twigs := existingBranch.twigs[word]
+	return twigs
+}
+
+func (wt *WordTree) GetBranches() []*LanguageBranch {
+	return slices.Collect(maps.Values(wt.branches))
 }
 
 // Add a new word to the tree. If language branch does not exists, one is created.
