@@ -53,8 +53,17 @@ func (c *Compiler) Compile() []lsproto.Diagnostic {
 
 	addDiagToAllWordPositions := func(timeRemaining float64, severitiy lsproto.DiagnosticsSeverity, words []*parser.Word) {
 		for _, word := range words {
+			message := func() string {
+				if timeRemaining == 0 {
+					return "Review now!"
+				}
+				if timeRemaining > 0 {
+					return fmt.Sprintf("Needs review within: %f day(s)", timeRemaining)
+				}
+				return fmt.Sprintf("%d days past deadline", int(math.Ceil(timeRemaining*-1)))
+			}()
 			err := lsproto.MakeDiagnostics(
-				fmt.Sprintf("Needs review within: %f day(s)", timeRemaining),
+				message,
 				word.Line,
 				word.Start,
 				word.End,
