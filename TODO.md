@@ -26,6 +26,11 @@
         - [ ] Then make lsp work
             - [x] Get go debugger to work on windows with vscode
             - [x] Fix the error
+            - [ ] Seems for this case, errors are at the wrong place...
+                ```
+                    20/05/2025
+                    > (it) la magia, bene,scorprire
+                ```
         - [ ] Then it's multi threadin time!
 
 
