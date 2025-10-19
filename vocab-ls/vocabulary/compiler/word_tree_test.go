@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 	lsproto "vocab/lsp"
+	"vocab/super_memo"
 	"vocab/syntax"
 	test "vocab/vocab_testing"
 	parser "vocab/vocabulary/parser"
@@ -369,4 +370,32 @@ func TestHarvest_GivenAllZeroScores_ShouldOutputWordFruitsWithIntervalOne(t *tes
 	for _, fruit := range fruits {
 		test.Expect(t, 1, fruit.Interval)
 	}
+}
+
+func TestHarvest_GivenSeveralAppearancesOfWord_ShouldBeEquivalentToCallingSuperMemoThatManyTimesGivenScoreAndInterval(t *testing.T) {
+	text := test.TrimLines(`
+		20/05/2025
+		> (it) it_word1(1)
+		21/05/2025
+		>> (it) it_word1(0)
+		22/06/2025
+		>> (it) it_word1(4)
+		01/07/2025
+		>> (it) it_word1(3)
+		08/07/2025
+		>> (it) it_word1(5)
+	`)
+
+	ast := parser.NewParser(t.Context(), "xxx", parser.NewScanner(text), func(any) {}).Parse().Ast
+	tree := AstToWordTree(ast)
+	fruits := tree.Harvest()
+
+	rep, _, easiness := super_memo.Sm2(1, 0, 0, super_memo.InitialEasinessFactor)
+	rep, _, easiness = super_memo.Sm2(0, rep, 1, easiness)
+	rep, _, easiness = super_memo.Sm2(4, rep, 1, easiness)
+	rep, _, easiness = super_memo.Sm2(3, rep, 9, easiness)
+	_, interval, _ := super_memo.Sm2(5, rep, 7, easiness)
+
+	test.Expect(t, 1, len(fruits))
+	test.Expect(t, interval, fruits[0].Interval)
 }
