@@ -93,15 +93,14 @@ func (s *Scanner) Scan() (Token, string) {
 		s.forwardPos(1)
 		return TokenComma, ","
 
-	case lib.Minus:
-		c2, _ := s.charAt(1)
-		c3, _ := s.charAt(2)
-		if c2 == lib.Minus && c3 == lib.GreaterThan {
-			s.forwardPos(3)
-			return TokenMarkdownCommentEnd, "-->"
+	case lib.VerticalLine:
+		for {
+			s.forwardPos(1)
+			cur, _ := s.charAt(0)
+			if lib.IsLineBreak(cur) || s.atEnd() {
+				return TokenCommentTrivia, ""
+			}
 		}
-		s.forwardPos(1)
-		return TokenMinus, "-"
 
 	case lib.GreaterThan:
 		next, _ := s.charAt(1)
@@ -111,17 +110,6 @@ func (s *Scanner) Scan() (Token, string) {
 		}
 		s.forwardPos(1)
 		return TokenGreaterThan, ">"
-
-	case lib.LessThan:
-		c1, _ := s.charAt(1)
-		c2, _ := s.charAt(2)
-		c3, _ := s.charAt(3)
-		if c1 == lib.ExclamationMark && c2 == lib.Minus && c3 == lib.Minus {
-			s.forwardPos(4)
-			return TokenMarkdownCommentStart, "<!--"
-		}
-		s.forwardPos(1)
-		return TokenLessThan, "<"
 
 	case lib.Backtick:
 		nextChar, nextCharLength := s.charAt(1)

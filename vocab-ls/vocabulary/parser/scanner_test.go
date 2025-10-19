@@ -75,15 +75,12 @@ func TestBasicTokenScan(t *testing.T) {
 		{Text: "(it", Expectations: []ScanExpect{{TextValue: "(it", TokenValue: TokenText, LineOffset: 3, Pos: 3}}},
 		{Text: "(i)", Expectations: []ScanExpect{{TextValue: "i", TokenValue: TokenSemanticSpecifierLiteral, LineOffset: 3, Pos: 3}}},
 		{Text: "/", Expectations: []ScanExpect{{TextValue: "/", TokenValue: TokenSlash, LineOffset: 1, Pos: 1}}},
-		{Text: "<!--", Expectations: []ScanExpect{{TextValue: "<!--", TokenValue: TokenMarkdownCommentStart, LineOffset: 4, Pos: 4}}},
-		{Text: "-->", Expectations: []ScanExpect{{TextValue: "-->", TokenValue: TokenMarkdownCommentEnd, LineOffset: 3, Pos: 3}}},
-		{Text: "-", Expectations: []ScanExpect{{TextValue: "-", TokenValue: TokenMinus, LineOffset: 1, Pos: 1}}},
 		{Text: "1,", Expectations: []ScanExpect{
 			{TextValue: "1", TokenValue: TokenText, LineOffset: 1, Pos: 1},
 			{TextValue: ",", TokenValue: TokenComma, LineOffset: 2, Pos: 2},
 		}},
+		{Text: "| Hi, how are you?!/,xxx", Expectations: []ScanExpect{{TextValue: "", TokenValue: TokenCommentTrivia, LineOffset: 24, Pos: 24}}},
 	})
-
 }
 
 func TestNewline(t *testing.T) {

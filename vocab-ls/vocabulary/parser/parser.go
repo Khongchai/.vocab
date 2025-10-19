@@ -72,6 +72,8 @@ func (p *Parser) Parse() *Parser {
 		}
 
 		switch p.token {
+		case TokenCommentTrivia:
+			continue
 		case TokenLineBreak, TokenWhitespace:
 			continue
 		case TokenDateExpression:

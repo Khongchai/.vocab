@@ -17,8 +17,7 @@ const (
 	TokenLeftParen
 	TokenRightParen
 
-	TokenMarkdownCommentStart // <!--
-	TokenMarkdownCommentEnd   // -->
+	TokenCommentTrivia
 
 	TokenDateExpression           // xx/xx/xxxx
 	TokenWordLiteral              // `literally` `a` `word`
