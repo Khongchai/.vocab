@@ -23,6 +23,8 @@ func NewCompiler(ctx context.Context, log func(any)) *Compiler {
 	}
 }
 
+// This is called "accept" not compile because the compiler can incrementally build the inner language tree representation.
+// Calling "Accept" multiple times will update the existing global tree state.
 func (c *Compiler) Accept(documentUri string, text string, changeRange *lsproto.Range) {
 	scanner := parser.NewScanner(text)
 	parser := parser.NewParser(c.ctx, documentUri, scanner, c.log)
@@ -36,6 +38,7 @@ func (c *Compiler) Accept(documentUri string, text string, changeRange *lsproto.
 	}
 }
 
+// Based on the built tree, compile tree into diagnostics.
 func (c *Compiler) Compile() []lsproto.Diagnostic {
 	details := c.tree.Harvest()
 	diags := []lsproto.Diagnostic{}
