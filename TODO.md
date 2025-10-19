@@ -26,8 +26,6 @@
         - [ ] Then make lsp work
             - [x] Get go debugger to work on windows with vscode
             - [x] Fix the error
-            - [ ] If the same line already has an error, don't emit another.
-            - [ ] Just one error per line is enough
         - [ ] Then it's multi threadin time!
 
 
