@@ -51,7 +51,7 @@ func NewParser(ctx context.Context, uri string, scanner *Scanner, printCallback 
 	}
 }
 
-func (p *Parser) Parse() {
+func (p *Parser) Parse() *Parser {
 	p.Ast.Sections = []*VocabularySection{}
 
 	var lastSection *VocabularySection = nil
@@ -64,7 +64,7 @@ func (p *Parser) Parse() {
 		p.nextToken()
 
 		if p.token == TokenEOF {
-			return
+			return p
 		}
 
 		if len(p.Ast.Sections) > 0 {

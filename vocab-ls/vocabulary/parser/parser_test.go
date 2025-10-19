@@ -380,3 +380,17 @@ func TestInvalidGradeShouldIgnoreWordsAfterCompletely(t *testing.T) {
 	test.Expect(t, 22, diag3.Range.End.Character)
 	test.Expect(t, 5, diag3.Range.Start.Line, diag3.Range.End.Line)
 }
+
+func TestWordWithNumber_ShouldWorkBecauseItSuperUsefulWhenTesting(t *testing.T) {
+	text := test.TrimLines(`
+		20/05/2025
+		> (it) it_word1, it_word2
+		lorem ipsum...
+	`)
+	ast := NewParser(t.Context(), "xxx", NewScanner(text), func(any) {}).Parse().Ast
+	test.Expect(t, 1, len(ast.Sections))
+	test.Expect(t, 1, len(ast.Sections[0].NewWords))
+	test.Expect(t, 2, len(ast.Sections[0].NewWords[0].Words))
+	test.Expect(t, "it_word1", ast.Sections[0].NewWords[0].Words[0].Text)
+	test.Expect(t, "it_word2", ast.Sections[0].NewWords[0].Words[1].Text)
+}

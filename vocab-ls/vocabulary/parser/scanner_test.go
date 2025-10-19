@@ -43,7 +43,7 @@ func testScanExpectations(t *testing.T, testCases []ScanCase) {
 			}
 
 			if actualText != expectation.TextValue {
-				t.Fatalf("Text does not match: expected %s, got %s", expectation.TextValue, actualText)
+				t.Fatalf("Text does not match: expected \"%s\", got \"%s\"", expectation.TextValue, actualText)
 			}
 
 			if actualOffset != expectation.LineOffset {
@@ -78,6 +78,10 @@ func TestBasicTokenScan(t *testing.T) {
 		{Text: "<!--", Expectations: []ScanExpect{{TextValue: "<!--", TokenValue: TokenMarkdownCommentStart, LineOffset: 4, Pos: 4}}},
 		{Text: "-->", Expectations: []ScanExpect{{TextValue: "-->", TokenValue: TokenMarkdownCommentEnd, LineOffset: 3, Pos: 3}}},
 		{Text: "-", Expectations: []ScanExpect{{TextValue: "-", TokenValue: TokenMinus, LineOffset: 1, Pos: 1}}},
+		{Text: "1,", Expectations: []ScanExpect{
+			{TextValue: "1", TokenValue: TokenText, LineOffset: 1, Pos: 1},
+			{TextValue: ",", TokenValue: TokenComma, LineOffset: 2, Pos: 2},
+		}},
 	})
 
 }
