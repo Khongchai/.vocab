@@ -18,7 +18,7 @@ type Compiler struct {
 func NewCompiler(ctx context.Context, log func(any)) *Compiler {
 	return &Compiler{
 		ctx:  ctx,
-		tree: &WordTree{},
+		tree: nil,
 		log:  log,
 	}
 }
