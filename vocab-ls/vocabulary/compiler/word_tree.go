@@ -56,6 +56,8 @@ func (wt *WordTree) AddTwig(language parser.Language, word *parser.Word, uri str
 		startingDiagnostics = append(startingDiagnostics, newDiag)
 	}
 	twig := &WordTwig{
+		location:            section.Uri,
+		word:                word,
 		grade:               clamped_grade,
 		section:             section,
 		startingDiagnostics: startingDiagnostics,

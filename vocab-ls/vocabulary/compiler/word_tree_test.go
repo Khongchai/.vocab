@@ -412,4 +412,5 @@ func TestHarvest_ShouldAssociateWordWithTheParserSection(t *testing.T) {
 
 	test.Expect(t, 1, len(fruits))
 	test.Expect(t, 1, len(fruits[0].Words))
+	test.Expect(t, true, fruits[0].Words[0] != nil)
 }

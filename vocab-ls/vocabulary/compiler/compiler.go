@@ -10,25 +10,31 @@ import (
 )
 
 type Compiler struct {
-	ctx  context.Context
-	tree *WordTree
-	log  func(any)
+	ctx                context.Context
+	parsingDiagnostics []*lsproto.Diagnostic
+	tree               *WordTree
+	log                func(any)
 }
 
 func NewCompiler(ctx context.Context, log func(any)) *Compiler {
 	return &Compiler{
-		ctx:  ctx,
-		tree: nil,
-		log:  log,
+		parsingDiagnostics: []*lsproto.Diagnostic{},
+		ctx:                ctx,
+		tree:               nil,
+		log:                log,
 	}
 }
 
 // This is called "accept" not compile because the compiler can incrementally build the inner language tree representation.
 // Calling "Accept" multiple times will update the existing global tree state.
-func (c *Compiler) Accept(documentUri string, text string, changeRange *lsproto.Range) {
+func (c *Compiler) Accept(documentUri string, text string, changeRange *lsproto.Range) *Compiler {
 	scanner := parser.NewScanner(text)
 	parser := parser.NewParser(c.ctx, documentUri, scanner, c.log)
 	parser.Parse()
+
+	for _, section := range parser.Ast.Sections {
+		c.parsingDiagnostics = append(c.parsingDiagnostics, section.Diagnostics...)
+	}
 
 	newWordTree := AstToWordTree(parser.Ast)
 	if c.tree == nil {
@@ -36,14 +42,16 @@ func (c *Compiler) Accept(documentUri string, text string, changeRange *lsproto.
 	} else {
 		c.tree.Graft(newWordTree)
 	}
+
+	return c
 }
 
 // Based on the built tree, compile tree into diagnostics.
 func (c *Compiler) Compile() []lsproto.Diagnostic {
-	details := c.tree.Harvest()
+	fruits := c.tree.Harvest()
 	diags := []lsproto.Diagnostic{}
 
-	addDiagToWords := func(timeRemaining float64, severitiy lsproto.DiagnosticsSeverity, words []*parser.Word) {
+	addDiagToAllWordPositions := func(timeRemaining float64, severitiy lsproto.DiagnosticsSeverity, words []*parser.Word) {
 		for _, word := range words {
 			err := lsproto.MakeDiagnostics(
 				fmt.Sprintf("Needs review within: %f day(s)", timeRemaining),
@@ -57,14 +65,14 @@ func (c *Compiler) Compile() []lsproto.Diagnostic {
 		}
 	}
 
-	for _, detail := range details {
-		for _, starting := range detail.StartingDiagnostics {
+	for _, fruit := range fruits {
+		for _, starting := range fruit.StartingDiagnostics {
 			diags = append(diags, *starting)
 		}
 
 		severity, remainingDays := func() (lsproto.DiagnosticsSeverity, float64) {
-			interval := math.Ceil(detail.Interval)
-			deadline := detail.LastSeenDate.AddDate(0, 0, int(interval))
+			interval := math.Ceil(fruit.Interval)
+			deadline := fruit.LastSeenDate.AddDate(0, 0, int(interval))
 			remainingHours := time.Until(deadline).Hours()
 			var remainingDays float64 = remainingHours / 24
 
@@ -77,7 +85,11 @@ func (c *Compiler) Compile() []lsproto.Diagnostic {
 			return lsproto.DiagnosticsSeverityInformation, remainingDays
 		}()
 
-		addDiagToWords(remainingDays, severity, detail.Words)
+		addDiagToAllWordPositions(remainingDays, severity, fruit.Words)
+	}
+
+	for _, parsingDiag := range c.parsingDiagnostics {
+		diags = append(diags, *parsingDiag)
 	}
 
 	return diags

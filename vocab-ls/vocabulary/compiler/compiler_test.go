@@ -19,6 +19,22 @@ func TestShouldCompile(t *testing.T) {
 	compiler.Compile()
 }
 
+func TestShouldActuallyEmitError(t *testing.T) {
+	// parser error
+	compiler := NewCompiler(t.Context(), func(a any) {})
+	parsingDiag := compiler.Accept("xxx", "> (it) la magia, bene,scorprire", nil).Compile()
+	test.Expect(t, true, len(parsingDiag) > 0)
+
+	// compiler error
+	compiler = NewCompiler(t.Context(), func(a any) {})
+	compilationDiag := compiler.Accept("xxx", test.TrimLines(`
+		12/10/1000
+		> (it) mostrare
+		Mostrare
+	`), nil).Compile()
+	test.Expect(t, true, len(compilationDiag) > 0)
+}
+
 func TestShouldAllowIncrementalCompilation(t *testing.T) {
 	compiler := NewCompiler(t.Context(), func(any) {})
 
