@@ -114,6 +114,7 @@ const (
 	CloseBracket    rune = 0x5d // ]
 	Colon           rune = 0x3a // :
 	Comma           rune = 0x2c // ,
+	VerticalLine    rune = 0x7c
 	Dash            rune = 0x2d // -
 	Dot             rune = 0x2e // .
 	DoubleQuote     rune = 0x22 // "
