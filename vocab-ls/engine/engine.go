@@ -2,6 +2,7 @@ package engine
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"vocab/lib"
@@ -16,8 +17,8 @@ type Engine struct {
 	read                 ReadCallback
 	write                WriteCallback
 	logger               lib.Logger
-	notificationHandlers map[string]func(lsproto.Notification) any
-	requestHandlers      map[string]func(lsproto.RequestMessage) any
+	notificationHandlers map[string]func(lsproto.Notification) (any, error)
+	requestHandlers      map[string]func(lsproto.RequestMessage) (any, error)
 }
 
 func NewEngine(
@@ -25,8 +26,8 @@ func NewEngine(
 	read ReadCallback,
 	write WriteCallback,
 	logger lib.Logger,
-	notificationHandlers map[string]func(lsproto.Notification) any,
-	requestHandlers map[string]func(lsproto.RequestMessage) any,
+	notificationHandlers map[string]func(lsproto.Notification) (any, error),
+	requestHandlers map[string]func(lsproto.RequestMessage) (any, error),
 ) *Engine {
 	engine := &Engine{
 		ctx,
@@ -55,7 +56,10 @@ func (engine *Engine) Start() {
 			if n, ok := data.Msg.(lsproto.Notification); ok {
 				engine.logger.Log("Received notification ", n.Method)
 
-				response := engine.onNotification(n)
+				response, err := engine.onNotification(n)
+				if err != nil {
+					engine.logger.Logf("Got error while handling message %+v", err)
+				}
 				if response == nil {
 					continue
 				}
@@ -65,7 +69,10 @@ func (engine *Engine) Start() {
 			if r, ok := data.Msg.(lsproto.RequestMessage); ok {
 				engine.logger.Log("Received request ", r.Method)
 
-				response := engine.onRequest(r)
+				response, err := engine.onRequest(r)
+				if err != nil {
+					engine.logger.Logf("Got error while handling request %+v", err)
+				}
 				if response == nil {
 					continue
 				}
@@ -82,22 +89,22 @@ func (engine *Engine) Start() {
 
 }
 
-func (engine *Engine) onRequest(message lsproto.RequestMessage) any {
+func (engine *Engine) onRequest(message lsproto.RequestMessage) (any, error) {
 	handler := engine.requestHandlers[message.Method]
 	if handler == nil {
-		return nil
+		return nil, errors.New("request handler nil")
 	}
-	result := handler(message)
-	return result
+	result, err := handler(message)
+	return result, err
 }
 
-func (engine *Engine) onNotification(message lsproto.Notification) any {
+func (engine *Engine) onNotification(message lsproto.Notification) (any, error) {
 	handler := engine.notificationHandlers[message.Method]
 	if handler == nil {
-		return nil
+		return nil, errors.New("notification handlers nil")
 	}
-	result := handler(message)
-	return result
+	result, err := handler(message)
+	return result, err
 }
 
 // Blocks and read content of this json rpc message

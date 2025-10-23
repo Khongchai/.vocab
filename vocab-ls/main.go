@@ -25,17 +25,13 @@ func main() {
 	inputReader := lib.NewInputReader(os.Stdin)
 	outputWriter := lib.NewOutputWriter(os.Stdout)
 	logger := lib.NewLogger(os.Stderr)
-	engine := engine.NewEngine(ctx, inputReader.Read, outputWriter.Write, logger, map[string]func(lsproto.Notification) any{
-		"textDocument/didChange": func(rm lsproto.Notification) any {
-			var params lsproto.DidChangeTextDocumentParams
-			marshalled, err := json.Marshal(rm.Params)
+	compiler := compiler.NewCompiler(ctx, func(any) {})
+	engine := engine.NewEngine(ctx, inputReader.Read, outputWriter.Write, logger, map[string]func(lsproto.Notification) (any, error){
+		"textDocument/didChange": func(rm lsproto.Notification) (any, error) {
+			params, err := unmarshalInto(rm.Params, &lsproto.DidChangeTextDocumentParams{})
 			if err != nil {
-				logger.Log("Error while unmarshalling params")
-				return nil
+				return nil, err
 			}
-			json.Unmarshal(marshalled, &params)
-
-			compiler := compiler.NewCompiler(ctx, func(any) {})
 
 			for i := range params.ContentChanges {
 				change := params.ContentChanges[i]
@@ -76,19 +72,19 @@ func main() {
 			// 	},
 			// )
 
-			return response
+			return response, nil
 		},
-	}, map[string]func(lsproto.RequestMessage) any{
-		"textDocument/diagnostic": func(message lsproto.RequestMessage) any {
+	}, map[string]func(lsproto.RequestMessage) (any, error){
+		"textDocument/diagnostic": func(message lsproto.RequestMessage) (any, error) {
 			response := lsproto.NewFullDocumentDiagnosticResponse(
 				message.ID,
 				[]lsproto.Diagnostic{},
 				map[string][]lsproto.Diagnostic{},
 			)
 
-			return response
+			return response, nil
 		},
-		"initialize": func(message lsproto.RequestMessage) any {
+		"initialize": func(message lsproto.RequestMessage) (any, error) {
 			response := map[string]any{
 				"jsonrpc": "2.0",
 				"id":      message.ID, // echo the request id
@@ -111,9 +107,18 @@ func main() {
 					},
 				},
 			}
-			return response
+			return response, nil
 		},
 	})
 
 	engine.Start()
+}
+
+func unmarshalInto[T any](unmarshalled any, params *T) (*T, error) {
+	marshalled, err := json.Marshal(unmarshalled)
+	if err != nil {
+		return nil, err
+	}
+	json.Unmarshal(marshalled, &params)
+	return params, nil
 }
