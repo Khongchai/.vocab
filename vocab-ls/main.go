@@ -9,7 +9,7 @@ import (
 	"vocab/engine"
 	"vocab/lib"
 	lsproto "vocab/lsp"
-	"vocab/vocabulary/compiler"
+	forest "vocab/vocabulary/forest"
 )
 
 // two options:
@@ -25,15 +25,15 @@ func main() {
 	inputReader := lib.NewInputReader(os.Stdin)
 	outputWriter := lib.NewOutputWriter(os.Stdout)
 	logger := lib.NewLogger(os.Stderr)
-	compiler := compiler.NewCompiler(ctx, func(any) {})
+	forest := forest.NewForest(ctx, func(any) {})
 	engine := engine.NewEngine(ctx, inputReader.Read, outputWriter.Write, logger, map[string]func(lsproto.Notification) (any, error){
 		"textDocument/didOpen": func(rm lsproto.Notification) (any, error) {
 			params, err := unmarshalInto(rm.Params, &lsproto.DidOpenDocumentParams{})
 			if err != nil {
 				return nil, err
 			}
-			compiler.Accept(params.TextDocument.Uri, params.TextDocument.Text, nil)
-			diagnostics := compiler.Compile()
+			forest.Plant(params.TextDocument.Uri, params.TextDocument.Text, nil)
+			diagnostics := forest.Harvest()
 			response := lsproto.NewPublishDiagnosticsNotfication(
 				lsproto.PublishDiagnosticsParams{
 					Uri:         params.TextDocument.Uri,
@@ -53,10 +53,10 @@ func main() {
 			for i := range params.ContentChanges {
 				change := params.ContentChanges[i]
 				// for now, sequential. In the future we can make this parallel
-				compiler.Accept(params.TextDocument.Uri, change.Text, change.Range)
+				forest.Plant(params.TextDocument.Uri, change.Text, change.Range)
 			}
 
-			diagnostics := compiler.Compile()
+			diagnostics := forest.Harvest()
 			response := lsproto.NewPublishDiagnosticsNotfication(
 				lsproto.PublishDiagnosticsParams{
 					Uri:         params.TextDocument.Uri,

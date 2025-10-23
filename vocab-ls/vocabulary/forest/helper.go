@@ -1,4 +1,4 @@
-package compiler
+package forest
 
 import (
 	lsproto "vocab/lsp"

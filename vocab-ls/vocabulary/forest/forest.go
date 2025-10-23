@@ -1,4 +1,4 @@
-package compiler
+package forest
 
 import (
 	"context"
@@ -9,26 +9,28 @@ import (
 	"vocab/vocabulary/parser"
 )
 
-type Compiler struct {
-	ctx                context.Context
+type Forest struct {
+	ctx context.Context
+	// Map of document uri and the associated diagnostics from parser
 	parsingDiagnostics map[string][]*lsproto.Diagnostic
-	tree               *WordTree
-	log                func(any)
+	// Map of document uri and the associated trees
+	trees map[string]*WordTree
+	log   func(any)
 }
 
-func NewCompiler(ctx context.Context, log func(any)) *Compiler {
-	return &Compiler{
+func NewForest(ctx context.Context, log func(any)) *Forest {
+	return &Forest{
 		parsingDiagnostics: make(map[string][]*lsproto.Diagnostic),
+		trees:              make(map[string]*WordTree),
 		ctx:                ctx,
-		tree:               nil,
 		log:                log,
 	}
 }
 
-// This is called "accept" not compile because the compiler can incrementally build the inner language tree representation.
-// Calling "Accept" multiple times will update the existing global tree state.
-func (c *Compiler) Accept(documentUri string, text string, changeRange *lsproto.Range) *Compiler {
-
+// Create or replace tree associated with documentUri and merge it back to the global tree.
+//
+// This also clears the diagnostics of the current documentUri
+func (c *Forest) Plant(documentUri string, text string, changeRange *lsproto.Range) *Forest {
 	scanner := parser.NewScanner(text)
 	parser := parser.NewParser(c.ctx, documentUri, scanner, c.log)
 	parser.Parse()
@@ -38,19 +40,19 @@ func (c *Compiler) Accept(documentUri string, text string, changeRange *lsproto.
 		c.parsingDiagnostics[documentUri] = append(c.parsingDiagnostics[documentUri], section.Diagnostics...)
 	}
 
-	newWordTree := AstToWordTree(parser.Ast)
-	if c.tree == nil {
-		c.tree = newWordTree
-	} else {
-		c.tree.Graft(newWordTree)
-	}
+	c.trees[documentUri] = AstToWordTree(parser.Ast)
 
 	return c
 }
 
 // Based on the built tree, compile tree into diagnostics.
-func (c *Compiler) Compile() []lsproto.Diagnostic {
-	fruits := c.tree.Harvest()
+func (c *Forest) Harvest() []lsproto.Diagnostic {
+	mergedTree := NewWordTree()
+	for _, tree := range c.trees {
+		mergedTree.Graft(tree)
+	}
+	fruits := mergedTree.Harvest()
+
 	diags := []lsproto.Diagnostic{}
 
 	addDiagToAllWordPositions := func(timeRemaining float64, severitiy lsproto.DiagnosticsSeverity, words []*parser.Word) {

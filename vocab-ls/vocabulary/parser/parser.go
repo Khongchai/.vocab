@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	MalformedDate            string = "Malformed date"
+	MalformedDate            string = "Malformed date -- expected dd/mm/yyyy"
 	ExpectDateSection        string = "Expect a date section here."
 	ExpectVocabulary         string = "Expect Vocabulary"
 	ExpectLanguageExpression string = "The language of this section is not specified. Specified either (it) or (de)"
