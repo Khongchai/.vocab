@@ -27,6 +27,23 @@ func main() {
 	logger := lib.NewLogger(os.Stderr)
 	compiler := compiler.NewCompiler(ctx, func(any) {})
 	engine := engine.NewEngine(ctx, inputReader.Read, outputWriter.Write, logger, map[string]func(lsproto.Notification) (any, error){
+		"textDocument/didOpen": func(rm lsproto.Notification) (any, error) {
+			params, err := unmarshalInto(rm.Params, &lsproto.DidOpenDocumentParams{})
+			if err != nil {
+				return nil, err
+			}
+			compiler.Accept(params.TextDocument.Uri, params.TextDocument.Text, nil)
+			diagnostics := compiler.Compile()
+			response := lsproto.NewPublishDiagnosticsNotfication(
+				lsproto.PublishDiagnosticsParams{
+					Uri:         params.TextDocument.Uri,
+					Version:     params.TextDocument.Version,
+					Diagnostics: diagnostics,
+				},
+			)
+
+			return response, nil
+		},
 		"textDocument/didChange": func(rm lsproto.Notification) (any, error) {
 			params, err := unmarshalInto(rm.Params, &lsproto.DidChangeTextDocumentParams{})
 			if err != nil {
@@ -48,33 +65,10 @@ func main() {
 				},
 			)
 
-			// uncomment to test error all
-			// response := lsproto.NewPublishDiagnosticsNotfication(
-			// 	lsproto.PublishDiagnosticsParams{
-			// 		Uri:     params.TextDocument.Uri,
-			// 		Version: params.TextDocument.Version,
-			// 		Diagnostics: []lsproto.Diagnostic{
-			// 			{
-			// 				Severity: lsproto.DiagnosticsSeverityError,
-			// 				Message:  "This is a test; no need to panick!",
-			// 				Range: lsproto.Range{
-			// 					Start: lsproto.Position{
-			// 						Line:      0,
-			// 						Character: 0,
-			// 					},
-			// 					End: lsproto.Position{
-			// 						Line:      99999999,
-			// 						Character: 99999999,
-			// 					},
-			// 				},
-			// 			},
-			// 		},
-			// 	},
-			// )
-
 			return response, nil
 		},
 	}, map[string]func(lsproto.RequestMessage) (any, error){
+		// Not actually doing anything right now.
 		"textDocument/diagnostic": func(message lsproto.RequestMessage) (any, error) {
 			_, err := unmarshalInto(message.Params, &lsproto.DocumentDiagnosticsParams{})
 			if err != nil {

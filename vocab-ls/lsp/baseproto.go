@@ -48,6 +48,17 @@ type DidChangeTextDocumentParams struct {
 	ContentChanges []TextDocumentContentChangeEvent        `json:"contentChanges"`
 }
 
+type TextDocumentItem struct {
+	Uri        string  `json:"uri"`
+	LanguageId string  `json:"langaugeId"`
+	Version    float64 `json:"version"`
+	Text       string  `json:"text"`
+}
+
+type DidOpenDocumentParams struct {
+	TextDocument *TextDocumentItem
+}
+
 func NewFullDocumentDiagnosticResponse(id int, documentsDiagnostics []Diagnostic, relatedDocumentsDiagnostics map[string][]Diagnostic) *documentDiagnosticResponse {
 	reports := map[string]FullDocumentDiagnosticReport{}
 
