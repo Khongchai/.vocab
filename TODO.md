@@ -36,7 +36,7 @@
                 laskdjflkasjdf lksajdf
                 ```
         - [ ] Handle document deletion
-        - [ ] comment on vocab line not handled properly
+        - [x] comment on vocab line not handled properly
         - [x] Error not re-added when changing in one document.
         - [ ] Then it's multi threadin time!
 - [ ] tree.replace method for only replacing the ast of certain files!
