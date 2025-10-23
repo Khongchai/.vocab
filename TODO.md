@@ -38,6 +38,8 @@
         - [ ] Handle document deletion
             - [ ] see main.go
         - [ ] When diagnostics disappear, should still return registered documents.
+        - [ ] Now with pull mode, diagnostics of even just one file is not updated correctly...?
+        - [ ] Then also check diagnostics of two files.
         - [x] comment on vocab line not handled properly
         - [x] Error not re-added when changing in one document.
         - [ ] Review in another file not getting rid of error in theo ther

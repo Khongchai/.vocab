@@ -57,6 +57,9 @@ func (c *Forest) Harvest() map[string][]lsproto.Diagnostic {
 	fruits := mergedTree.Harvest()
 
 	diags := make(map[string][]lsproto.Diagnostic)
+	for uri := range c.trees {
+		diags[uri] = []lsproto.Diagnostic{}
+	}
 
 	addDiagToAllWordPositions := func(timeRemaining float64, severitiy lsproto.DiagnosticsSeverity, words []*parser.Word) {
 		for _, word := range words {

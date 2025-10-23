@@ -80,6 +80,17 @@ func TestShouldReAddParsingDiagnosticsOfCorrectDocument_OnceErrorIsBack(t *testi
 	test.Expect(t, true, len(diags["doc-1"]) > 0)
 }
 
+func TestHarvestShouldReturnKeyOfDocumentEvenIfThereAreNoErrors(t *testing.T) {
+	forest := NewForest(t.Context(), func(any) {})
+	okText := test.TrimLines(fmt.Sprintf(`
+		%s
+		> (it) la magia
+	`, time.Now().Format(syntax.DateLayout)))
+	harvested := forest.Plant("xxx", okText, nil).Harvest()
+	test.Expect(t, true, harvested["xxx"] != nil)
+	test.Expect(t, 0, len(harvested["xxx"]))
+}
+
 func TestShouldAllowIncrementalCompilation(t *testing.T) {
 	forest := NewForest(t.Context(), func(any) {})
 
