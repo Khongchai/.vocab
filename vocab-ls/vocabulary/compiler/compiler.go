@@ -11,14 +11,14 @@ import (
 
 type Compiler struct {
 	ctx                context.Context
-	parsingDiagnostics []*lsproto.Diagnostic
+	parsingDiagnostics map[string][]*lsproto.Diagnostic
 	tree               *WordTree
 	log                func(any)
 }
 
 func NewCompiler(ctx context.Context, log func(any)) *Compiler {
 	return &Compiler{
-		parsingDiagnostics: []*lsproto.Diagnostic{},
+		parsingDiagnostics: make(map[string][]*lsproto.Diagnostic),
 		ctx:                ctx,
 		tree:               nil,
 		log:                log,
@@ -28,12 +28,14 @@ func NewCompiler(ctx context.Context, log func(any)) *Compiler {
 // This is called "accept" not compile because the compiler can incrementally build the inner language tree representation.
 // Calling "Accept" multiple times will update the existing global tree state.
 func (c *Compiler) Accept(documentUri string, text string, changeRange *lsproto.Range) *Compiler {
+
 	scanner := parser.NewScanner(text)
 	parser := parser.NewParser(c.ctx, documentUri, scanner, c.log)
 	parser.Parse()
 
+	c.parsingDiagnostics[documentUri] = []*lsproto.Diagnostic{}
 	for _, section := range parser.Ast.Sections {
-		c.parsingDiagnostics = append(c.parsingDiagnostics, section.Diagnostics...)
+		c.parsingDiagnostics[documentUri] = append(c.parsingDiagnostics[documentUri], section.Diagnostics...)
 	}
 
 	newWordTree := AstToWordTree(parser.Ast)
@@ -57,11 +59,15 @@ func (c *Compiler) Compile() []lsproto.Diagnostic {
 				if timeRemaining == 0 {
 					return "Review now!"
 				}
+				// can keep this for hover action
 				if timeRemaining > 0 {
-					return fmt.Sprintf("Needs review within: %f day(s)", timeRemaining)
+					return ""
 				}
 				return fmt.Sprintf("%d days past deadline", int(math.Ceil(timeRemaining*-1)))
 			}()
+			if message == "" {
+				continue
+			}
 			err := lsproto.MakeDiagnostics(
 				message,
 				word.Line,
@@ -97,8 +103,10 @@ func (c *Compiler) Compile() []lsproto.Diagnostic {
 		addDiagToAllWordPositions(remainingDays, severity, fruit.Words)
 	}
 
-	for _, parsingDiag := range c.parsingDiagnostics {
-		diags = append(diags, *parsingDiag)
+	for key := range c.parsingDiagnostics {
+		for _, parsingDiag := range c.parsingDiagnostics[key] {
+			diags = append(diags, *parsingDiag)
+		}
 	}
 
 	return diags

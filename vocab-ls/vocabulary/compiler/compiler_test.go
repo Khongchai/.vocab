@@ -1,7 +1,10 @@
 package compiler
 
 import (
+	"fmt"
 	"testing"
+	"time"
+	"vocab/syntax"
 	test "vocab/vocab_testing"
 )
 
@@ -33,6 +36,26 @@ func TestShouldActuallyEmitError(t *testing.T) {
 		Mostrare
 	`), nil).Compile()
 	test.Expect(t, true, len(compilationDiag) > 0)
+}
+
+func TestShouldClearOldParsingDiagnosticsOfCorrectDocument_OnceErrorIsFixed(t *testing.T) {
+	// parser error
+	compiler := NewCompiler(t.Context(), func(a any) {})
+	parsingDiag1 := compiler.Accept("doc-1", "> (it) la magia, bene,scorprire", nil).Compile()
+	test.Expect(t, true, len(parsingDiag1) > 0)
+
+	parsingDiag2 := compiler.Accept("doc-2", "> (it) la magia, bene,scorprire", nil).Compile()
+	test.Expect(t, true, len(parsingDiag2) > 0)
+
+	// act: clear errors from doc-1
+	today := time.Now().Format(syntax.DateLayout)
+	okText := fmt.Sprintf(`
+		%s
+		> (it) mostrare
+		Mostrare
+	`, today)
+	finalDiag := compiler.Accept("doc-1", test.TrimLines(okText), nil).Compile()
+	test.Expect(t, true, len(finalDiag) == len(parsingDiag2)-len(parsingDiag1))
 }
 
 func TestShouldAllowIncrementalCompilation(t *testing.T) {
