@@ -55,6 +55,22 @@ type TextDocumentItem struct {
 	Text       string  `json:"text"`
 }
 
+type TextDocumentIdentifier struct {
+	Uri string `json:"uri"`
+}
+
+type FileDelete struct {
+	Uri string `json:"uri"`
+}
+
+type DeleteFilesParms struct {
+	Files []*FileDelete `json:"files"`
+}
+
+type DidCloseTextDocumentParams struct {
+	TextDocument TextDocumentIdentifier
+}
+
 type DidOpenDocumentParams struct {
 	TextDocument *TextDocumentItem
 }

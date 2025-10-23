@@ -26,88 +26,112 @@ func main() {
 	outputWriter := lib.NewOutputWriter(os.Stdout)
 	logger := lib.NewLogger(os.Stderr)
 	forest := forest.NewForest(ctx, func(any) {})
-	engine := engine.NewEngine(ctx, inputReader.Read, outputWriter.Write, logger, map[string]func(lsproto.Notification) (any, error){
-		"textDocument/didOpen": func(rm lsproto.Notification) (any, error) {
-			params, err := unmarshalInto(rm.Params, &lsproto.DidOpenDocumentParams{})
-			if err != nil {
-				return nil, err
-			}
-			forest.Plant(params.TextDocument.Uri, params.TextDocument.Text, nil)
-			diagnostics := forest.Harvest()
-			response := lsproto.NewPublishDiagnosticsNotfication(
-				lsproto.PublishDiagnosticsParams{
-					Uri:         params.TextDocument.Uri,
-					Version:     params.TextDocument.Version,
-					Diagnostics: diagnostics,
-				},
-			)
+	engine := engine.NewEngine(ctx, inputReader.Read, outputWriter.Write, logger,
+		map[string]func(lsproto.Notification) (any, error){
+			"workspace/didDeleteFiles": func(request lsproto.Notification) (any, error) {
+				// TODO handle deletion and update tree and then publish new diagnostics.
+				params, err := unmarshalInto(request.Params, &lsproto.DeleteFilesParms{})
+				if err != nil {
+					return nil, err
+				}
 
-			return response, nil
-		},
-		"textDocument/didChange": func(rm lsproto.Notification) (any, error) {
-			params, err := unmarshalInto(rm.Params, &lsproto.DidChangeTextDocumentParams{})
-			if err != nil {
-				return nil, err
-			}
+				diagnostics := forest.Harvest()
 
-			for i := range params.ContentChanges {
-				change := params.ContentChanges[i]
-				// for now, sequential. In the future we can make this parallel
-				forest.Plant(params.TextDocument.Uri, change.Text, change.Range)
-			}
+				return diagnosticsToNotificationResponse(
+					params.TextDocument.Uri,
+					params.TextDocument.Version,
+					diagnostics,
+				), nil
+			},
+			"textDocument/didOpen": func(rm lsproto.Notification) (any, error) {
+				params, err := unmarshalInto(rm.Params, &lsproto.DidOpenDocumentParams{})
+				if err != nil {
+					return nil, err
+				}
+				forest.Plant(params.TextDocument.Uri, params.TextDocument.Text, nil)
 
-			diagnostics := forest.Harvest()
-			response := lsproto.NewPublishDiagnosticsNotfication(
-				lsproto.PublishDiagnosticsParams{
-					Uri:         params.TextDocument.Uri,
-					Version:     params.TextDocument.Version,
-					Diagnostics: diagnostics,
-				},
-			)
+				diagnostics := forest.Harvest()
 
-			return response, nil
-		},
-	}, map[string]func(lsproto.RequestMessage) (any, error){
-		// Not actually doing anything right now.
-		"textDocument/diagnostic": func(message lsproto.RequestMessage) (any, error) {
-			_, err := unmarshalInto(message.Params, &lsproto.DocumentDiagnosticsParams{})
-			if err != nil {
-				return nil, err
-			}
-			response := lsproto.NewFullDocumentDiagnosticResponse(
-				message.ID,
-				[]lsproto.Diagnostic{},
-				map[string][]lsproto.Diagnostic{},
-			)
+				return diagnosticsToNotificationResponse(
+					params.TextDocument.Uri,
+					params.TextDocument.Version,
+					diagnostics,
+				), nil
+			},
+			"textDocument/didChange": func(rm lsproto.Notification) (any, error) {
+				params, err := unmarshalInto(rm.Params, &lsproto.DidChangeTextDocumentParams{})
+				if err != nil {
+					return nil, err
+				}
 
-			return response, nil
-		},
-		"initialize": func(message lsproto.RequestMessage) (any, error) {
-			response := map[string]any{
-				"jsonrpc": "2.0",
-				"id":      message.ID, // echo the request id
-				"result": map[string]any{
-					"capabilities": map[string]any{
-						// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#serverCapabilities
-						"textDocumentSync": map[string]any{
-							"openClose": true,
-							"change":    lsproto.TextDocumentSyncKindFull,
+				for i := range params.ContentChanges {
+					change := params.ContentChanges[i]
+					// for now, sequential. In the future we can make this parallel
+					forest.Plant(params.TextDocument.Uri, change.Text, change.Range)
+				}
+
+				diagnostics := forest.Harvest()
+
+				return diagnosticsToNotificationResponse(
+					params.TextDocument.Uri,
+					params.TextDocument.Version,
+					diagnostics,
+				), nil
+			},
+		}, map[string]func(lsproto.RequestMessage) (any, error){
+			// Not actually doing anything right now.
+			"textDocument/diagnostic": func(message lsproto.RequestMessage) (any, error) {
+				_, err := unmarshalInto(message.Params, &lsproto.DocumentDiagnosticsParams{})
+				if err != nil {
+					return nil, err
+				}
+				response := lsproto.NewFullDocumentDiagnosticResponse(
+					message.ID,
+					[]lsproto.Diagnostic{},
+					map[string][]lsproto.Diagnostic{},
+				)
+
+				return response, nil
+			},
+			"initialize": func(message lsproto.RequestMessage) (any, error) {
+				response := map[string]any{
+					"jsonrpc": "2.0",
+					"id":      message.ID, // echo the request id
+					"result": map[string]any{
+						"capabilities": map[string]any{
+							// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#serverCapabilities
+							"textDocumentSync": map[string]any{
+								"openClose": true,
+								"change":    lsproto.TextDocumentSyncKindFull,
+							},
+							"diagnosticProvider": map[string]any{
+								// a change of date in one vocab can affect another (spaced repetition)
+								"interFileDependencies": true,
+							},
+							// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#workspace_didChangeWatchedFiles
+							"workspace": map[string]any{
+								"fileOperations": map[string]any{
+									"didDelete": map[string]any{
+										"filters": []map[string]any{
+											{
+												"scheme":  "file",
+												"pattern": map[string]any{"glob": "**/*.vocab"},
+											},
+										},
+									},
+								},
+							},
 						},
-						"diagnosticProvider": map[string]any{
-							// a change of date in one vocab can affect another (spaced repetition)
-							"interFileDependencies": true,
+						// optional, helps debugging in client logs
+						"serverInfo": map[string]any{
+							"name":    "vocab-ls",
+							"version": "0.0.1",
 						},
 					},
-					// optional, helps debugging in client logs
-					"serverInfo": map[string]any{
-						"name":    "vocab-ls",
-						"version": "0.0.1",
-					},
-				},
-			}
-			return response, nil
-		},
-	})
+				}
+				return response, nil
+			},
+		})
 
 	engine.Start()
 }
@@ -119,4 +143,14 @@ func unmarshalInto[T any](unmarshalled any, params *T) (*T, error) {
 	}
 	json.Unmarshal(marshalled, &params)
 	return params, nil
+}
+
+func diagnosticsToNotificationResponse(uri string, version float64, diags []lsproto.Diagnostic) *lsproto.PublishDiagnosticsNotification {
+	return lsproto.NewPublishDiagnosticsNotfication(
+		lsproto.PublishDiagnosticsParams{
+			Uri:         uri,
+			Version:     version,
+			Diagnostics: diags,
+		},
+	)
 }
