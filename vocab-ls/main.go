@@ -28,21 +28,21 @@ func main() {
 	forest := forest.NewForest(ctx, func(any) {})
 	engine := engine.NewEngine(ctx, inputReader.Read, outputWriter.Write, logger,
 		map[string]func(lsproto.Notification) (any, error){
-			"workspace/didDeleteFiles": func(request lsproto.Notification) (any, error) {
-				// TODO handle deletion and update tree and then publish new diagnostics.
-				params, err := unmarshalInto(request.Params, &lsproto.DeleteFilesParms{})
-				if err != nil {
-					return nil, err
-				}
+			// "workspace/didDeleteFiles": func(request lsproto.Notification) (any, error) {
+			// 	// TODO handle deletion and update tree and then publish new diagnostics.
+			// 	params, err := unmarshalInto(request.Params, &lsproto.DeleteFilesParms{})
+			// 	if err != nil {
+			// 		return nil, err
+			// 	}
 
-				diagnostics := forest.Harvest()
+			// 	diagnostics := forest.Harvest()
 
-				return diagnosticsToNotificationResponse(
-					params.TextDocument.Uri,
-					params.TextDocument.Version,
-					diagnostics,
-				), nil
-			},
+			// 	return diagnosticsToNotificationResponse(
+			// 		params.TextDocument.Uri,
+			// 		params.TextDocument.Version,
+			// 		diagnostics,
+			// 	), nil
+			// },
 			"textDocument/didOpen": func(rm lsproto.Notification) (any, error) {
 				params, err := unmarshalInto(rm.Params, &lsproto.DidOpenDocumentParams{})
 				if err != nil {

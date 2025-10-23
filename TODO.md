@@ -36,11 +36,16 @@
                 laskdjflkasjdf lksajdf
                 ```
         - [ ] Handle document deletion
+            - [ ] see main.go
         - [x] comment on vocab line not handled properly
         - [x] Error not re-added when changing in one document.
-        - [ ] Then it's multi threadin time!
+        - [ ] Review in another file not getting rid of error in theo ther
 - [ ] tree.replace method for only replacing the ast of certain files!
-
+- [ ] Support hover.
+- [ ] Multi-threading
+    - [ ] Go routine dispatch parsing
+    - [ ] Harvest command for collecting all words needs review and create a new section. This would need a workspace command.
+ 
 
 ```markdown
 # 04/09/2025
