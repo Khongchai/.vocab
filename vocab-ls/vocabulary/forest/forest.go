@@ -9,6 +9,7 @@ import (
 	"vocab/vocabulary/parser"
 )
 
+// The compiler
 type Forest struct {
 	ctx context.Context
 	// Map of document uri and the associated diagnostics from parser

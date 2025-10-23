@@ -40,11 +40,11 @@ func TestShouldActuallyEmitError(t *testing.T) {
 
 func TestShouldClearOldParsingDiagnosticsOfCorrectDocument_OnceErrorIsFixed(t *testing.T) {
 	// parser error
-	compiler := NewForest(t.Context(), func(a any) {})
-	parsingDiag1 := compiler.Plant("doc-1", "> (it) la magia, bene,scorprire", nil).Harvest()
+	forest := NewForest(t.Context(), func(a any) {})
+	parsingDiag1 := forest.Plant("doc-1", "> (it) la magia, bene,scorprire", nil).Harvest()
 	test.Expect(t, true, len(parsingDiag1) > 0)
 
-	parsingDiag2 := compiler.Plant("doc-2", "> (it) la magia, bene,scorprire", nil).Harvest()
+	parsingDiag2 := forest.Plant("doc-2", "> (it) la magia, bene,scorprire", nil).Harvest()
 	test.Expect(t, true, len(parsingDiag2) > 0)
 
 	// act: clear errors from doc-1
@@ -54,17 +54,17 @@ func TestShouldClearOldParsingDiagnosticsOfCorrectDocument_OnceErrorIsFixed(t *t
 		> (it) mostrare
 		Mostrare
 	`, today)
-	finalDiag := compiler.Plant("doc-1", test.TrimLines(okText), nil).Harvest()
+	finalDiag := forest.Plant("doc-1", test.TrimLines(okText), nil).Harvest()
 	test.Expect(t, true, len(finalDiag) == len(parsingDiag2)-len(parsingDiag1))
 }
 
 func TestShouldReAddParsingDiagnosticsOfCorrectDocument_OnceErrorIsBack(t *testing.T) {
-	compiler := NewForest(t.Context(), func(a any) {})
+	forest := NewForest(t.Context(), func(a any) {})
 	input1 := test.TrimLines(`
 		01/01/2025
 		> (it) la magia
 	`)
-	diags := compiler.Plant("doc-1", input1, nil).Harvest()
+	diags := forest.Plant("doc-1", input1, nil).Harvest()
 	test.Expect(t, true, len(diags) > 0)
 
 	// clear errors
@@ -72,24 +72,24 @@ func TestShouldReAddParsingDiagnosticsOfCorrectDocument_OnceErrorIsBack(t *testi
 		%s
 		> (it) la magia
 	`, time.Now().Format(syntax.DateLayout)))
-	diags = compiler.Plant("doc-1", input2, nil).Harvest()
+	diags = forest.Plant("doc-1", input2, nil).Harvest()
 	test.Expect(t, true, len(diags) == 0)
 
 	// errors should be back here
-	diags = compiler.Plant("doc-1", input1, nil).Harvest()
+	diags = forest.Plant("doc-1", input1, nil).Harvest()
 	test.Expect(t, true, len(diags) > 0)
 }
 
 func TestShouldAllowIncrementalCompilation(t *testing.T) {
-	compiler := NewForest(t.Context(), func(any) {})
+	forest := NewForest(t.Context(), func(any) {})
 
-	compiler.Plant("xxx", test.TrimLines(`
+	forest.Plant("xxx", test.TrimLines(`
 		12/10/2025
 		> (it) mostrare
 		>> (it) spiegare
 		E oggi voglio spiegarvi un po' com'è essere cittadino a Roma. Che cosa fanno i cittadini a Roma perchè vivono qui. Dov'è vivono la com'è la città e soprattutto com'è la parte che non mostriamo ai turisti.
 	`), nil)
-	compiler.Plant("xxx", test.TrimLines(`
+	forest.Plant("xxx", test.TrimLines(`
 		13/10/2025
 		> (it) qualcuno(1), migliaia, decimi(1)
 		Qualcuno di voi ha chiesto:
@@ -100,9 +100,9 @@ func TestShouldAllowIncrementalCompilation(t *testing.T) {
 		Der Sprecher benutzt lange, zusammengesetzte Sätze mit Nebensätzen, Relativsätzen und erklärenden Einschüben.
 		Er ist voll mit Schnodderigkeit. Kann nicht mit ihm arbeiten...
 	`), nil)
-	compiler.Harvest()
+	forest.Harvest()
 
-	compiler.Plant("xxx", test.TrimLines(`
+	forest.Plant("xxx", test.TrimLines(`
 		16/10/2025
 		> (it) %sspiegarmi%s(2), %scom'è%s, eterno, il mito, sfatare, la verità, vera
 		> (de) zertreuern, entlarven
@@ -111,5 +111,5 @@ func TestShouldAllowIncrementalCompilation(t *testing.T) {
 		Nicht um den Mythos der Ewigen Stadt zu zerstreuen(oder entlarven), das magische Rom, das Sie in Filmen sehen, insbesondere in denen von Fellini, sondern um Ihnen die Wahrheit oder zumindest die wahre Realität von Rom und den Römern zu zeigen.
 		Non per sfatare il mito della città eterna, della Roma magica che vedete anche nei film, soprattutto nei film di Fellini, ma per mostrarvi la verità o comunque la vera realtà di Roma e dei romani. 
 	`), nil)
-	compiler.Harvest()
+	forest.Harvest()
 }
