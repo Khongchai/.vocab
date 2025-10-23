@@ -114,6 +114,9 @@ func TestSingleWordSection(t *testing.T) {
 
 	n := newWords[0].Words
 	test.Expect(t, "la magia", n[0].Text)
+	test.Expect(t, 1, n[0].Line)
+	test.Expect(t, 7, n[0].Start)
+	test.Expect(t, 7+len("la magia"), n[0].End)
 	test.Expect(t, false, n[0].Literally)
 	test.Expect(t, "bene", n[1].Text)
 	test.Expect(t, false, n[1].Literally)

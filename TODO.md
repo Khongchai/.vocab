@@ -26,10 +26,14 @@
         - [ ] Then make lsp work
             - [x] Get go debugger to work on windows with vscode
             - [x] Fix the error
-            - [ ] Seems for this case, errors are at the wrong place...
+            - [ ] starting a new section does not get rid of the error...
                 ```
-                    20/05/2025
-                    > (it) la magia, bene,scorprire
+                20/05/2025
+                > (it) la magia, bene, scorprire
+                lskjfljalfkjsl jlsjf ljsdf 
+                23/10/2025
+                >> (it) la magia
+                laskdjflkasjdf lksajdf
                 ```
         - [ ] Then it's multi threadin time!
 - [ ] tree.replace method for only replacing the ast of certain files!

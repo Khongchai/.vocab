@@ -174,7 +174,7 @@ func (p *Parser) parseVocabSection() {
 			return t
 		}()
 
-		newWord := &Word{Parent: words, Text: text, Start: p.tokenStart, End: p.tokenEnd, Literally: isWordLiteral, Line: p.line}
+		newWord := &Word{Parent: words, Text: text, Start: p.tokenStart - len(text), End: p.tokenStart, Literally: isWordLiteral, Line: p.line}
 		words.Words = append(words.Words, newWord)
 	}
 
