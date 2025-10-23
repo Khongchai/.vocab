@@ -59,8 +59,14 @@ func (s *Scanner) Scan() (Token, string) {
 	}
 
 	if lib.IsLineBreak(scanned) {
+		collected := string(scanned)
+		char, _ := s.charAt(1)
+		if scanned == '\r' && char == '\n' {
+			collected += "\n"
+			s.forwardPos(1)
+		}
 		s.forwardLine()
-		return TokenLineBreak, string(scanned)
+		return TokenLineBreak, collected
 	}
 
 	if lib.IsDigit(scanned) {

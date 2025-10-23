@@ -76,6 +76,10 @@ func main() {
 		},
 	}, map[string]func(lsproto.RequestMessage) (any, error){
 		"textDocument/diagnostic": func(message lsproto.RequestMessage) (any, error) {
+			_, err := unmarshalInto(message.Params, &lsproto.DocumentDiagnosticsParams{})
+			if err != nil {
+				return nil, err
+			}
 			response := lsproto.NewFullDocumentDiagnosticResponse(
 				message.ID,
 				[]lsproto.Diagnostic{},
