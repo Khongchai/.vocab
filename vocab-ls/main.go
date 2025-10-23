@@ -51,11 +51,15 @@ func main() {
 				forest.Plant(params.TextDocument.Uri, params.TextDocument.Text, nil)
 
 				diagnostics := forest.Harvest()
+				flattened := []lsproto.Diagnostic{}
+				for _, diag := range diagnostics {
+					flattened = append(flattened, diag...)
+				}
 
 				return diagnosticsToNotificationResponse(
 					params.TextDocument.Uri,
 					params.TextDocument.Version,
-					diagnostics,
+					flattened,
 				), nil
 			},
 			"textDocument/didChange": func(rm lsproto.Notification) (any, error) {
@@ -70,25 +74,22 @@ func main() {
 					forest.Plant(params.TextDocument.Uri, change.Text, change.Range)
 				}
 
-				diagnostics := forest.Harvest()
-
-				return diagnosticsToNotificationResponse(
-					params.TextDocument.Uri,
-					params.TextDocument.Version,
-					diagnostics,
-				), nil
+				return nil, nil
 			},
 		}, map[string]func(lsproto.RequestMessage) (any, error){
-			// Not actually doing anything right now.
 			"textDocument/diagnostic": func(message lsproto.RequestMessage) (any, error) {
-				_, err := unmarshalInto(message.Params, &lsproto.DocumentDiagnosticsParams{})
+				request, err := unmarshalInto(message.Params, &lsproto.DocumentDiagnosticsParams{})
 				if err != nil {
 					return nil, err
 				}
+
+				diagnostics := forest.Harvest()
+				thisDocDiag := diagnostics[request.TextDocument.Uri]
+
 				response := lsproto.NewFullDocumentDiagnosticResponse(
 					message.ID,
-					[]lsproto.Diagnostic{},
-					map[string][]lsproto.Diagnostic{},
+					thisDocDiag,
+					diagnostics,
 				)
 
 				return response, nil

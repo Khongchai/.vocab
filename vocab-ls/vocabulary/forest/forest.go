@@ -3,7 +3,9 @@ package forest
 import (
 	"context"
 	"fmt"
+	"maps"
 	"math"
+	"slices"
 	"time"
 	lsproto "vocab/lsp"
 	"vocab/vocabulary/parser"
@@ -47,14 +49,14 @@ func (c *Forest) Plant(documentUri string, text string, changeRange *lsproto.Ran
 }
 
 // Based on the built tree, compile tree into diagnostics.
-func (c *Forest) Harvest() []lsproto.Diagnostic {
+func (c *Forest) Harvest() map[string][]lsproto.Diagnostic {
 	mergedTree := NewWordTree()
 	for _, tree := range c.trees {
 		mergedTree.Graft(tree)
 	}
 	fruits := mergedTree.Harvest()
 
-	diags := []lsproto.Diagnostic{}
+	diags := make(map[string][]lsproto.Diagnostic)
 
 	addDiagToAllWordPositions := func(timeRemaining float64, severitiy lsproto.DiagnosticsSeverity, words []*parser.Word) {
 		for _, word := range words {
@@ -79,15 +81,11 @@ func (c *Forest) Harvest() []lsproto.Diagnostic {
 				severitiy,
 			)
 
-			diags = append(diags, *err)
+			diags[word.Uri()] = append(diags[word.Uri()], *err)
 		}
 	}
 
 	for _, fruit := range fruits {
-		for _, starting := range fruit.StartingDiagnostics {
-			diags = append(diags, *starting)
-		}
-
 		severity, remainingDays := func() (lsproto.DiagnosticsSeverity, float64) {
 			interval := math.Ceil(fruit.Interval)
 			deadline := fruit.LastSeenDate.AddDate(0, 0, int(interval))
@@ -106,11 +104,15 @@ func (c *Forest) Harvest() []lsproto.Diagnostic {
 		addDiagToAllWordPositions(remainingDays, severity, fruit.Words)
 	}
 
-	for key := range c.parsingDiagnostics {
-		for _, parsingDiag := range c.parsingDiagnostics[key] {
-			diags = append(diags, *parsingDiag)
+	for uri := range c.parsingDiagnostics {
+		for _, diag := range c.parsingDiagnostics[uri] {
+			diags[uri] = append(diags[uri], *diag)
 		}
 	}
 
 	return diags
+}
+
+func (f *Forest) GetTreesLocations() []string {
+	return slices.Collect(maps.Keys(f.trees))
 }

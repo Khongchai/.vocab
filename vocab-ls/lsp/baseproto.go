@@ -134,10 +134,12 @@ type PublishDiagnosticsParams struct {
 	Version     float64      `json:"version,omitempty"`
 }
 
+type TextDocument struct {
+	Uri string `json:"uri"`
+}
+
 type DocumentDiagnosticsParams struct {
-	TextDocument     string `json:"textDocument"`
-	Identifier       string `json:"identifier",omitempty`
-	PreviousResultId string `json:"previousResultId",omitempty`
+	TextDocument TextDocument `json:"textDocument"`
 }
 
 type Diagnostic struct {

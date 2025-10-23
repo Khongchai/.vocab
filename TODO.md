@@ -37,6 +37,7 @@
                 ```
         - [ ] Handle document deletion
             - [ ] see main.go
+        - [ ] When diagnostics disappear, should still return registered documents.
         - [x] comment on vocab line not handled properly
         - [x] Error not re-added when changing in one document.
         - [ ] Review in another file not getting rid of error in theo ther

@@ -33,6 +33,10 @@ type Word struct {
 	Parent *WordsSection
 }
 
+func (w *Word) Uri() string {
+	return w.Parent.Parent.Uri
+}
+
 // TODO: we can add lemmatization logic here later.
 func (w *Word) GetNormalizedText() string {
 	return strings.ToLower(w.Text)

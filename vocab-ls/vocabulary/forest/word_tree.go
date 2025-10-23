@@ -56,11 +56,10 @@ func (wt *WordTree) AddTwig(language parser.Language, word *parser.Word, uri str
 		startingDiagnostics = append(startingDiagnostics, newDiag)
 	}
 	twig := &WordTwig{
-		location:            section.Uri,
-		word:                word,
-		grade:               clamped_grade,
-		section:             section,
-		startingDiagnostics: startingDiagnostics,
+		location: section.Uri,
+		word:     word,
+		grade:    clamped_grade,
+		section:  section,
 	}
 
 	norm := word.GetNormalizedText()
@@ -86,13 +85,12 @@ func (wt *WordTree) Harvest() []*WordFruit {
 	// für jede WordTwig auf LanguageBranch (Wir gehen davon aus, dass die Twigs schon sortiert sind.)
 	for lang, langBranch := range wt.branches {
 		for word, twigs := range langBranch.twigs {
-			detail := &WordFruit{
-				Words:               []*parser.Word{},
-				Interval:            0,
-				LastSeenDate:        time.Time{},
-				StartingDiagnostics: []*lsproto.Diagnostic{},
-				Lang:                parser.Language(lang),
-				Text:                word,
+			wordFruit := &WordFruit{
+				Words:        []*parser.Word{},
+				Interval:     0,
+				LastSeenDate: time.Time{},
+				Lang:         parser.Language(lang),
+				Text:         word,
 			}
 
 			repetitionNumber := 0
@@ -102,8 +100,7 @@ func (wt *WordTree) Harvest() []*WordFruit {
 			var interval float64
 			var lastSeenDate *time.Time
 			for _, twig := range twigs {
-				detail.Words = append(detail.Words, twig.word)
-				detail.StartingDiagnostics = append(detail.StartingDiagnostics, twig.startingDiagnostics...)
+				wordFruit.Words = append(wordFruit.Words, twig.word)
 				currentInterval := func() float64 {
 					if lastSeenDate == nil {
 						return 0
@@ -117,10 +114,10 @@ func (wt *WordTree) Harvest() []*WordFruit {
 				lastSeenDate = &twig.section.Date.Time
 			}
 
-			detail.Interval = interval
-			detail.LastSeenDate = *lastSeenDate
+			wordFruit.Interval = interval
+			wordFruit.LastSeenDate = *lastSeenDate
 
-			details = append(details, detail)
+			details = append(details, wordFruit)
 		}
 	}
 
@@ -171,10 +168,9 @@ func (lb *LanguageBranch) sortTwigs(word string) {
 }
 
 type WordTwig struct {
-	grade               int
-	word                *parser.Word
-	section             *parser.VocabularySection // word.Parent.Parent
-	startingDiagnostics []*lsproto.Diagnostic
+	grade   int
+	word    *parser.Word
+	section *parser.VocabularySection // word.Parent.Parent
 	// Document location file name)
 	location string
 }
@@ -185,10 +181,9 @@ type WordFruit struct {
 	// All word object tied to normalized `text`
 	Words []*parser.Word
 	// The normalized text.
-	Text                string
-	Interval            float64
-	LastSeenDate        time.Time
-	StartingDiagnostics []*lsproto.Diagnostic
+	Text         string
+	Interval     float64
+	LastSeenDate time.Time
 }
 
 func (wb *WordTwig) GetLocation() string {

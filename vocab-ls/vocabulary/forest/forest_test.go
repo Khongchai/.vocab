@@ -35,17 +35,17 @@ func TestShouldActuallyEmitError(t *testing.T) {
 		> (it) mostrare
 		Mostrare
 	`), nil).Harvest()
-	test.Expect(t, true, len(compilationDiag) > 0)
+	test.Expect(t, true, len(compilationDiag["xxx"]) > 0)
 }
 
 func TestShouldClearOldParsingDiagnosticsOfCorrectDocument_OnceErrorIsFixed(t *testing.T) {
 	// parser error
 	forest := NewForest(t.Context(), func(a any) {})
 	parsingDiag1 := forest.Plant("doc-1", "> (it) la magia, bene,scorprire", nil).Harvest()
-	test.Expect(t, true, len(parsingDiag1) > 0)
+	test.Expect(t, true, len(parsingDiag1["doc-1"]) > 0)
 
 	parsingDiag2 := forest.Plant("doc-2", "> (it) la magia, bene,scorprire", nil).Harvest()
-	test.Expect(t, true, len(parsingDiag2) > 0)
+	test.Expect(t, true, len(parsingDiag2["doc-1"]) > 0)
 
 	// act: clear errors from doc-1
 	today := time.Now().Format(syntax.DateLayout)
@@ -55,7 +55,7 @@ func TestShouldClearOldParsingDiagnosticsOfCorrectDocument_OnceErrorIsFixed(t *t
 		Mostrare
 	`, today)
 	finalDiag := forest.Plant("doc-1", test.TrimLines(okText), nil).Harvest()
-	test.Expect(t, true, len(finalDiag) == len(parsingDiag2)-len(parsingDiag1))
+	test.Expect(t, true, len(finalDiag["doc-1"]) == len(parsingDiag2["doc-2"])-len(parsingDiag1["doc-1"]))
 }
 
 func TestShouldReAddParsingDiagnosticsOfCorrectDocument_OnceErrorIsBack(t *testing.T) {
@@ -65,7 +65,7 @@ func TestShouldReAddParsingDiagnosticsOfCorrectDocument_OnceErrorIsBack(t *testi
 		> (it) la magia
 	`)
 	diags := forest.Plant("doc-1", input1, nil).Harvest()
-	test.Expect(t, true, len(diags) > 0)
+	test.Expect(t, true, len(diags["doc-1"]) > 0)
 
 	// clear errors
 	input2 := test.TrimLines(fmt.Sprintf(`
@@ -73,11 +73,11 @@ func TestShouldReAddParsingDiagnosticsOfCorrectDocument_OnceErrorIsBack(t *testi
 		> (it) la magia
 	`, time.Now().Format(syntax.DateLayout)))
 	diags = forest.Plant("doc-1", input2, nil).Harvest()
-	test.Expect(t, true, len(diags) == 0)
+	test.Expect(t, true, len(diags["doc-1"]) == 0)
 
 	// errors should be back here
 	diags = forest.Plant("doc-1", input1, nil).Harvest()
-	test.Expect(t, true, len(diags) > 0)
+	test.Expect(t, true, len(diags["doc-1"]) > 0)
 }
 
 func TestShouldAllowIncrementalCompilation(t *testing.T) {

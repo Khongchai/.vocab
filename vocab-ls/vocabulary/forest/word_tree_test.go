@@ -83,7 +83,6 @@ func TestAddTwigToEmptyTree(t *testing.T) {
 	test.Expect(t, true, branches[0].twigs[wordNormalized] != nil)
 	test.Expect(t, 1, len(branches[0].twigs[wordNormalized]))
 	twig := branches[0].twigs[wordNormalized][0]
-	test.Expect(t, 1, len(twig.startingDiagnostics))
 	test.Expect(t, 5, twig.grade)
 	test.Expect(t, vocabSection, twig.section)
 }
@@ -212,9 +211,7 @@ func TestAddTwigsWithInvalidGrade_ShouldProduceExtraDiagnosticsError(t *testing.
 	test.Expect(t, 2, len(äste.twigs))
 	// expect clamping
 	test.Expect(t, 0, äste.twigs["ding"][0].grade)
-	test.Expect(t, 1, len(äste.twigs["ding"][0].startingDiagnostics))
 	test.Expect(t, 5, äste.twigs["cosa"][0].grade)
-	test.Expect(t, 2, len(äste.twigs["cosa"][0].startingDiagnostics))
 }
 
 func TestGraftingTrees_ShouldCombineCorrectLanguageBranch_AndSortTwigs(t *testing.T) {
