@@ -1,10 +1,11 @@
 # vocab
+
 The `vocab` language server for vscode.
 
-# Refs for Development
+# Development Set Up
 
-https://code.visualstudio.com/api/language-extensions/language-server-extension-guide
+1. Compile the language server in `vocab-ls` using the given bash or cmd script.
 
-https://github.com/microsoft/typescript-go/tree/0a3c816da9be581f3b567df9f05b73533f5c9384
+2. Compile extension in `extension` with `npm run compile`
 
-https://github.com/golang/vscode-go/tree/85d7f0ca21fc18762ba9f7981de0f7c9a197d572
+3. `Launch Client and server` from vscode launch menu and optionally attach debugger to the language server with `Attach to vocab-ls`.
