@@ -48,6 +48,10 @@ func (c *Forest) Plant(documentUri string, text string, changeRange *lsproto.Ran
 	return c
 }
 
+func (c *Forest) Remove(documentUri string) {
+	c.trees[documentUri] = nil
+}
+
 // Based on the built tree, compile tree into diagnostics.
 func (c *Forest) Harvest() map[string][]lsproto.Diagnostic {
 	mergedTree := NewWordTree()
