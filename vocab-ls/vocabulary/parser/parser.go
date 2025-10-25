@@ -157,13 +157,8 @@ func (p *Parser) parseVocabSection() {
 	p.nextTokenNotWhitespace()
 
 	parsing := ""
-	currentGrade := 0
 	parsingStart := -1
-
-	assignGradeAndClear := func() {
-		words.Words[len(words.Words)-1].Grade = currentGrade
-		currentGrade = 0
-	}
+	parsingEnd := -1
 
 	newWordFromText := func(t string) {
 		isWordLiteral := p.token == TokenWordLiteral
@@ -186,7 +181,7 @@ func (p *Parser) parseVocabSection() {
 			return trailingSpaceCount
 		}()
 		start := parsingStart
-		end := p.tokenStart - trailingSpaceCount
+		end := parsingEnd - trailingSpaceCount
 
 		newWord := &Word{Parent: words, Text: text[:len(text)-trailingSpaceCount], Start: start, End: end, Literally: isWordLiteral, Line: p.line}
 
@@ -200,6 +195,8 @@ func (p *Parser) parseVocabSection() {
 		words.Words = append(words.Words, newWord)
 
 		parsingStart = -1
+		parsingEnd = -1
+		parsing = ""
 	}
 
 	for {
@@ -208,7 +205,6 @@ func (p *Parser) parseVocabSection() {
 		case TokenLineBreak, TokenEOF, TokenCommentTrivia:
 			if parsing != "" {
 				newWordFromText(parsing)
-				assignGradeAndClear()
 			}
 			return
 		case TokenSemanticSpecifierLiteral:
@@ -222,26 +218,30 @@ func (p *Parser) parseVocabSection() {
 					p.nextToken()
 				}
 			}
-			currentGrade = number
+			if parsing != "" {
+				newWordFromText(parsing)
+			}
+			words.Words[len(words.Words)-1].Grade = number
 			p.nextTokenNotWhitespace()
 		case TokenWordLiteral:
+			parsingEnd = p.tokenEnd
 			newWordFromText(parsing)
 			p.nextTokenNotWhitespace()
 		case TokenComma:
 			if parsing == "" {
-				assignGradeAndClear()
 				p.nextTokenNotWhitespace()
 				continue
 			}
 
 			newWordFromText(parsing)
-			assignGradeAndClear()
 			p.nextTokenNotWhitespace()
-			parsing = ""
 		default:
 			if parsingStart == -1 {
+				// remember the start position of text
 				parsingStart = p.tokenStart
+				parsingEnd = p.tokenStart
 			}
+			parsingEnd += len(p.text)
 			parsing += p.text
 			p.nextToken()
 		}
