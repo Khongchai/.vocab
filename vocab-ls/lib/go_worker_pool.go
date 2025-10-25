@@ -15,7 +15,6 @@ type GoWorkerPool struct {
 }
 
 func NewGoWorkerPool(ctx context.Context) *GoWorkerPool {
-	runtime.GOMAXPROCS(runtime.NumCPU())
 	return &GoWorkerPool{
 		ctx:     ctx,
 		channel: make(chan struct{}, runtime.NumCPU()),
@@ -34,6 +33,10 @@ func (pool *GoWorkerPool) Run(resource string, work func()) {
 			pool.wg.Done()
 			<-pool.channel
 		}()
+
+		runtime.LockOSThread()
+		defer runtime.UnlockOSThread()
+
 		pool.workWithMutex(resource, work)
 	}()
 }
