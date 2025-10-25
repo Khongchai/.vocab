@@ -38,6 +38,23 @@ func TestShouldActuallyEmitError(t *testing.T) {
 	test.Expect(t, true, len(compilationDiag["xxx"]) > 0)
 }
 
+// Very unlikely in real life, but just for programmatic correctness.
+func TestShouldEmitErrorIfReviewedWordIsOfDifferentLanguageBranch(t *testing.T) {
+	forest := NewForest(t.Context(), func(a any) {})
+	okText := fmt.Sprintf(`
+	    20/01/2025
+		> (it) sport
+		%s
+		>> (de) Sport
+	`, time.Now().Format(syntax.DateLayout))
+
+	// act
+	finalDiag := forest.Plant("doc-1", test.TrimLines(okText), nil).Harvest()
+
+	test.Expect(t, 1, len(finalDiag["doc-1"]))
+	test.Expect(t, 1, finalDiag["doc-1"][0].Range.Start.Line, finalDiag["doc-1"][0].Range.End.Line)
+}
+
 func TestShouldClearOldParsingDiagnosticsOfCorrectDocument_OnceErrorIsFixed(t *testing.T) {
 	// parser error
 	forest := NewForest(t.Context(), func(a any) {})
