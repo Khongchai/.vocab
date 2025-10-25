@@ -48,18 +48,13 @@ func main() {
 				if err != nil {
 					return nil, err
 				}
-				forest.Plant(params.TextDocument.Uri, params.TextDocument.Text, nil)
 
-				diagnostics := forest.Harvest()
-				flattened := []lsproto.Diagnostic{}
-				for _, diag := range diagnostics {
-					flattened = append(flattened, diag...)
-				}
+				forest.Plant(params.TextDocument.Uri, params.TextDocument.Text, nil)
 
 				return diagnosticsToNotificationResponse(
 					params.TextDocument.Uri,
 					params.TextDocument.Version,
-					flattened,
+					nil,
 				), nil
 			},
 			"textDocument/didChange": func(rm lsproto.Notification) (any, error) {
@@ -85,6 +80,7 @@ func main() {
 
 				diagnostics := forest.Harvest()
 				thisDocDiag := diagnostics[request.TextDocument.Uri]
+				diagnostics[request.TextDocument.Uri] = nil
 
 				response := lsproto.NewFullDocumentDiagnosticResponse(
 					message.ID,
