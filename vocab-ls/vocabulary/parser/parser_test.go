@@ -197,7 +197,6 @@ func TestWordExpressionMissingClosingBacktickShouldAutoClose(t *testing.T) {
 	test.Expect(t, 1, len(words1.Words))
 	test.Expect(t, "la magia, bene", words1.Words[0].Text)
 	test.Expect(t, true, words1.Words[0].Literally)
-
 }
 
 func TestMultipleWordSection(t *testing.T) {
