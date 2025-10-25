@@ -7,6 +7,7 @@ import (
 	"math"
 	"slices"
 	"time"
+	lib "vocab/lib"
 	lsproto "vocab/lsp"
 	"vocab/vocabulary/parser"
 )
@@ -19,6 +20,7 @@ type Forest struct {
 	// Map of document uri and the associated trees
 	trees map[string]*WordTree
 	log   func(any)
+	pool  *lib.GoWorkerPool
 }
 
 func NewForest(ctx context.Context, log func(any)) *Forest {
@@ -27,24 +29,28 @@ func NewForest(ctx context.Context, log func(any)) *Forest {
 		trees:              make(map[string]*WordTree),
 		ctx:                ctx,
 		log:                log,
+		pool:               lib.NewGoWorkerPool(ctx),
 	}
 }
 
 // Create or replace tree associated with documentUri and merge it back to the global tree.
 //
 // This also clears the diagnostics of the current documentUri
+// If there is an on going work for documentUri, cancel it and spawn a new goroutine work.
+// Other wise just spawn
 func (c *Forest) Plant(documentUri string, text string, changeRange *lsproto.Range) *Forest {
-	scanner := parser.NewScanner(text)
-	parser := parser.NewParser(c.ctx, documentUri, scanner, c.log)
-	parser.Parse()
+	c.pool.Run(documentUri, func() {
+		scanner := parser.NewScanner(text)
+		parser := parser.NewParser(c.ctx, documentUri, scanner, c.log)
+		parser.Parse()
 
-	c.parsingDiagnostics[documentUri] = []*lsproto.Diagnostic{}
-	for _, section := range parser.Ast.Sections {
-		c.parsingDiagnostics[documentUri] = append(c.parsingDiagnostics[documentUri], section.Diagnostics...)
-	}
+		c.parsingDiagnostics[documentUri] = []*lsproto.Diagnostic{}
+		for _, section := range parser.Ast.Sections {
+			c.parsingDiagnostics[documentUri] = append(c.parsingDiagnostics[documentUri], section.Diagnostics...)
+		}
 
-	c.trees[documentUri] = AstToWordTree(parser.Ast)
-
+		c.trees[documentUri] = AstToWordTree(parser.Ast)
+	})
 	return c
 }
 
@@ -54,6 +60,8 @@ func (c *Forest) Remove(documentUri string) {
 
 // Based on the built tree, compile tree into diagnostics.
 func (c *Forest) Harvest() map[string][]lsproto.Diagnostic {
+	c.pool.WaitAll()
+
 	mergedTree := NewWordTree()
 	for _, tree := range c.trees {
 		mergedTree.Graft(tree)
