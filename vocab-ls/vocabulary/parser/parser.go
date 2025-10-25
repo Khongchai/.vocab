@@ -154,11 +154,11 @@ func (p *Parser) parseVocabSection() {
 		words.Language = Unrecognized
 	}
 
-	parsing := ""
-
 	p.nextTokenNotWhitespace()
 
+	parsing := ""
 	currentGrade := 0
+	parsingStart := -1
 
 	assignGradeAndClear := func() {
 		words.Words[len(words.Words)-1].Grade = currentGrade
@@ -175,16 +175,18 @@ func (p *Parser) parseVocabSection() {
 			return t
 		}()
 
-		newWord := &Word{Parent: words, Text: text, Start: p.tokenStart - len(text), End: p.tokenStart, Literally: isWordLiteral, Line: p.line}
+		newWord := &Word{Parent: words, Text: text, Start: parsingStart, End: p.tokenStart, Literally: isWordLiteral, Line: p.line}
 
 		for _, word := range words.Words {
 			if word.Text == newWord.Text {
-				p.diagnosticsAt(nil, DuplicateToken, p.tokenStart-len(newWord.Text), p.tokenStart, lsproto.DiagnosticsSeverityWarning)
+				p.diagnosticsAt(nil, DuplicateToken, parsingStart, p.tokenStart, lsproto.DiagnosticsSeverityWarning)
 				return
 			}
 		}
 
 		words.Words = append(words.Words, newWord)
+
+		parsingStart = -1
 	}
 
 	for {
@@ -224,6 +226,9 @@ func (p *Parser) parseVocabSection() {
 			p.nextTokenNotWhitespace()
 			parsing = ""
 		default:
+			if parsingStart == -1 {
+				parsingStart = p.tokenStart
+			}
 			parsing += p.text
 			p.nextToken()
 		}

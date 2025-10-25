@@ -32,10 +32,14 @@ func TestShouldActuallyEmitError(t *testing.T) {
 	forst = NewForest(t.Context(), func(a any) {})
 	compilationDiag := forst.Plant("xxx", test.TrimLines(`
 		12/10/1000
-		> (it) mostrare
+		> (it) mostrare(0)
 		Mostrare
 	`), nil).Harvest()
 	test.Expect(t, true, len(compilationDiag["xxx"]) > 0)
+	diag := compilationDiag["xxx"][0]
+	test.Expect(t, 1, diag.Range.Start.Line, diag.Range.End.Line)
+	test.Expect(t, 7, diag.Range.Start.Character)
+	test.Expect(t, 7+len("mostrare(0)"), diag.Range.End.Character)
 }
 
 // Very unlikely in real life, but just for programmatic correctness.
