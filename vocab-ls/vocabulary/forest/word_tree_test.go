@@ -411,3 +411,41 @@ func TestHarvest_ShouldAssociateWordWithTheParserSection(t *testing.T) {
 	test.Expect(t, 1, len(fruits[0].Words))
 	test.Expect(t, true, fruits[0].Words[0] != nil)
 }
+
+func TestHarvest_PerfectYesterdayShouldRequireReviewToday_IfFirstTime(t *testing.T) {
+	today := time.Now().AddDate(0, 0, -1).Format(syntax.DateLayout)
+	okText := fmt.Sprintf(`
+		%s
+		> (it) mostrare(5)
+	`, today)
+	text := test.TrimLines(okText)
+
+	ast := parser.NewParser(t.Context(), "xxx", parser.NewScanner(text), func(any) {}).Parse().Ast
+	tree := AstToWordTree(ast)
+	fruits := tree.Harvest()
+
+	test.Expect(t, 1, len(fruits))
+	test.Expect(t, 1, len(fruits[0].Words))
+	test.Expect(t, 5, fruits[0].Words[0].Grade)
+	test.Expect(t, true, fruits[0].Interval == 1)
+}
+
+func TestHarvest_PerfectYesterdayShouldNOTRequireReviewToday_IfNOTFirstTime(t *testing.T) {
+	today := time.Now().AddDate(0, 0, -1).Format(syntax.DateLayout)
+	okText := fmt.Sprintf(`
+		02/05/2025
+		> (it) mostrare(5)
+		%s
+		>> (it) mostrare(5)
+	`, today)
+	text := test.TrimLines(okText)
+
+	ast := parser.NewParser(t.Context(), "xxx", parser.NewScanner(text), func(any) {}).Parse().Ast
+	tree := AstToWordTree(ast)
+	fruits := tree.Harvest()
+
+	test.Expect(t, 1, len(fruits))
+	test.Expect(t, 2, len(fruits[0].Words))
+	test.Expect(t, 5, fruits[0].Words[0].Grade)
+	test.Expect(t, true, fruits[0].Interval > 1)
+}
