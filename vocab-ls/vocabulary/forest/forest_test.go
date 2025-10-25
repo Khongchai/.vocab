@@ -141,3 +141,8 @@ func TestShouldAllowIncrementalCompilation(t *testing.T) {
 	`), nil)
 	forest.Harvest()
 }
+
+func TestWordThatGetsAFiveShouldNotNeedToBeReviewedTheNextDay(t *testing.T) {
+	// yesterday
+	// > (it) sport(5) | should not be red
+}
