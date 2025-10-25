@@ -417,7 +417,7 @@ func TestIgnoreCommentAtEndOfLine(t *testing.T) {
 	text := test.TrimLines(`
 		20/05/2025
 		| hola
-		> (it) it_word1 | it_word2
+		> (it) it_word1(1) | it_word2
 		| amigo!
 		lorem ipsum...
 	`)
