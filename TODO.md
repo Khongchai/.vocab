@@ -43,12 +43,16 @@
         - [x] comment on vocab line not handled properly
         - [x] Error not re-added when changing in one document.
 - [x] tree.replace method for only replacing the ast of certain files!
-- [ ] Support hover.
-- [ ] Multi-threading
+- [x] Multi-threading
     - [x] Go routine dispatch parsing
-    - [ ] test for go worker pool
+- [ ] Support hover.
 - [ ] Harvest command for collecting all words needs review and create a new section. This would need a workspace command.
- 
+- [ ] Syntax highlighting
+- [ ] Lemmatization
+- [ ] Inline word highlighting
+- [ ] Error offset wrong
+    -	16/10/2025
+		>> (de) gewöhnlich, ewig | right here
 
 ```markdown
 # 04/09/2025
@@ -68,7 +72,7 @@ Basic vocab capture
 Inoltre, questo plugin sarà fantastico. Sono sicuro.
 ```
 - [ ] Match absolute text within > or >> section, if those matched text does not appear in the following section, underline the correct point
-- [ ] Don't clear diagnostics on document close. We need to keep it for spaced repetition later.
+- [x] Don't clear diagnostics on document close. We need to keep it for spaced repetition later.
 
 # Main Requirement 1.5 
 
@@ -76,7 +80,7 @@ Inoltre, questo plugin sarà fantastico. Sono sicuro.
 
 # Main Requirement 2
 
-- [ ] Handle multiple opened files in parallel (great opportunity to try out go's parallel power)
+- [x] Handle multiple opened files in parallel (great opportunity to try out go's parallel power)
 We can build the ast trees -> word tree in parallel
 aggregate to final single word tree
 Then fork again and apply in parallel sm2 
