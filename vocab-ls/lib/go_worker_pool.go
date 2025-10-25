@@ -8,9 +8,10 @@ import (
 
 // CPU-bound worker pool for cpu-intensive tasks.
 type GoWorkerPool struct {
-	ctx     context.Context
-	wg      sync.WaitGroup
-	channel chan struct{}
+	ctx           context.Context
+	wg            sync.WaitGroup
+	channel       chan struct{}
+	resourceMutex sync.Map
 }
 
 func NewGoWorkerPool(ctx context.Context) *GoWorkerPool {
@@ -33,10 +34,19 @@ func (pool *GoWorkerPool) Run(resource string, work func()) {
 			pool.wg.Done()
 			<-pool.channel
 		}()
-		work()
+		pool.workWithMutex(resource, work)
 	}()
 }
 
 func (pool *GoWorkerPool) WaitAll() {
 	pool.wg.Wait()
+}
+
+func (pool *GoWorkerPool) workWithMutex(res string, work func()) {
+	got, _ := pool.resourceMutex.LoadOrStore(res, &sync.Mutex{})
+	mutex := got.(*sync.Mutex)
+
+	mutex.Lock()
+	defer mutex.Unlock()
+	work()
 }
