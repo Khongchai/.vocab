@@ -38,16 +38,16 @@
         - [ ] Handle document deletion
             - [ ] see main.go
         - [ ] When diagnostics disappear, should still return registered documents.
-        - [ ] Now with pull mode, diagnostics of even just one file is not updated correctly...?
+        - [x] Now with pull mode, diagnostics of even just one file is not updated correctly...?
         - [ ] Then also check diagnostics of two files.
         - [x] comment on vocab line not handled properly
         - [x] Error not re-added when changing in one document.
-        - [ ] Review in another file not getting rid of error in theo ther
-- [ ] tree.replace method for only replacing the ast of certain files!
+- [x] tree.replace method for only replacing the ast of certain files!
 - [ ] Support hover.
 - [ ] Multi-threading
-    - [ ] Go routine dispatch parsing
-    - [ ] Harvest command for collecting all words needs review and create a new section. This would need a workspace command.
+    - [x] Go routine dispatch parsing
+    - [ ] test for go worker pool
+- [ ] Harvest command for collecting all words needs review and create a new section. This would need a workspace command.
  
 
 ```markdown
