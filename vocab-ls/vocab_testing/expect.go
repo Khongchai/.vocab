@@ -12,6 +12,6 @@ func Expect[T comparable](t *testing.T, expectation T, gots ...T) {
 			continue
 		}
 
-		t.Fatalf("Error: expected %+v, got %+v (index %d)", expectation, got, i)
+		t.Fatalf("Error: expected \"%+v\", got \"%+v\" (index %d)", expectation, got, i)
 	}
 }

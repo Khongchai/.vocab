@@ -167,19 +167,32 @@ func (p *Parser) parseVocabSection() {
 
 	newWordFromText := func(t string) {
 		isWordLiteral := p.token == TokenWordLiteral
-
 		text := func() string {
 			if isWordLiteral {
 				return p.text
 			}
 			return t
 		}()
+		trailingSpaceCount := func() int {
+			i := len(text) - 1
+			trailingSpaceCount := 0
+			for {
+				if text[i] != ' ' {
+					break
+				}
+				i--
+				trailingSpaceCount++
+			}
+			return trailingSpaceCount
+		}()
+		start := parsingStart
+		end := p.tokenStart - trailingSpaceCount
 
-		newWord := &Word{Parent: words, Text: text, Start: parsingStart, End: p.tokenStart, Literally: isWordLiteral, Line: p.line}
+		newWord := &Word{Parent: words, Text: text[:len(text)-trailingSpaceCount], Start: start, End: end, Literally: isWordLiteral, Line: p.line}
 
 		for _, word := range words.Words {
 			if word.Text == newWord.Text {
-				p.diagnosticsAt(nil, DuplicateToken, parsingStart, p.tokenStart, lsproto.DiagnosticsSeverityWarning)
+				p.diagnosticsAt(nil, DuplicateToken, start, end, lsproto.DiagnosticsSeverityWarning)
 				return
 			}
 		}
@@ -192,7 +205,7 @@ func (p *Parser) parseVocabSection() {
 	for {
 		switch p.token {
 
-		case TokenLineBreak, TokenEOF:
+		case TokenLineBreak, TokenEOF, TokenCommentTrivia:
 			if parsing != "" {
 				newWordFromText(parsing)
 				assignGradeAndClear()

@@ -414,6 +414,27 @@ func TestIgnoreComment(t *testing.T) {
 	test.Expect(t, "it_word2", ast.Sections[0].NewWords[0].Words[1].Text)
 }
 
+func TestIgnoreCommentAtEndOfLine(t *testing.T) {
+	text := test.TrimLines(`
+		20/05/2025
+		| hola
+		> (it) it_word1 | it_word2
+		| amigo!
+		lorem ipsum...
+	`)
+
+	// act
+	ast := NewParser(t.Context(), "xxx", NewScanner(text), func(any) {}).Parse().Ast
+
+	test.Expect(t, 1, len(ast.Sections))
+	test.Expect(t, 1, len(ast.Sections[0].NewWords))
+	test.Expect(t, 1, len(ast.Sections[0].NewWords[0].Words))
+	test.Expect(t, "it_word1", ast.Sections[0].NewWords[0].Words[0].Text)
+	test.Expect(t, 2, ast.Sections[0].NewWords[0].Words[0].Line)
+	test.Expect(t, 7, ast.Sections[0].NewWords[0].Words[0].Start)
+	test.Expect(t, 7+len("it_word1"), ast.Sections[0].NewWords[0].Words[0].End)
+}
+
 func TestRepeatedToken(t *testing.T) {
 	text := test.TrimLines(`
 		20/05/2025
