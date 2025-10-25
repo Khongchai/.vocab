@@ -53,7 +53,9 @@ func (c *Forest) Plant(documentUri string, text string, changeRange *lsproto.Ran
 }
 
 func (c *Forest) Remove(documentUri string) {
-	c.trees[documentUri] = nil
+	c.pool.Run(documentUri, func() {
+		c.trees[documentUri] = nil
+	})
 }
 
 // Based on the built tree, compile tree into diagnostics.

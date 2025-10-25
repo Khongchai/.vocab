@@ -35,8 +35,8 @@
                 >> (it) la magia
                 laskdjflkasjdf lksajdf
                 ```
-        - [ ] Handle document deletion
-            - [ ] see main.go
+        - [x] Handle document deletion
+            - [x] see main.go
         - [ ] When diagnostics disappear, should still return registered documents.
         - [x] Now with pull mode, diagnostics of even just one file is not updated correctly...?
         - [ ] Then also check diagnostics of two files.
