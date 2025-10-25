@@ -46,6 +46,7 @@
 - [x] Multi-threading
     - [x] Go routine dispatch parsing
 - [ ] Support hover.
+- [ ]  While harvesting, do a global lock (nothing should change!)
 - [ ] Harvest command for collecting all words needs review and create a new section. This would need a workspace command.
 - [ ] Syntax highlighting
 - [ ] Lemmatization
