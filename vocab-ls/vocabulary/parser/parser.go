@@ -18,6 +18,7 @@ const (
 	ExpectVocabSection       string = "Expect Vocab Section"
 	UnexpectedToken          string = "Unexpected Token"
 	InvalidScore             string = "Score must be a number"
+	DuplicateToken           string = "Duplicate token in same section"
 )
 
 type Parser struct {
@@ -175,6 +176,14 @@ func (p *Parser) parseVocabSection() {
 		}()
 
 		newWord := &Word{Parent: words, Text: text, Start: p.tokenStart - len(text), End: p.tokenStart, Literally: isWordLiteral, Line: p.line}
+
+		for _, word := range words.Words {
+			if word.Text == newWord.Text {
+				p.diagnosticsAt(nil, DuplicateToken, p.tokenStart-len(newWord.Text), p.tokenStart, lsproto.DiagnosticsSeverityWarning)
+				return
+			}
+		}
+
 		words.Words = append(words.Words, newWord)
 	}
 
@@ -248,25 +257,7 @@ func (p *Parser) parseUtteranceSection() {
 
 // Add a diagnostics error to this line and forward until new line.
 func (p *Parser) errorHere(original *error, message string) {
-	if original != nil {
-		p.printCallback(&original)
-	}
-	newError := &lsproto.Diagnostic{
-		Severity: lsproto.DiagnosticsSeverityError,
-		Message:  string(message),
-		Range: lsproto.Range{
-			Start: lsproto.Position{
-				Line:      p.line,
-				Character: p.tokenStart,
-			},
-			End: lsproto.Position{
-				Line:      p.line,
-				Character: p.tokenEnd,
-			},
-		},
-	}
-	diag := p.currentVocabSection().Diagnostics
-	p.currentVocabSection().Diagnostics = append(diag, newError)
+	p.diagnosticsAt(original, message, p.tokenStart, p.tokenEnd, lsproto.DiagnosticsSeverityError)
 
 	// Only 1 error per line for simplicity.
 	for {
@@ -276,6 +267,29 @@ func (p *Parser) errorHere(original *error, message string) {
 			break
 		}
 	}
+}
+
+func (p *Parser) diagnosticsAt(original *error, message string, start int, end int, severity lsproto.DiagnosticsSeverity) {
+	if original != nil {
+		p.printCallback(&original)
+	}
+	newError := &lsproto.Diagnostic{
+		Severity: severity,
+		Message:  string(message),
+		Range: lsproto.Range{
+			Start: lsproto.Position{
+				Line:      p.line,
+				Character: start,
+			},
+			End: lsproto.Position{
+				Line:      p.line,
+				Character: end,
+			},
+		},
+	}
+	diag := p.currentVocabSection().Diagnostics
+	p.currentVocabSection().Diagnostics = append(diag, newError)
+
 }
 
 func (p *Parser) nextTokenNotWhitespace() {

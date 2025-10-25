@@ -412,5 +412,19 @@ func TestIgnoreComment(t *testing.T) {
 	test.Expect(t, 2, len(ast.Sections[0].NewWords[0].Words))
 	test.Expect(t, "it_word1", ast.Sections[0].NewWords[0].Words[0].Text)
 	test.Expect(t, "it_word2", ast.Sections[0].NewWords[0].Words[1].Text)
+}
 
+func TestRepeatedToken(t *testing.T) {
+	text := test.TrimLines(`
+		20/05/2025
+		> (it) la magia, maga, la magia
+	`)
+	ast := NewParser(t.Context(), "xxx", NewScanner(text), func(any) {}).Parse().Ast
+	test.Expect(t, 1, len(ast.Sections))
+	test.Expect(t, 1, len(ast.Sections[0].NewWords))
+	test.Expect(t, 2, len(ast.Sections[0].NewWords[0].Words))
+	test.Expect(t, 1, len(ast.Sections[0].Diagnostics))
+	test.Expect(t, DuplicateToken, ast.Sections[0].Diagnostics[0].Message)
+	test.Expect(t, 23, ast.Sections[0].Diagnostics[0].Range.Start.Character)
+	test.Expect(t, 31, ast.Sections[0].Diagnostics[0].Range.End.Character)
 }
