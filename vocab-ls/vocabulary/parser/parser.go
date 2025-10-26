@@ -160,6 +160,8 @@ func (p *Parser) parseVocabSection() {
 	parsing := ""
 	parsingStart := -1
 	parsingEnd := -1
+	startRuneCountOffset := 0
+	endRuneCountOffset := 0
 
 	newWordFromText := func(t string) {
 		isWordLiteral := p.token == TokenWordLiteral
@@ -185,15 +187,19 @@ func (p *Parser) parseVocabSection() {
 		end := parsingEnd - trailingSpaceCount
 		trimmed := text[:len(text)-trailingSpaceCount]
 
+		difference := len(trimmed) - utf8.RuneCountInString(trimmed)
+		endRuneCountOffset += difference
+
 		newWord := &Word{
 			Parent:    words,
 			Text:      trimmed,
-			Start:     start,
-			End:       end,
+			Start:     start - startRuneCountOffset,
+			End:       end - endRuneCountOffset,
 			Literally: isWordLiteral,
 			Line:      p.line,
-			RuneCount: utf8.RuneCountInString(trimmed),
 		}
+
+		startRuneCountOffset += difference
 
 		for _, word := range words.Words {
 			if word.Text == newWord.Text {

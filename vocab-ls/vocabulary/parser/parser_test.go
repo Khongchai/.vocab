@@ -457,5 +457,5 @@ func TestWordWithSpecialCharacter(t *testing.T) {
 	test.Expect(t, 1, len(ast.Sections[0].NewWords))
 	test.Expect(t, 1, len(ast.Sections[0].NewWords[0].Words))
 	test.Expect(t, 7, ast.Sections[0].NewWords[0].Words[0].Start)
-	test.Expect(t, 15, ast.Sections[0].NewWords[0].Words[0].End)
+	test.Expect(t, 14, ast.Sections[0].NewWords[0].Words[0].End)
 }

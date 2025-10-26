@@ -19,10 +19,6 @@ type Word struct {
 	Line int
 	// Text represent the actual string value of a word with or without its article.
 	Text string
-	// If word.Text = "ä"
-	// Calling len(word.Text) will return 2
-	// word.RuneCount returns 1
-	RuneCount int
 	// Literally means the text was wrapped with backticks. The compiler may choose to do something
 	// differently with this information.
 	Literally bool
@@ -30,7 +26,8 @@ type Word struct {
 	// "hello" start = 0
 	Start int
 	// the end of Text
-	// "hello" end = 4
+	// "hello" end = 5
+	// "ö" end non ascii chars like ö is treated as 1 not 2
 	End int
 	// grade parsed after word -> word(5)
 	Grade  int

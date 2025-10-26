@@ -153,12 +153,17 @@ func TestEmitErrorAtWordWithSpecialCharacter(t *testing.T) {
 	forest := NewForest(t.Context(), func(a any) {})
 
 	// act
-	forest.Plant("xxx", "16/10/2025 \n> (it) `com'è`", nil)
+	forest.Plant("xxx", "16/10/2025 \n> (it) `com'è`, risolvere", nil)
 
 	harvested := forest.Harvest()
-	test.Expect(t, 1, len(harvested["xxx"]))
-	diag := harvested["xxx"][0]
-	test.Expect(t, 1, diag.Range.Start.Line, diag.Range.End.Line)
-	test.Expect(t, 7, diag.Range.Start.Character)
-	test.Expect(t, 15, diag.Range.End.Character)
+	test.Expect(t, 2, len(harvested["xxx"]))
+	diag1 := harvested["xxx"][0]
+	test.Expect(t, 1, diag1.Range.Start.Line, diag1.Range.End.Line)
+	test.Expect(t, 7, diag1.Range.Start.Character)
+	test.Expect(t, 14, diag1.Range.End.Character)
+
+	diag2 := harvested["xxx"][1]
+	test.Expect(t, 1, diag2.Range.Start.Line, diag2.Range.End.Line)
+	test.Expect(t, 16, diag2.Range.Start.Character)
+	test.Expect(t, 25, diag2.Range.End.Character)
 }
