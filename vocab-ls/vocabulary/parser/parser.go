@@ -224,6 +224,7 @@ func (p *Parser) parseVocabSection() {
 			words.Words[len(words.Words)-1].Grade = number
 			p.nextTokenNotWhitespace()
 		case TokenWordLiteral:
+			parsingStart = p.tokenStart
 			parsingEnd = p.tokenEnd
 			newWordFromText(parsing)
 			p.nextTokenNotWhitespace()

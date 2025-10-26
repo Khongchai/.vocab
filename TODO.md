@@ -43,11 +43,20 @@
         - [x] comment on vocab line not handled properly
         - [x] Error not re-added when changing in one document.
 - [x] tree.replace method for only replacing the ast of certain files!
+- [x] test word with special char for parser and compiler
 - [x] Multi-threading
     - [x] Go routine dispatch parsing
 - [ ] Support hover.
 - [ ]  While harvesting, do a global lock (nothing should change!)
 - [ ] Harvest command for collecting all words needs review and create a new section. This would need a workspace command.
+- [ ] There are still duplicate diagnostics...somehow
+```
+20/05/2025
+> (it) thing
+
+20/06/2025
+> (it) thing
+```
 - [ ] Syntax highlighting
 - [ ] Lemmatization
 - [ ] Inline word highlighting

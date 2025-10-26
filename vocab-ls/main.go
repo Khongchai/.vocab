@@ -77,7 +77,7 @@ func main() {
 
 				diagnostics := forest.Harvest()
 				thisDocDiag := diagnostics[request.TextDocument.Uri]
-				diagnostics[request.TextDocument.Uri] = nil
+				delete(diagnostics, request.TextDocument.Uri)
 
 				response := lsproto.NewFullDocumentDiagnosticResponse(
 					message.ID,

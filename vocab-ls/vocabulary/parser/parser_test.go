@@ -448,3 +448,14 @@ func TestRepeatedToken(t *testing.T) {
 	test.Expect(t, 23, ast.Sections[0].Diagnostics[0].Range.Start.Character)
 	test.Expect(t, 31, ast.Sections[0].Diagnostics[0].Range.End.Character)
 }
+
+func TestWordWithSpecialCharacter(t *testing.T) {
+	text := "16/10/2025 \n> (it) `com'è`"
+	ast := NewParser(t.Context(), "xxx", NewScanner(text), func(a any) {}).Parse().Ast
+
+	test.Expect(t, 1, len(ast.Sections))
+	test.Expect(t, 1, len(ast.Sections[0].NewWords))
+	test.Expect(t, 1, len(ast.Sections[0].NewWords[0].Words))
+	test.Expect(t, 7, ast.Sections[0].NewWords[0].Words[0].Start)
+	test.Expect(t, 15, ast.Sections[0].NewWords[0].Words[0].End)
+}

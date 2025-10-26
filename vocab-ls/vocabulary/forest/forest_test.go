@@ -30,16 +30,19 @@ func TestShouldActuallyEmitError(t *testing.T) {
 
 	// compiler error
 	forst = NewForest(t.Context(), func(a any) {})
-	compilationDiag := forst.Plant("xxx", test.TrimLines(`
+	compilationDiag := forst.Plant("xxx", test.TrimLines(fmt.Sprintf(`
 		12/10/1000
-		> (it) mostrare(0)
-		Mostrare
-	`), nil).Harvest()
+		> (it) mostrare(0), %stante%s
+	`, "`", "`")), nil).Harvest()
 	test.Expect(t, true, len(compilationDiag["xxx"]) > 0)
-	diag := compilationDiag["xxx"][0]
-	test.Expect(t, 1, diag.Range.Start.Line, diag.Range.End.Line)
-	test.Expect(t, 7, diag.Range.Start.Character)
-	test.Expect(t, 7+len("mostrare"), diag.Range.End.Character)
+	diag1 := compilationDiag["xxx"][0]
+	test.Expect(t, 1, diag1.Range.Start.Line, diag1.Range.End.Line)
+	test.Expect(t, 7, diag1.Range.Start.Character)
+	test.Expect(t, 15, diag1.Range.End.Character)
+	diag2 := compilationDiag["xxx"][1]
+	test.Expect(t, 1, diag2.Range.Start.Line, diag2.Range.End.Line)
+	test.Expect(t, 20, diag2.Range.Start.Character)
+	test.Expect(t, 20+len("tante")+1, diag2.Range.End.Character)
 }
 
 // Very unlikely in real life, but just for programmatic correctness.
@@ -146,7 +149,16 @@ func TestShouldAllowIncrementalCompilation(t *testing.T) {
 	forest.Harvest()
 }
 
-func TestWordThatGetsAFiveShouldNotNeedToBeReviewedTheNextDay(t *testing.T) {
-	// yesterday
-	// > (it) sport(5) | should not be red
+func TestEmitErrorAtWordWithSpecialCharacter(t *testing.T) {
+	forest := NewForest(t.Context(), func(a any) {})
+
+	// act
+	forest.Plant("xxx", "16/10/2025 \n> (it) `com'è`", nil)
+
+	harvested := forest.Harvest()
+	test.Expect(t, 1, len(harvested["xxx"]))
+	diag := harvested["xxx"][0]
+	test.Expect(t, 1, diag.Range.Start.Line, diag.Range.End.Line)
+	test.Expect(t, 7, diag.Range.Start.Character)
+	test.Expect(t, 15, diag.Range.End.Character)
 }
