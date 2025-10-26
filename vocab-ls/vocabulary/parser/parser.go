@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode/utf8"
 	lsproto "vocab/lsp"
 	"vocab/syntax"
 )
@@ -182,8 +183,17 @@ func (p *Parser) parseVocabSection() {
 		}()
 		start := parsingStart
 		end := parsingEnd - trailingSpaceCount
+		trimmed := text[:len(text)-trailingSpaceCount]
 
-		newWord := &Word{Parent: words, Text: text[:len(text)-trailingSpaceCount], Start: start, End: end, Literally: isWordLiteral, Line: p.line}
+		newWord := &Word{
+			Parent:    words,
+			Text:      trimmed,
+			Start:     start,
+			End:       end,
+			Literally: isWordLiteral,
+			Line:      p.line,
+			RuneCount: utf8.RuneCountInString(trimmed),
+		}
 
 		for _, word := range words.Words {
 			if word.Text == newWord.Text {

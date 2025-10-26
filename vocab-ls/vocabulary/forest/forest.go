@@ -92,6 +92,7 @@ func (c *Forest) Harvest() map[string][]lsproto.Diagnostic {
 			if message == "" {
 				continue
 			}
+
 			err := lsproto.MakeDiagnostics(
 				message,
 				word.Line,

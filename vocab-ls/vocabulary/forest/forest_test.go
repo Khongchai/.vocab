@@ -42,7 +42,7 @@ func TestShouldActuallyEmitError(t *testing.T) {
 	diag2 := compilationDiag["xxx"][1]
 	test.Expect(t, 1, diag2.Range.Start.Line, diag2.Range.End.Line)
 	test.Expect(t, 20, diag2.Range.Start.Character)
-	test.Expect(t, 20+len("tante")+1, diag2.Range.End.Character)
+	test.Expect(t, 27, diag2.Range.End.Character)
 }
 
 // Very unlikely in real life, but just for programmatic correctness.

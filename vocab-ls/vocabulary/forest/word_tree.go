@@ -175,6 +175,10 @@ type WordTwig struct {
 	location string
 }
 
+func (wb *WordTwig) GetLocation() string {
+	return wb.location
+}
+
 // The final review detail of a word
 type WordFruit struct {
 	Lang parser.Language
@@ -184,8 +188,4 @@ type WordFruit struct {
 	Text         string
 	Interval     float64
 	LastSeenDate time.Time
-}
-
-func (wb *WordTwig) GetLocation() string {
-	return wb.location
 }
