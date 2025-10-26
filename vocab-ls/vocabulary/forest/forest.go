@@ -6,6 +6,7 @@ import (
 	"maps"
 	"math"
 	"slices"
+	"sync"
 	"time"
 	lib "vocab/lib"
 	lsproto "vocab/lsp"
@@ -18,9 +19,10 @@ type Forest struct {
 	// Map of document uri and the associated diagnostics from parser
 	parsingDiagnostics map[string][]*lsproto.Diagnostic
 	// Map of document uri and the associated trees
-	trees map[string]*WordTree
-	log   func(any)
-	pool  *lib.GoWorkerPool
+	trees        map[string]*WordTree
+	log          func(any)
+	pool         *lib.GoWorkerPool
+	harvestMutex sync.Mutex
 }
 
 func NewForest(ctx context.Context, log func(any)) *Forest {
@@ -61,6 +63,8 @@ func (c *Forest) Remove(documentUri string) {
 // Based on the built tree, compile tree into diagnostics.
 func (c *Forest) Harvest() map[string][]lsproto.Diagnostic {
 	c.pool.WaitAll()
+	c.harvestMutex.Lock()
+	defer c.harvestMutex.Unlock()
 
 	mergedTree := NewWordTree()
 	for _, tree := range c.trees {
