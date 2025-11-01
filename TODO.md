@@ -50,6 +50,11 @@
 - [x] While harvesting, do a global lock (nothing should change!)
 - [ ] Harvest command for collecting all words needs review and create a new section. This would need a workspace command.
 - [ ] There are still duplicate diagnostics...somehow
+- [ ] no more lemmatization, but keep literal tag for including "la" and whatnot.
+- [ ] Normalization change
+    - [ ] move normlaization to word tree
+    - [ ] make normalization turn to lower case only for italian
+    - [ ] normalization should strip definite and indefinite articles of both languages.
 ```
 20/05/2025
 > (it) thing
