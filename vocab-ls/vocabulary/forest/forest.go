@@ -107,10 +107,7 @@ func (c *Forest) Harvest() map[string][]lsproto.Diagnostic {
 
 	for _, fruit := range fruits {
 		severity, remainingDays := func() (lsproto.DiagnosticsSeverity, float64) {
-			interval := math.Ceil(fruit.Interval)
-			deadline := fruit.LastSeenDate.AddDate(0, 0, int(interval))
-			remainingHours := time.Until(deadline).Hours()
-			var remainingDays float64 = remainingHours / 24
+			remainingDays := fruitToRemainingDays(fruit)
 
 			if remainingDays <= 1 {
 				return lsproto.DiagnosticsSeverityError, remainingDays
@@ -135,4 +132,28 @@ func (c *Forest) Harvest() map[string][]lsproto.Diagnostic {
 
 func (f *Forest) GetTreesLocations() []string {
 	return slices.Collect(maps.Keys(f.trees))
+}
+
+// Pick a fruit based on its location in the tree and return its remaining days description
+func (f *Forest) Pick(textDocument string, line int, character int) (string, bool) {
+	if tree, exists := f.trees[textDocument]; exists {
+		picked := tree.Pick(line, character)
+		if picked == nil {
+			return "", false
+		}
+		remaining := fruitToRemainingDays(picked)
+		return fmt.Sprintf("Remaining days: %f", remaining), true
+	}
+	return "", false
+}
+
+func fruitToRemainingDays(fruit *WordFruit) float64 {
+	if fruit == nil {
+		panic("Fruit is null here...what?!")
+	}
+	interval := math.Ceil(fruit.Interval)
+	deadline := fruit.LastSeenDate.AddDate(0, 0, int(interval))
+	remainingHours := time.Until(deadline).Hours()
+	var remainingDays float64 = remainingHours / 24
+	return remainingDays
 }

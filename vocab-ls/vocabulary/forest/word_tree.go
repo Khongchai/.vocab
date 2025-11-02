@@ -96,49 +96,76 @@ func (wt *WordTree) Graft(other *WordTree) *WordTree {
 	return wt
 }
 
+func (wt *WordTree) Pick(line int, char int) *WordFruit {
+	for lang, langBranch := range wt.branches {
+		for word, twigs := range langBranch.twigs {
+			someInRange := false
+			for _, t := range twigs {
+				someInRange = t.word.Line == line && t.word.Start <= char && char <= t.word.End
+				if someInRange {
+					break
+				}
+			}
+			if !someInRange {
+				continue
+			}
+			wordFruit := twigsToWordFruits(lang, word, twigs)
+
+			return wordFruit
+		}
+	}
+
+	return nil
+}
+
 func (wt *WordTree) Harvest() []*WordFruit {
 	details := []*WordFruit{}
 	// für jede LanguageBranch
 	// für jede WordTwig auf LanguageBranch (Wir gehen davon aus, dass die Twigs schon sortiert sind.)
 	for lang, langBranch := range wt.branches {
 		for word, twigs := range langBranch.twigs {
-			wordFruit := &WordFruit{
-				Words:        []*parser.Word{},
-				Interval:     0,
-				LastSeenDate: time.Time{},
-				Lang:         parser.Language(lang),
-				Text:         word,
-			}
-
-			repetitionNumber := 0
-			easinessFactor := super_memo.InitialEasinessFactor
-
-			// interval is the final output we want
-			var interval float64
-			var lastSeenDate *time.Time
-			for _, twig := range twigs {
-				wordFruit.Words = append(wordFruit.Words, twig.word)
-				currentInterval := func() float64 {
-					if lastSeenDate == nil {
-						return 0
-					}
-					diff := twig.section.Date.Time.Sub(*lastSeenDate)
-					diffDays := diff.Hours() / 24
-					return diffDays
-				}()
-				repetitionNumber, interval, easinessFactor = super_memo.Sm2(twig.grade, repetitionNumber, currentInterval, easinessFactor)
-
-				lastSeenDate = &twig.section.Date.Time
-			}
-
-			wordFruit.Interval = interval
-			wordFruit.LastSeenDate = *lastSeenDate
-
+			wordFruit := twigsToWordFruits(lang, word, twigs)
 			details = append(details, wordFruit)
 		}
 	}
 
 	return details
+}
+
+func twigsToWordFruits(lang string, word string, twigs []*WordTwig) *WordFruit {
+	wordFruit := &WordFruit{
+		Words:        []*parser.Word{},
+		Interval:     0,
+		LastSeenDate: time.Time{},
+		Lang:         parser.Language(lang),
+		Text:         word,
+	}
+
+	repetitionNumber := 0
+	easinessFactor := super_memo.InitialEasinessFactor
+
+	// interval is the final output we want
+	var interval float64
+	var lastSeenDate *time.Time
+	for _, twig := range twigs {
+		wordFruit.Words = append(wordFruit.Words, twig.word)
+		currentInterval := func() float64 {
+			if lastSeenDate == nil {
+				return 0
+			}
+			diff := twig.section.Date.Time.Sub(*lastSeenDate)
+			diffDays := diff.Hours() / 24
+			return diffDays
+		}()
+		repetitionNumber, interval, easinessFactor = super_memo.Sm2(twig.grade, repetitionNumber, currentInterval, easinessFactor)
+
+		lastSeenDate = &twig.section.Date.Time
+	}
+
+	wordFruit.Interval = interval
+	wordFruit.LastSeenDate = *lastSeenDate
+
+	return wordFruit
 }
 
 type LanguageBranch struct {
