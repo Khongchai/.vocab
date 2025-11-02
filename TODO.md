@@ -58,14 +58,7 @@
     - [ ] Connect hover to lsp
 - [ ] Harvest command for collecting all words needs review and create a new section. This would need a workspace command.
 - [ ] Semantic highlight 
-- [ ] When deleting bottom section, error should come back
-```
-    01/05/2025
-    > (it) ciao
-    Ciao, mi piace Iris.
-    {today}
-    > (it) ciao
-```
+- [ ] Implement quick fix.
 
 ```
 20/05/2025
