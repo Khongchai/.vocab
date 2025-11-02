@@ -55,6 +55,7 @@
 - [ ] Support hover.
     - [ ] Write test for hover
     - [x] Implement hover logic (Pick)
+        - [ ] continue from here "textDocument/hover": func(rm lsproto.RequestMessage) (any, err
     - [ ] Connect hover to lsp
 - [ ] Harvest command for collecting all words needs review and create a new section. This would need a workspace command.
 - [ ] Semantic highlight 

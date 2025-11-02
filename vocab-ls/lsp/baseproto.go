@@ -75,6 +75,11 @@ type DidOpenDocumentParams struct {
 	TextDocument *TextDocumentItem
 }
 
+type HoverParams struct {
+	TextDocument string   `json:"textDocument"`
+	Position     Position `json:"position"`
+}
+
 func NewFullDocumentDiagnosticResponse(id int, documentsDiagnostics []Diagnostic, relatedDocumentsDiagnostics map[string][]Diagnostic) *documentDiagnosticResponse {
 	reports := map[string]FullDocumentDiagnosticReport{}
 

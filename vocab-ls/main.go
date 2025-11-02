@@ -9,7 +9,7 @@ import (
 	"vocab/engine"
 	"vocab/lib"
 	lsproto "vocab/lsp"
-	forest "vocab/vocabulary/forest"
+	"vocab/vocabulary/forest"
 )
 
 // two options:
@@ -69,6 +69,22 @@ func main() {
 				return nil, nil
 			},
 		}, map[string]func(lsproto.RequestMessage) (any, error){
+			"textDocument/hover": func(rm lsproto.RequestMessage) (any, error) {
+				params, err := unmarshalInto(rm.Params, &lsproto.HoverParams{})
+				if err != nil {
+					return nil, err
+				}
+
+				result, found := forest.Pick(params.TextDocument, params.Position.Line, params.Position.Character)
+				print(result)
+				if !found {
+					return nil, nil
+				}
+
+				return map[string]string{
+					"value": "lol",
+				}, nil
+			},
 			"textDocument/diagnostic": func(message lsproto.RequestMessage) (any, error) {
 				request, err := unmarshalInto(message.Params, &lsproto.DocumentDiagnosticsParams{})
 				if err != nil {
@@ -98,6 +114,7 @@ func main() {
 								"openClose": true,
 								"change":    lsproto.TextDocumentSyncKindFull,
 							},
+							"hoverProvider": true,
 							"diagnosticProvider": map[string]any{
 								// a change of date in one vocab can affect another (spaced repetition)
 								"interFileDependencies": true,
