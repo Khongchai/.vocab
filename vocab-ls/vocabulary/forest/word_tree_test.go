@@ -73,10 +73,11 @@ func TestAddTwigToEmptyTree(t *testing.T) {
 	}
 
 	//act
-	tree.AddTwig(parser.Deutsch, word, "xxx", vocabSection, startingDiags)
+	word.Literally = false
+	tree.AddTwig(parser.Italiano, word, "xxx", vocabSection, startingDiags)
 
 	wordNormalized := strings.ToLower(word.Text)
-	test.Expect(t, true, tree.branches[string(parser.Deutsch)] != nil)
+	test.Expect(t, true, tree.branches[string(parser.Italiano)] != nil)
 	branches := slices.Collect(maps.Values(tree.branches))
 	test.Expect(t, 1, len(branches))
 	test.Expect(t, 1, len(branches[0].twigs))
@@ -107,9 +108,15 @@ func TestAddTwigToNonEmptyTree_WithMultipleSections(t *testing.T) {
 	section2.ReviewedWords = append(section2.ReviewedWords, reviewedWordSection)
 
 	//act
-	tree.AddTwig(parser.Deutsch, fakeWord("Testen", 5, newWordSection), "xxx", section1, []*lsproto.Diagnostic{})
-	tree.AddTwig(parser.Italiano, fakeWord("Test", 3, newWordSection), "xxx", section1, []*lsproto.Diagnostic{})
-	tree.AddTwig(parser.Deutsch, fakeWord("testen", 4, reviewedWordSection), "xxx", section2, []*lsproto.Diagnostic{})
+	fakeWord1 := fakeWord("Testen", 5, newWordSection)
+	fakeWord2 := fakeWord("Test", 3, newWordSection)
+	fakeWord3 := fakeWord("testen", 4, reviewedWordSection)
+	fakeWord1.Literally = false
+	fakeWord2.Literally = false
+	fakeWord3.Literally = false
+	tree.AddTwig(parser.Deutsch, fakeWord1, "xxx", section1, []*lsproto.Diagnostic{})
+	tree.AddTwig(parser.Italiano, fakeWord2, "xxx", section1, []*lsproto.Diagnostic{})
+	tree.AddTwig(parser.Deutsch, fakeWord3, "xxx", section2, []*lsproto.Diagnostic{})
 
 	test.Expect(t, true, tree.branches[string(parser.Deutsch)] != nil)
 	test.Expect(t, true, tree.branches[string(parser.Italiano)] != nil)
@@ -118,11 +125,11 @@ func TestAddTwigToNonEmptyTree_WithMultipleSections(t *testing.T) {
 
 	// german
 	derAst := tree.branches[string(parser.Deutsch)]
-	test.Expect(t, 2, len(derAst.twigs["testen"]))
-	test.Expect(t, 5, derAst.twigs["testen"][0].grade)
-	test.Expect(t, section1, derAst.twigs["testen"][0].section)
-	test.Expect(t, 4, derAst.twigs["testen"][1].grade)
-	test.Expect(t, section2, derAst.twigs["testen"][1].section)
+	test.Expect(t, 1, len(derAst.twigs["testen"]))
+	test.Expect(t, 4, derAst.twigs["testen"][0].grade)
+	test.Expect(t, section2, derAst.twigs["testen"][0].section)
+	test.Expect(t, 5, derAst.twigs["Testen"][0].grade)
+	test.Expect(t, section1, derAst.twigs["Testen"][0].section)
 
 	// italian
 	unRamo := tree.branches[string(parser.Italiano)]

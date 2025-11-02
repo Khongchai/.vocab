@@ -2,7 +2,6 @@ package parser
 
 import (
 	"fmt"
-	"strings"
 	"time"
 	lsproto "vocab/lsp"
 )
@@ -36,11 +35,6 @@ type Word struct {
 
 func (w *Word) Uri() string {
 	return w.Parent.Parent.Uri
-}
-
-// TODO: we can add lemmatization logic here later.
-func (w *Word) GetNormalizedText() string {
-	return strings.ToLower(w.Text)
 }
 
 type Section interface {

@@ -3,9 +3,11 @@ package forest
 import (
 	"maps"
 	"slices"
+	"strings"
 	"time"
 	lsproto "vocab/lsp"
 	"vocab/super_memo"
+	"vocab/vocabulary/languages"
 	"vocab/vocabulary/parser"
 )
 
@@ -62,9 +64,24 @@ func (wt *WordTree) AddTwig(language parser.Language, word *parser.Word, uri str
 		section:  section,
 	}
 
-	norm := word.GetNormalizedText()
+	norm := wt.GetNormalizedText(language, word)
 	branch.twigs[norm] = append(branch.twigs[norm], twig)
 	branch.sortTwigs(norm)
+}
+
+func (wt *WordTree) GetNormalizedText(lang parser.Language, word *parser.Word) string {
+	if word.Literally {
+		return word.Text
+	}
+
+	if lang == parser.Italiano {
+		norm := languages.StripItalianArticleFromWord(strings.ToLower(word.Text))
+		return norm
+	}
+
+	// German is case-sensitive
+	norm := languages.StripGermanArticleFromWord(word.Text)
+	return norm
 }
 
 func (wt *WordTree) Graft(other *WordTree) *WordTree {

@@ -23,7 +23,7 @@ func TestVocabAstToWordTree(t *testing.T) {
 		Der Sprecher benutzt lange, zusammengesetzte Sätze mit Nebensätzen, Relativsätzen und erklärenden Einschüben.
 		Er ist voll mit Schnodderigkeit. Kann nicht mit ihm arbeiten...
 		15/10/2025
-		> (de) Ausnahmsweise(1), der Rechner(5), nachhaltig(4)
+		> (de) ausnahmsweise(1), der Rechner(5), nachhaltig(4)
 		>> (de) gewöhnlich
 		>> (it) qualcuno(3)
 		Ich werd' ausnahmsweise mal nichts machen.
@@ -62,17 +62,17 @@ func TestVocabAstToWordTree(t *testing.T) {
 	test.Expect(t, 1, len(italianBranch["spiegarmi"]))
 	test.Expect(t, 1, len(italianBranch["com'è"]))
 	test.Expect(t, 1, len(italianBranch["eterno"]))
-	test.Expect(t, 1, len(italianBranch["il mito"]))
+	test.Expect(t, 1, len(italianBranch["mito"]))
 	test.Expect(t, 1, len(italianBranch["sfatare"]))
-	test.Expect(t, 1, len(italianBranch["la verità"]))
+	test.Expect(t, 1, len(italianBranch["verità"]))
 	test.Expect(t, 1, len(italianBranch["vera"]))
 
-	test.Expect(t, 1, len(germanBranch["der nebensatz"]))
-	test.Expect(t, 1, len(germanBranch["der relativsatz"]))
-	test.Expect(t, 1, len(germanBranch["der einschub"]))
-	test.Expect(t, 1, len(germanBranch["die schnodderigkeit"]))
+	test.Expect(t, 1, len(germanBranch["Nebensatz"]))
+	test.Expect(t, 1, len(germanBranch["Relativsatz"]))
+	test.Expect(t, 1, len(germanBranch["Einschub"]))
+	test.Expect(t, 1, len(germanBranch["Schnodderigkeit"]))
 	test.Expect(t, 1, len(germanBranch["ausnahmsweise"]))
-	test.Expect(t, 1, len(germanBranch["der rechner"]))
+	test.Expect(t, 1, len(germanBranch["Rechner"]))
 	test.Expect(t, 1, len(germanBranch["nachhaltig"]))
 	test.Expect(t, 1, len(germanBranch["zertreuern"]))
 	test.Expect(t, 1, len(germanBranch["entlarven"]))
