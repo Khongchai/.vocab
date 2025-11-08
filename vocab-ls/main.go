@@ -70,20 +70,22 @@ func main() {
 			},
 		}, map[string]func(lsproto.RequestMessage) (any, error){
 			"textDocument/hover": func(rm lsproto.RequestMessage) (any, error) {
-				params, err := unmarshalInto(rm.Params, &lsproto.HoverParams{})
+				_, err := unmarshalInto(rm.Params, &lsproto.HoverParams{})
 				if err != nil {
 					return nil, err
 				}
 
-				result, found := forest.Pick(params.TextDocument, params.Position.Line, params.Position.Character)
-				print(result)
-				if !found {
-					return nil, nil
-				}
+				// result, found := forest.Pick(params.TextDocument, params.Position.Line, params.Position.Character)
+				// print(result)
+				// if !found {
+				// 	return nil, nil
+				// }
 
-				return map[string]string{
-					"value": "lol",
-				}, nil
+				return lsproto.NewTextDocumentHoverResponse(
+					rm.ID,
+					"lol",
+					nil,
+				), nil
 			},
 			"textDocument/diagnostic": func(message lsproto.RequestMessage) (any, error) {
 				request, err := unmarshalInto(message.Params, &lsproto.DocumentDiagnosticsParams{})

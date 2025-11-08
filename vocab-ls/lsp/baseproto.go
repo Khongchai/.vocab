@@ -75,6 +75,27 @@ type DidOpenDocumentParams struct {
 	TextDocument *TextDocumentItem
 }
 
+func NewTextDocumentHoverResponse(requestId int, content string, r *Range) *map[string]any {
+	return NewGenericResponse(
+		requestId,
+		map[string]any{
+			"contents": map[string]any{
+				"kind":  "plaintext",
+				"value": content,
+			},
+			"range": r,
+		},
+	)
+}
+
+func NewGenericResponse(messageId int, result map[string]any) *map[string]any {
+	return &map[string]any{
+		"jsonrpc": JsonRPCVersion,
+		"id":      messageId,
+		"result":  result,
+	}
+}
+
 type HoverParams struct {
 	TextDocument string   `json:"textDocument"`
 	Position     Position `json:"position"`
