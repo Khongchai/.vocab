@@ -69,24 +69,6 @@ func main() {
 				return nil, nil
 			},
 		}, map[string]func(lsproto.RequestMessage) (any, error){
-			"textDocument/hover": func(rm lsproto.RequestMessage) (any, error) {
-				_, err := unmarshalInto(rm.Params, &lsproto.HoverParams{})
-				if err != nil {
-					return nil, err
-				}
-
-				// result, found := forest.Pick(params.TextDocument, params.Position.Line, params.Position.Character)
-				// print(result)
-				// if !found {
-				// 	return nil, nil
-				// }
-
-				return lsproto.NewTextDocumentHoverResponse(
-					rm.ID,
-					"lol",
-					nil,
-				), nil
-			},
 			"textDocument/diagnostic": func(message lsproto.RequestMessage) (any, error) {
 				request, err := unmarshalInto(message.Params, &lsproto.DocumentDiagnosticsParams{})
 				if err != nil {
@@ -116,7 +98,6 @@ func main() {
 								"openClose": true,
 								"change":    lsproto.TextDocumentSyncKindFull,
 							},
-							"hoverProvider": true,
 							"diagnosticProvider": map[string]any{
 								// a change of date in one vocab can affect another (spaced repetition)
 								"interFileDependencies": true,

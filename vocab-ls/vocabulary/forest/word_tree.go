@@ -96,28 +96,6 @@ func (wt *WordTree) Graft(other *WordTree) *WordTree {
 	return wt
 }
 
-func (wt *WordTree) Pick(line int, char int) *WordFruit {
-	for lang, langBranch := range wt.branches {
-		for word, twigs := range langBranch.twigs {
-			someInRange := false
-			for _, t := range twigs {
-				someInRange = t.word.Line == line && t.word.Start <= char && char <= t.word.End
-				if someInRange {
-					break
-				}
-			}
-			if !someInRange {
-				continue
-			}
-			wordFruit := twigsToWordFruits(lang, word, twigs)
-
-			return wordFruit
-		}
-	}
-
-	return nil
-}
-
 func (wt *WordTree) Harvest() []*WordFruit {
 	details := []*WordFruit{}
 	// für jede LanguageBranch
