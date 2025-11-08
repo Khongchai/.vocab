@@ -61,7 +61,9 @@
 ## Last two...then done
 - [x] Trigger whole workspace root parse immediately upon opening any .vocab file.
 - [ ] Harvest command for collecting all words needs review and create a new section. This would need a workspace command.
-- [ ] Refactor logic inside main.go to another place.
+    - [ ] Change harvest to produce fruits and then map fruits to diagnostics outside. 
+    - [ ] Then for collecting from all files, we can know from outside which fruit needs review. 
+    - [ ] At this point, we'll probably need to refactor the stuff inside main.go into something more structured
     
 ```
 20/05/2025
