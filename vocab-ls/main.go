@@ -98,6 +98,12 @@ func main() {
 				return nil, nil
 			},
 		}, map[string]func(lsproto.RequestMessage) (any, error){
+			"vocab/collectFromThisFile": func(lsproto.RequestMessage) (any, error) {
+				return nil, nil
+			},
+			"vocab/collectAll": func(lsproto.RequestMessage) (any, error) {
+				return nil, nil
+			},
 			"textDocument/hover": func(rm lsproto.RequestMessage) (any, error) {
 				_, err := unmarshalInto(rm.Params, &lsproto.HoverParams{})
 				if err != nil {

@@ -4,11 +4,9 @@ import {
   LanguageClient,
   LanguageClientOptions,
   ServerOptions,
-  CloseAction,
   TransportKind,
-  ErrorHandler,
-  ErrorAction,
 } from "vscode-languageclient/node";
+import { registerCommands } from "./registerCommands";
 
 let client: LanguageClient | undefined;
 
@@ -63,6 +61,8 @@ export async function activate(context: vscode.ExtensionContext) {
       },
     },
   });
+
+  context.subscriptions.push(...registerCommands(client));
 }
 
 export async function deactivate() {

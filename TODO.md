@@ -59,8 +59,9 @@
     - [-] Connect hover to lsp
 
 ## Last two...then done
-- [ ] Trigger whole workspace root parse immediately upon opening any .vocab file.
+- [x] Trigger whole workspace root parse immediately upon opening any .vocab file.
 - [ ] Harvest command for collecting all words needs review and create a new section. This would need a workspace command.
+- [ ] Refactor logic inside main.go to another place.
     
 ```
 20/05/2025

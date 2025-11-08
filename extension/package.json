@@ -23,7 +23,18 @@
         ]
       }
     ],
-    "commands": []
+    "commands": [
+      {
+        "command": "vocab.collectFromThisFile",
+        "title": "Review All From This File",
+        "category": "Vocab"
+      },
+      {
+        "command": "vocab.collectAll",
+        "title": "Review All",
+        "category": "Vocab"
+      }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "npm run package",
