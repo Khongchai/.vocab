@@ -22,7 +22,8 @@
           ".vocab"
         ]
       }
-    ]
+    ],
+    "commands": []
   },
   "scripts": {
     "vscode:prepublish": "npm run package",
