@@ -37,9 +37,9 @@ type Notification struct {
 }
 
 type RequestMessage struct {
-	ID     int           `json:"id"`
-	Method RequestMethod `json:"method"`
-	Params any           `json:"params,omitempty"`
+	ID     int            `json:"id"`
+	Method RequestMethod  `json:"method"`
+	Params map[string]any `json:"params,omitempty"`
 }
 
 type ResponseMessage struct {

@@ -37,7 +37,9 @@ func NewForest(ctx context.Context, log func(any)) *Forest {
 
 // Create or replace tree associated with documentUri and merge it back to the global tree.
 //
-// This also clears the diagnostics of the current documentUri
+// # This also clears the diagnostics of the current documentUri
+//
+// This method spawns a new thread if available and parse the given file.
 func (c *Forest) Plant(documentUri string, text string, changeRange *lsproto.Range) *Forest {
 	c.pool.Run(documentUri, func() {
 		scanner := parser.NewScanner(text)

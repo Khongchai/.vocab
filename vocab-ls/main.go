@@ -3,8 +3,12 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"io/fs"
 	"os"
 	"os/signal"
+	"path/filepath"
+	"strings"
 	"syscall"
 	"vocab/engine"
 	"vocab/lib"
@@ -26,6 +30,31 @@ func main() {
 	outputWriter := lib.NewOutputWriter(os.Stdout)
 	logger := lib.NewLogger(os.Stderr)
 	forest := forest.NewForest(ctx, func(any) {})
+
+	collectVocabFilesInRootPath := func(rootPath string) {
+		filepath.WalkDir(rootPath, func(path string, d fs.DirEntry, err error) error {
+			isFile := d.Type().IsRegular()
+			isVocab := func() bool {
+				chunks := strings.Split(d.Name(), ".")
+				extension := chunks[len(chunks)-1]
+				return extension == "vocab"
+			}()
+
+			if !isFile || !isVocab {
+				return nil
+			}
+
+			bytes, readErr := os.ReadFile(path)
+			if readErr != nil {
+				logger.Logf("Can't read content at %s", rootPath)
+			}
+			fileContent := string(bytes)
+			forest.Plant(fmt.Sprintf("%s%s", "file://", path), fileContent, nil)
+
+			return nil
+		})
+	}
+
 	engine := engine.NewEngine(ctx, inputReader.Read, outputWriter.Write, logger,
 		map[string]func(lsproto.Notification) (any, error){
 			"workspace/didDeleteFiles": func(request lsproto.Notification) (any, error) {
@@ -75,12 +104,6 @@ func main() {
 					return nil, err
 				}
 
-				// result, found := forest.Pick(params.TextDocument, params.Position.Line, params.Position.Character)
-				// print(result)
-				// if !found {
-				// 	return nil, nil
-				// }
-
 				return lsproto.NewTextDocumentHoverResponse(
 					rm.ID,
 					"lol",
@@ -106,6 +129,9 @@ func main() {
 				return response, nil
 			},
 			"initialize": func(message lsproto.RequestMessage) (any, error) {
+				root := message.Params["rootPath"].(string)
+				collectVocabFilesInRootPath(root)
+
 				response := map[string]any{
 					"jsonrpc": "2.0",
 					"id":      message.ID, // echo the request id
@@ -116,7 +142,7 @@ func main() {
 								"openClose": true,
 								"change":    lsproto.TextDocumentSyncKindFull,
 							},
-							"hoverProvider": true,
+							// "hoverProvider": true,
 							"diagnosticProvider": map[string]any{
 								// a change of date in one vocab can affect another (spaced repetition)
 								"interFileDependencies": true,
