@@ -52,11 +52,11 @@
     - [x] move normlaization to word tree
     - [x] make normalization turn to lower case only for italian
     - [x] normalization should strip definite and indefinite articles of both languages.
-- [ ] Support hover.
-    - [ ] Write test for hover
+- [-] Support hover.
+    - [-] Write test for hover
     - [x] Implement hover logic (Pick)
-        - [ ] continue from here "textDocument/hover": func(rm lsproto.RequestMessage) (any, err
-    - [ ] Connect hover to lsp
+        - [-] continue from here "textDocument/hover": func(rm lsproto.RequestMessage) (any, err
+    - [-] Connect hover to lsp
 - [ ] Harvest command for collecting all words needs review and create a new section. This would need a workspace command.
 - [ ] Semantic highlight 
 - [ ] Implement quick fix.
