@@ -77,7 +77,7 @@ func (c *Forest) Harvest() map[string][]lsproto.Diagnostic {
 		diags[uri] = []lsproto.Diagnostic{}
 	}
 
-	addDiagToAllWordPositions := func(timeRemaining int, severitiy lsproto.DiagnosticsSeverity, words []*parser.Word) {
+	addDiagToAllWordPositions := func(timeRemaining float64, severitiy lsproto.DiagnosticsSeverity, words []*parser.Word) {
 		for _, word := range words {
 			message := func() string {
 				if timeRemaining == 0 {
@@ -85,9 +85,9 @@ func (c *Forest) Harvest() map[string][]lsproto.Diagnostic {
 				}
 				// can keep this for hover action
 				if timeRemaining > 0 {
-					return fmt.Sprintf("Needs review in %d day(s)", timeRemaining)
+					return ""
 				}
-				return fmt.Sprintf("%d day(s) past deadline", timeRemaining)
+				return fmt.Sprintf("%d days past deadline", int(math.Ceil(timeRemaining*-1)))
 			}()
 			if message == "" {
 				continue
@@ -106,10 +106,10 @@ func (c *Forest) Harvest() map[string][]lsproto.Diagnostic {
 	}
 
 	for _, fruit := range fruits {
-		severity, remainingDays := func() (lsproto.DiagnosticsSeverity, int) {
+		severity, remainingDays := func() (lsproto.DiagnosticsSeverity, float64) {
 			remainingDays := fruitToRemainingDays(fruit)
 
-			if remainingDays < 1 {
+			if remainingDays <= 1 {
 				return lsproto.DiagnosticsSeverityError, remainingDays
 			} else if remainingDays < 3 {
 				return lsproto.DiagnosticsSeverityHint, remainingDays
@@ -134,7 +134,20 @@ func (f *Forest) GetTreesLocations() []string {
 	return slices.Collect(maps.Keys(f.trees))
 }
 
-func fruitToRemainingDays(fruit *WordFruit) int {
+// Pick a fruit based on its location in the tree and return its remaining days description
+func (f *Forest) Pick(textDocument string, line int, character int) (string, bool) {
+	if tree, exists := f.trees[textDocument]; exists {
+		picked := tree.Pick(line, character)
+		if picked == nil {
+			return "", false
+		}
+		remaining := fruitToRemainingDays(picked)
+		return fmt.Sprintf("Remaining days: %f", remaining), true
+	}
+	return "", false
+}
+
+func fruitToRemainingDays(fruit *WordFruit) float64 {
 	if fruit == nil {
 		panic("Fruit is null here...what?!")
 	}
@@ -142,5 +155,5 @@ func fruitToRemainingDays(fruit *WordFruit) int {
 	deadline := fruit.LastSeenDate.AddDate(0, 0, int(interval))
 	remainingHours := time.Until(deadline).Hours()
 	var remainingDays float64 = remainingHours / 24
-	return int(math.Ceil(remainingDays))
+	return remainingDays
 }
