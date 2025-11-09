@@ -64,9 +64,12 @@
     - [x] Collecting from all files and this file
     - [x] Collect params and collect response
     - [ ] At this point, we'll probably need to refactor the stuff inside main.go into something more structured
-- [ ] Syntax highlighting
-- [ ] Some updates don't go to the server. Try adding all stuff to review then clear it again. The errors sometimes don't come back
     
+## Cleanup
+- [ ] Lsproto position seems wonky now? (could be related to the next problem)
+- [ ] Some updates don't go to the server. Try adding all stuff to review then clear it again. The errors sometimes don't come back
+## Bonus
+- [ ] Syntax highlighting
 ```
 20/05/2025
 > (it) thing
