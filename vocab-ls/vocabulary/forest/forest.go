@@ -62,8 +62,13 @@ func (c *Forest) Remove(documentUri string) {
 	})
 }
 
+type HarvestedDiagnostic struct {
+	Diagnostic lsproto.Diagnostic
+	Word       string
+}
+
 // Based on the built tree, compile tree into diagnostics.
-func (c *Forest) Harvest() map[string][]lsproto.Diagnostic {
+func (c *Forest) Harvest() map[string][]HarvestedDiagnostic {
 	c.pool.WaitAll()
 	c.harvestMutex.Lock()
 	defer c.harvestMutex.Unlock()
@@ -74,13 +79,13 @@ func (c *Forest) Harvest() map[string][]lsproto.Diagnostic {
 	}
 	fruits := mergedTree.Harvest()
 
-	diags := make(map[string][]lsproto.Diagnostic)
+	diags := make(map[string][]HarvestedDiagnostic)
 	for uri := range c.trees {
-		diags[uri] = []lsproto.Diagnostic{}
+		diags[uri] = []HarvestedDiagnostic{}
 	}
 
-	addDiagToAllWordPositions := func(timeRemaining float64, severitiy lsproto.DiagnosticsSeverity, words []*parser.Word) {
-		for _, word := range words {
+	addDiagToAllWordPositions := func(timeRemaining float64, severitiy lsproto.DiagnosticsSeverity, fruit *WordFruit) {
+		for _, word := range fruit.Words {
 			message := func() string {
 				if timeRemaining == 0 {
 					return "Review now!"
@@ -103,7 +108,10 @@ func (c *Forest) Harvest() map[string][]lsproto.Diagnostic {
 				severitiy,
 			)
 
-			diags[word.Uri()] = append(diags[word.Uri()], *err)
+			diags[word.Uri()] = append(diags[word.Uri()], HarvestedDiagnostic{
+				Diagnostic: *err,
+				Word:       fruit.Text,
+			})
 		}
 	}
 
@@ -120,12 +128,15 @@ func (c *Forest) Harvest() map[string][]lsproto.Diagnostic {
 			return lsproto.DiagnosticsSeverityInformation, remainingDays
 		}()
 
-		addDiagToAllWordPositions(remainingDays, severity, fruit.Words)
+		addDiagToAllWordPositions(remainingDays, severity, fruit)
 	}
 
 	for uri := range c.parsingDiagnostics {
 		for _, diag := range c.parsingDiagnostics[uri] {
-			diags[uri] = append(diags[uri], *diag)
+			diags[uri] = append(diags[uri], HarvestedDiagnostic{
+				Diagnostic: *diag,
+				Word:       "",
+			})
 		}
 	}
 

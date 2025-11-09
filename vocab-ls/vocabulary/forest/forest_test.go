@@ -36,13 +36,13 @@ func TestShouldActuallyEmitError(t *testing.T) {
 	`, "`", "`")), nil).Harvest()
 	test.Expect(t, true, len(compilationDiag["xxx"]) > 0)
 	diag1 := compilationDiag["xxx"][0]
-	test.Expect(t, 1, diag1.Range.Start.Line, diag1.Range.End.Line)
-	test.Expect(t, 7, diag1.Range.Start.Character)
-	test.Expect(t, 15, diag1.Range.End.Character)
+	test.Expect(t, 1, diag1.Diagnostic.Range.Start.Line, diag1.Diagnostic.Range.End.Line)
+	test.Expect(t, 7, diag1.Diagnostic.Range.Start.Character)
+	test.Expect(t, 15, diag1.Diagnostic.Range.End.Character)
 	diag2 := compilationDiag["xxx"][1]
-	test.Expect(t, 1, diag2.Range.Start.Line, diag2.Range.End.Line)
-	test.Expect(t, 20, diag2.Range.Start.Character)
-	test.Expect(t, 27, diag2.Range.End.Character)
+	test.Expect(t, 1, diag2.Diagnostic.Range.Start.Line, diag2.Diagnostic.Range.End.Line)
+	test.Expect(t, 20, diag2.Diagnostic.Range.Start.Character)
+	test.Expect(t, 27, diag2.Diagnostic.Range.End.Character)
 }
 
 // Very unlikely in real life, but just for programmatic correctness.
@@ -59,7 +59,7 @@ func TestShouldEmitErrorIfReviewedWordIsOfDifferentLanguageBranch(t *testing.T) 
 	finalDiag := forest.Plant("doc-1", test.TrimLines(okText), nil).Harvest()
 
 	test.Expect(t, 1, len(finalDiag["doc-1"]))
-	test.Expect(t, 1, finalDiag["doc-1"][0].Range.Start.Line, finalDiag["doc-1"][0].Range.End.Line)
+	test.Expect(t, 1, finalDiag["doc-1"][0].Diagnostic.Range.Start.Line, finalDiag["doc-1"][0].Diagnostic.Range.End.Line)
 }
 
 func TestShouldClearOldParsingDiagnosticsOfCorrectDocument_OnceErrorIsFixed(t *testing.T) {
@@ -158,12 +158,12 @@ func TestEmitErrorAtWordWithSpecialCharacter(t *testing.T) {
 	harvested := forest.Harvest()
 	test.Expect(t, 2, len(harvested["xxx"]))
 	diag1 := harvested["xxx"][0]
-	test.Expect(t, 1, diag1.Range.Start.Line, diag1.Range.End.Line)
-	test.Expect(t, 7, diag1.Range.Start.Character)
-	test.Expect(t, 14, diag1.Range.End.Character)
+	test.Expect(t, 1, diag1.Diagnostic.Range.Start.Line, diag1.Diagnostic.Range.End.Line)
+	test.Expect(t, 7, diag1.Diagnostic.Range.Start.Character)
+	test.Expect(t, 14, diag1.Diagnostic.Range.End.Character)
 
 	diag2 := harvested["xxx"][1]
-	test.Expect(t, 1, diag2.Range.Start.Line, diag2.Range.End.Line)
-	test.Expect(t, 16, diag2.Range.Start.Character)
-	test.Expect(t, 25, diag2.Range.End.Character)
+	test.Expect(t, 1, diag2.Diagnostic.Range.Start.Line, diag2.Diagnostic.Range.End.Line)
+	test.Expect(t, 16, diag2.Diagnostic.Range.Start.Character)
+	test.Expect(t, 25, diag2.Diagnostic.Range.End.Character)
 }

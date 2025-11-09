@@ -123,13 +123,23 @@ func main() {
 				}
 
 				diagnostics := forest.Harvest()
-				thisDocDiag := diagnostics[request.TextDocument.Uri]
+				var thisDocDiags []lsproto.Diagnostic
+				for _, d := range diagnostics[request.TextDocument.Uri] {
+					thisDocDiags = append(thisDocDiags, d.Diagnostic)
+				}
+
 				delete(diagnostics, request.TextDocument.Uri)
+				restDiags := make(map[string][]lsproto.Diagnostic)
+				for key := range diagnostics {
+					for _, d := range diagnostics[key] {
+						restDiags[key] = append(restDiags[key], d.Diagnostic)
+					}
+				}
 
 				response := lsproto.NewFullDocumentDiagnosticResponse(
 					message.ID,
-					thisDocDiag,
-					diagnostics,
+					thisDocDiags,
+					restDiags,
 				)
 
 				return response, nil
