@@ -67,7 +67,10 @@
     
 ## Cleanup
 - [ ] Lsproto position seems wonky now? (could be related to the next problem)
-- [ ] Some updates don't go to the server. Try adding all stuff to review then clear it again. The errors sometimes don't come back
+    - This is not related to walkDir, but just how errors are somehow mixed when all files diagnostics are joined in the end.
+- [ ] File scheme for windows when collecting all diagnostics on startup incorrect:
+    Expect file:///c%3A/Users/world/Desktop/vocab/test.vocab
+    Got file://c:\\Users\\world\\Desktop\\vocab\\test.vocab
 ## Bonus
 - [ ] Syntax highlighting
 ```
