@@ -21,7 +21,6 @@ func main() {
 	outputWriter := lib.NewOutputWriter(os.Stdout)
 	logger := lib.NewLogger(os.Stderr)
 	forest := forest.NewForest(ctx, func(any) {})
-
 	h := harvester.NewHarvester(
 		ctx,
 		forest,

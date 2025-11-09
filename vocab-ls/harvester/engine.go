@@ -26,22 +26,30 @@ func NewEngine(
 	read ReadCallback,
 	write WriteCallback,
 	logger lib.Logger,
-	notificationHandlers map[string]func(lsproto.Notification) (any, error),
-	requestHandlers map[string]func(lsproto.RequestMessage) (any, error),
 ) *Engine {
 	engine := &Engine{
 		ctx,
 		read,
 		write,
 		logger,
-		notificationHandlers,
-		requestHandlers,
+		make(map[string]func(lsproto.Notification) (any, error)),
+		make(map[string]func(lsproto.RequestMessage) (any, error)),
 	}
 	return engine
 }
 
+func (engine *Engine) SetNotificationHandlers(handlers map[string]func(lsproto.Notification) (any, error)) *Engine {
+	engine.notificationHandlers = handlers
+	return engine
+}
+
+func (engine *Engine) SetRequestHandlers(handlers map[string]func(lsproto.RequestMessage) (any, error)) *Engine {
+	engine.requestHandlers = handlers
+	return engine
+}
+
 // Start up main loop.
-func (engine *Engine) Start() {
+func (engine *Engine) Start() *Engine {
 	for { // https://github.com/microsoft/typescript-go/blob/main/internal/lsp/server.go#L246
 		data, err := engine.readNext()
 
@@ -86,7 +94,6 @@ func (engine *Engine) Start() {
 			engine.logger.Log("No default message handler found.")
 		}
 	}
-
 }
 
 func (engine *Engine) onRequest(message lsproto.RequestMessage) (any, error) {
