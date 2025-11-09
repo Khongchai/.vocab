@@ -5,15 +5,18 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/fs"
+	"maps"
 	"os"
 	"os/signal"
 	"path/filepath"
+	"slices"
 	"strings"
 	"syscall"
 	"vocab/engine"
 	"vocab/lib"
 	lsproto "vocab/lsp"
 	"vocab/vocabulary/forest"
+	"vocab/vocabulary/parser"
 )
 
 // two options:
@@ -98,11 +101,72 @@ func main() {
 				return nil, nil
 			},
 		}, map[string]func(lsproto.RequestMessage) (any, error){
-			"vocab/collectFromThisFile": func(lsproto.RequestMessage) (any, error) {
-				return nil, nil
+			"vocab/collectFromThisFile": func(rm lsproto.RequestMessage) (any, error) {
+				params, err := unmarshalInto(rm.Params, &lsproto.CollectParams{})
+				if err != nil {
+					return nil, err
+				}
+
+				harvested := forest.Harvest()
+				thisDocInfo := harvested[params.CurrentDocumentUri]
+
+				itWordSet := make(map[string]struct{})
+				deWordSet := make(map[string]struct{})
+				for _, harvested := range thisDocInfo {
+					if harvested.Diagnostic.Severity != lsproto.DiagnosticsSeverityError {
+						continue
+					}
+					if harvested.Lang == parser.Deutsch {
+						_, found := deWordSet[harvested.Word]
+						if found {
+							continue
+						}
+						deWordSet[harvested.Word] = struct{}{}
+					} else {
+						_, found := itWordSet[harvested.Word]
+						if found {
+							continue
+						}
+						itWordSet[harvested.Word] = struct{}{}
+					}
+				}
+
+				return lsproto.NewCollectResponse(rm.ID,
+					slices.Collect(maps.Keys(itWordSet)),
+					slices.Collect(maps.Keys(deWordSet)),
+				), nil
 			},
-			"vocab/collectAll": func(lsproto.RequestMessage) (any, error) {
-				return nil, nil
+			"vocab/collectAll": func(rm lsproto.RequestMessage) (any, error) {
+
+				harvesteds := forest.Harvest()
+				deWordSet := make(map[string]struct{})
+				itWordSet := make(map[string]struct{})
+
+				for _, diagnostics := range harvesteds {
+					for _, harvested := range diagnostics {
+						if harvested.Diagnostic.Severity != lsproto.DiagnosticsSeverityError {
+							continue
+						}
+						if harvested.Lang == parser.Deutsch {
+							_, found := deWordSet[harvested.Word]
+							if found {
+								continue
+							}
+							deWordSet[harvested.Word] = struct{}{}
+						} else {
+							_, found := itWordSet[harvested.Word]
+							if found {
+								continue
+							}
+							itWordSet[harvested.Word] = struct{}{}
+						}
+					}
+				}
+
+				return lsproto.NewCollectResponse(rm.ID,
+					slices.Collect(maps.Keys(itWordSet)),
+					slices.Collect(maps.Keys(deWordSet)),
+				), nil
 			},
 			"textDocument/hover": func(rm lsproto.RequestMessage) (any, error) {
 				_, err := unmarshalInto(rm.Params, &lsproto.HoverParams{})

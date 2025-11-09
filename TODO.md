@@ -61,8 +61,11 @@
 ## Last two...then done
 - [x] Trigger whole workspace root parse immediately upon opening any .vocab file.
 - [ ] Harvest command for collecting all words needs review and create a new section. This would need a workspace command.
-    - [ ] Collecting from all files and this file
+    - [x] Collecting from all files and this file
+    - [x] Collect params and collect response
     - [ ] At this point, we'll probably need to refactor the stuff inside main.go into something more structured
+- [ ] Syntax highlighting
+- [ ] Some updates don't go to the server. Try adding all stuff to review then clear it again. The errors sometimes don't come back
     
 ```
 20/05/2025

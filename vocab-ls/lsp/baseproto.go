@@ -168,6 +168,22 @@ type DocumentDiagnosticsParams struct {
 	TextDocument TextDocument `json:"textDocument"`
 }
 
+type CollectParams struct {
+	CurrentDocumentUri string `json:"currentDocumentUri"`
+}
+
+func NewCollectResponse(requestId int, itWords []string, deWords []string) *map[string]any {
+	return NewGenericResponse(
+		requestId,
+		map[string]any{
+			"words": map[string]any{
+				"it": itWords,
+				"de": deWords,
+			},
+		},
+	)
+}
+
 type Diagnostic struct {
 	Range    Range               `json:"range"`
 	Message  string              `json:"message,omitempty"`

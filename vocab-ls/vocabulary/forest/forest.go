@@ -65,6 +65,7 @@ func (c *Forest) Remove(documentUri string) {
 type HarvestedDiagnostic struct {
 	Diagnostic lsproto.Diagnostic
 	Word       string
+	Lang       parser.Language
 }
 
 // Based on the built tree, compile tree into diagnostics.
@@ -109,6 +110,7 @@ func (c *Forest) Harvest() map[string][]HarvestedDiagnostic {
 			)
 
 			diags[word.Uri()] = append(diags[word.Uri()], HarvestedDiagnostic{
+				Lang:       fruit.Lang,
 				Diagnostic: *err,
 				Word:       fruit.Text,
 			})
