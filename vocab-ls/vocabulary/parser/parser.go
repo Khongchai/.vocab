@@ -237,7 +237,10 @@ func (p *Parser) parseVocabSection() {
 			if parsing != "" {
 				newWordFromText(parsing)
 			}
-			words.Words[len(words.Words)-1].Grade = number
+			// if after parsing, length is still 0, don't assign to grade
+			if len(words.Words) > 0 {
+				words.Words[len(words.Words)-1].Grade = number
+			}
 			p.nextTokenNotWhitespace()
 		case TokenWordLiteral:
 			parsingStart = p.tokenStart

@@ -459,3 +459,8 @@ func TestWordWithSpecialCharacter(t *testing.T) {
 	test.Expect(t, 7, ast.Sections[0].NewWords[0].Words[0].Start)
 	test.Expect(t, 14, ast.Sections[0].NewWords[0].Words[0].End)
 }
+
+func TestMissingWordWithScoreSpecifierShouldNotThrowError(t *testing.T) {
+	text := "16/10/2025 \n> (it) (2)"
+	NewParser(t.Context(), "xxx", NewScanner(text), func(a any) {}).Parse()
+}
