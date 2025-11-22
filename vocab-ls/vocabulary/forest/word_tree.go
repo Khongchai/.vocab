@@ -42,7 +42,7 @@ func (wt *WordTree) AddTwig(language parser.Language, word *parser.Word, uri str
 	branch := wt.branches[lang]
 
 	if branch == nil {
-		branch = &LanguageBranch{twigs: map[string][]*WordTwig{}}
+		branch = NewLanguageBranch()
 		wt.branches[lang] = branch
 	}
 
@@ -87,8 +87,7 @@ func (wt *WordTree) GetNormalizedText(lang parser.Language, word *parser.Word) s
 func (wt *WordTree) Graft(other *WordTree) *WordTree {
 	for key, value := range other.branches {
 		if wt.branches[key] == nil {
-			wt.branches[key] = value
-			continue
+			wt.branches[key] = NewLanguageBranch()
 		}
 
 		wt.branches[key].Graft(value)
@@ -171,6 +170,10 @@ func twigsToWordFruits(lang string, word string, twigs []*WordTwig) *WordFruit {
 type LanguageBranch struct {
 	// Map of word to places they appear in.
 	twigs map[string][]*WordTwig
+}
+
+func NewLanguageBranch() *LanguageBranch {
+	return &LanguageBranch{twigs: map[string][]*WordTwig{}}
 }
 
 func (lb *LanguageBranch) Graft(other *LanguageBranch) *LanguageBranch {

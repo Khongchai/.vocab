@@ -66,7 +66,7 @@
     - [ ] At this point, we'll probably need to refactor the stuff inside main.go into something more structured
     
 ## Cleanup
-- [ ] Lsproto position seems wonky now? (could be related to the next problem)
+- [x] Lsproto position seems wonky now? (could be related to the next problem)
     - This is not related to walkDir, but just how errors are somehow mixed when all files diagnostics are joined in the end.
     - Does not happen with one file. 
 - [ ] File scheme for windows when collecting all diagnostics on startup incorrect:

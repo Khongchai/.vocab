@@ -167,3 +167,18 @@ func TestEmitErrorAtWordWithSpecialCharacter(t *testing.T) {
 	test.Expect(t, 16, diag2.Diagnostic.Range.Start.Character)
 	test.Expect(t, 25, diag2.Diagnostic.Range.End.Character)
 }
+
+func TestErrorStateShouldBeCorrectAfterEditingMultipleFiles(t *testing.T) {
+	forest := NewForest(t.Context(), func(a any) {})
+
+	forest.Plant("1", "18/10/2025 \n > (it) b", nil)
+	forest.Plant("2", "16/10/2025 \n > (it) a", nil)
+	errors := forest.Harvest()
+	test.Expect(t, len(errors["1"]), 1)
+	test.Expect(t, len(errors["2"]), 1)
+
+	forest.Plant("1", "18/10/2025 \n > (it) ba", nil)
+	errors = forest.Harvest()
+	test.Expect(t, len(errors["1"]), 1)
+	test.Expect(t, len(errors["2"]), 1)
+}
