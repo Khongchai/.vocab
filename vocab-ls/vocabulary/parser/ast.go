@@ -12,6 +12,7 @@ const (
 	Unrecognized Language = ""
 	Deutsch      Language = "Tedesco"
 	Italiano     Language = "Italienisch"
+	Français     Language = "Franzözisch"
 )
 
 type Word struct {

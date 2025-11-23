@@ -14,8 +14,8 @@ const (
 	MalformedDate            string = "Malformed date -- expected dd/mm/yyyy"
 	ExpectDateSection        string = "Expect a date section here."
 	ExpectVocabulary         string = "Expect Vocabulary"
-	ExpectLanguageExpression string = "The language of this section is not specified. Specified either (it) or (de)"
-	UnrecognizedLanguage     string = "Unrecognized language identifier. Specify either (it) or (de)"
+	ExpectLanguageExpression string = "The language of this section is not specified. Specified either (it), (fr), or (de)"
+	UnrecognizedLanguage     string = "Unrecognized language identifier. Specify either (it), (fr), or (de)"
 	ExpectVocabSection       string = "Expect Vocab Section"
 	UnexpectedToken          string = "Unexpected Token"
 	InvalidScore             string = "Score must be a number"
@@ -150,6 +150,8 @@ func (p *Parser) parseVocabSection() {
 		words.Language = Italiano
 	case "de":
 		words.Language = Deutsch
+	case "fr":
+		words.Language = Français
 	default:
 		p.errorHere(nil, UnrecognizedLanguage)
 		words.Language = Unrecognized
