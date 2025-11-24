@@ -69,12 +69,11 @@
 - [x] Lsproto position seems wonky now? (could be related to the next problem)
     - This is not related to walkDir, but just how errors are somehow mixed when all files diagnostics are joined in the end.
     - Does not happen with one file. 
-- [ ] File scheme for windows when collecting all diagnostics on startup incorrect:
+- [x] File scheme for windows when collecting all diagnostics on startup incorrect:
     input: c:\\Users\\world\\Desktop\\vocab\\something.vocab
     Expect file:///c%3A/Users/world/Desktop/vocab/test.vocab
     Got file://c:\\Users\\world\\Desktop\\vocab\\test.vocab
-## Bonus
-- [ ] Syntax highlighting
+- [ ] Strip french articles.
 ```
 20/05/2025
 > (it) thing

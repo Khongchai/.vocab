@@ -1,71 +1,87 @@
-# vocab README
+# vocab
 
-This is the README for your extension "vocab". After writing up a brief description, we recommend including the following sections.
+Extension that adds a support for a custom .vocab file extension. 
 
-## Features
+.vocab is a custom language for vocabulary note taking format. It uses the spaced-repetition sm2 algorithm behind the scene to help remind you which words need review.
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+Right now it supports 3 languages identifiers: de, fr, and it. Even though these don't mean much other than just helping to remind you which language branch the words or phrases fall in, in the future, I might extend it with NLP capabilities to perform lemmatization. We'll see.
 
-For example if there is an image subfolder under your extension project workspace:
+# Syntax
 
-\!\[feature X\]\(images/feature-x.png\)
+## Structure
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+The syntax is composed of 4 main sections, the date, new words, reviewed words, and utterance.
 
-## Requirements
+```
+# 04/09/2025
+> (de) schön
+>> (it) `inoltre`
+Inoltre, questo plugin sarà fantastico. Sono sicuro.
+```
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+### Date
 
-## Extension Settings
+The date section has `dd/mm/yyyy` format. This marks the start of a section and plays into when the word is going to circle back.
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+### New and Reviewed Sections
 
-For example:
+`>` marks new and `>>` marks review. This is for clarity only and does not have any language server functionality.
 
-This extension contributes the following settings:
+The words in these sections are demarcated by a comma
 
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+```
+> (de|fr|it) word1, word2
+```
 
-## Known Issues
+### Utterance
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+This section is for example sentences. Can be anything.
 
-## Release Notes
+The utterance section can be any string of text for however many lines. The text are considered utterance sections up until the next date section.
 
-Users appreciate release notes as you update your extension.
+## Grading
 
-### 1.0.0
+A word can be graded according to the [sm2](https://en.wikipedia.org/wiki/SuperMemo#Description_of_SM-2_algorithm) algorithm.
 
-Initial release of ...
+```
+> (de|fr|it) word1(5), word2(2)
+```
 
-### 1.0.1
+This affect the interval between the word's last appearance and when it needs to appear (be reviewed) again.
 
-Fixed issue #.
+## Exact Match
 
-### 1.1.0
+Capture exact match by wrapping a word with backticks. 
 
-Added features X, Y, and Z.
+`das Haus`, `word2`
 
----
+The result is that the entire `das Haus` must reappear again later -- normally both indefinite and definite articles are stripped out.
 
-## Following extension guidelines
+## Comment
 
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
+Comments are prepended with the pipe symbol `|`.
 
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
+```
+01/01/2026
+> (de|fr|it) word1(5), word2(2) | word2 is so difficult...damn!
+```
 
-## Working with Markdown
+## Commands
 
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
+`Review All From This File` will create a new section with words in the current file that needs review.
 
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
+`Review All` will create a new section with words in all files in the current workspace that ends with .vocab that needs review.
 
-## For more information
+# Example
+```
+13/10/2025
+> (it) qualcuno(1), migliaia, decimi(1)
+Qualcuno di voi ha chiesto:
+Finalmente siamo arrivati, dopo migliaia di chilometri e decimi di ore di macchini.
+Nach Tausenden von Kilometern und Zehntelstunden Fahrt sind wir endlich angekommen.
+14/10/2025
+> (de) der Nebensatz, der Relativsatz(3), `der Einschub`, die Schnodderigkeit(4)
+Der Sprecher benutzt lange, zusammengesetzte Sätze mit Nebensätzen, Relativsätzen und erklärenden Einschüben.
+Er ist voll mit Schnodderigkeit. Kann nicht mit ihm arbeiten...
+```
 
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
