@@ -1,9 +1,10 @@
 {
   "name": "vocab",
   "displayName": "vocab",
-  "description": "Vocab file parser",
+  "description": "Spaced repetition syntax",
   "version": "0.0.1",
   "publisher": "Khongchai",
+  "repository": "https://github.com/Khongchai/.vocab",
   "engines": {
     "vscode": "^1.103.0"
   },
