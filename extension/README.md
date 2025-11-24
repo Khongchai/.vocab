@@ -13,7 +13,7 @@ Right now it supports 3 languages identifiers: de, fr, and it. Even though these
 The syntax is composed of 4 main sections, the date, new words, reviewed words, and utterance.
 
 ```
-# 04/09/2025
+04/09/2025
 > (de) schön
 >> (it) `inoltre`
 Inoltre, questo plugin sarà fantastico. Sono sicuro.
