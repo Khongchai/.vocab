@@ -126,7 +126,8 @@ func (n *RequestWorker) TextDocumentDiagnosticsWorker(message lsproto.RequestMes
 }
 
 func TransformWindowsPathToLspUri(path string) string {
-	split := strings.Split(filepath.ToSlash(path), "/")
+	slashed := filepath.ToSlash(path)
+	split := strings.Split(slashed, "/")
 	escaped := func() string {
 		parts := []string{}
 		for _, part := range split {

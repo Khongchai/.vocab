@@ -1,8 +1,15 @@
 package harvester
 
-import "testing"
+import (
+	"runtime"
+	"testing"
+)
 
-func TestFilePathTransform(t *testing.T) {
+func TestTransformWindowsPathToLspUri(t *testing.T) {
+	if runtime.GOOS != "windows" {
+		return
+	}
+
 	input := "c:\\Users\\world\\Desktop\\vocab\\test.vocab"
 	expect := "file:///c%3A/Users/world/Desktop/vocab/test.vocab"
 
