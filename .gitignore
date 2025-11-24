@@ -41,3 +41,5 @@ vocab-ls.exe
 # Executable
 /vocab-ls/vocab-ls 
 !/vocab-ls/     
+
+*.vsix
