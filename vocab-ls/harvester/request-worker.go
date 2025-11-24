@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"io/fs"
 	"maps"
+	"net/url"
 	"os"
 	"path/filepath"
+	"runtime"
 	"slices"
 	"strings"
 	"vocab/lib"
@@ -123,6 +125,19 @@ func (n *RequestWorker) TextDocumentDiagnosticsWorker(message lsproto.RequestMes
 	return response, nil
 }
 
+func TransformWindowsPathToLspUri(path string) string {
+	split := strings.Split(filepath.ToSlash(path), "/")
+	escaped := func() string {
+		parts := []string{}
+		for _, part := range split {
+			parts = append(parts, url.QueryEscape(part))
+		}
+		return strings.Join(parts, "/")
+	}()
+	result := fmt.Sprintf("%s%s", "file:///", escaped)
+	return result
+}
+
 func (n *RequestWorker) InitializeWorker(message lsproto.RequestMessage) (any, error) {
 	root := message.Params["rootPath"].(string)
 	filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
@@ -142,7 +157,15 @@ func (n *RequestWorker) InitializeWorker(message lsproto.RequestMessage) (any, e
 			n.logger.Logf("Can't read content at %s", root)
 		}
 		fileContent := string(bytes)
-		n.forest.Plant(fmt.Sprintf("%s%s", "file://", path), fileContent, nil)
+		fileUri := func() string {
+			if runtime.GOOS != "windows" {
+				return fmt.Sprintf("%s%s", "file://", path)
+			}
+
+			return TransformWindowsPathToLspUri(path)
+		}()
+
+		n.forest.Plant(fileUri, fileContent, nil)
 
 		return nil
 	})
