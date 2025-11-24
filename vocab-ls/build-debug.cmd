@@ -1,1 +1,1 @@
-go build -gcflags="all=-N -l" -o vocab-ls.exe
+go build -gcflags="all=-N -l" -o ../extension/binaries/vocab-ls.exe

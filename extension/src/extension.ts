@@ -12,7 +12,7 @@ let client: LanguageClient | undefined;
 
 export async function activate(context: vscode.ExtensionContext) {
   const serverOptions = (() => {
-    const lsPath = path.resolve(context.extensionPath, "..", "vocab-ls");
+    const lsPath = path.resolve(context.extensionPath, "binaries");
     const exePath = path.join(
       lsPath,
       `vocab-ls${process.platform === "win32" ? ".exe" : ""}`

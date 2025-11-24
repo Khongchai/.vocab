@@ -1,3 +1,3 @@
-go build  -o vocab-ls
+go build  -o ../extension/binaries/vocab-ls
 
-GOOS=windows GOARCH=amd64 go build -o vocab-ls.exe
+GOOS=windows GOARCH=amd64 go build -o ../extension/binaries/vocab-ls.exe

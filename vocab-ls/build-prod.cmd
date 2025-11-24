@@ -1,1 +1,1 @@
-go build -o vocab-ls.exe
+go build -o ../extension/binaries/vocab-ls.exe
