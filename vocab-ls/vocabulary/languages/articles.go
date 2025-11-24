@@ -23,6 +23,23 @@ var articeln = func() map[string]struct{} {
 	return set
 }()
 
+var article = func() map[string]struct{} {
+	arr := []string{
+		"la",
+		"le",
+		"l'",
+		"une",
+		"un",
+		"des",
+		"du",
+	}
+	set := make(map[string]struct{})
+	for _, item := range arr {
+		set[item] = struct{}{}
+	}
+	return set
+}()
+
 var articoli = func() map[string]struct{} {
 	arr := []string{
 		"il ",
@@ -58,6 +75,15 @@ func strip(set map[string]struct{}, word string, checkFor string) (string, bool)
 
 func StripGermanArticleFromWord(word string) string {
 	maybeStripped, _ := strip(articeln, word, " ")
+	return maybeStripped
+}
+
+func StripFrenchArticleFromWord(word string) string {
+	if maybeStripped, handled := strip(article, word, " "); handled {
+		return maybeStripped
+	}
+
+	maybeStripped, _ := strip(article, word, "'")
 	return maybeStripped
 }
 

@@ -74,14 +74,17 @@ func (wt *WordTree) GetNormalizedText(lang parser.Language, word *parser.Word) s
 		return word.Text
 	}
 
-	if lang == parser.Italiano {
+	switch lang {
+	case parser.Italiano:
 		norm := languages.StripItalianArticleFromWord(strings.ToLower(word.Text))
 		return norm
+	case parser.Français:
+		norm := languages.StripFrenchArticleFromWord(strings.ToLower(word.Text))
+		return norm
+	default:
+		norm := languages.StripGermanArticleFromWord(word.Text)
+		return norm
 	}
-
-	// German is case-sensitive
-	norm := languages.StripGermanArticleFromWord(word.Text)
-	return norm
 }
 
 func (wt *WordTree) Graft(other *WordTree) *WordTree {
