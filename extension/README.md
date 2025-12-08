@@ -1,5 +1,7 @@
 # vocab
 
+![example](./docs-assets/example.png)
+
 Extension that adds a support for a custom .vocab file extension. 
 
 .vocab is a custom language for vocabulary note taking format. It uses the spaced-repetition sm2 algorithm behind the scene to help remind you which words need review.
@@ -84,4 +86,5 @@ Nach Tausenden von Kilometern und Zehntelstunden Fahrt sind wir endlich angekomm
 Der Sprecher benutzt lange, zusammengesetzte Sätze mit Nebensätzen, Relativsätzen und erklärenden Einschüben.
 Er ist voll mit Schnodderigkeit. Kann nicht mit ihm arbeiten...
 ```
+
 
